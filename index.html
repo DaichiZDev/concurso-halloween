@@ -128,12 +128,14 @@
                     <input type="text" id="user-name-input" placeholder="Tu nombre (obligatorio)" class="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500">
                     <input type="text" id="costume-name-input" placeholder="Disfraz (opcional)" class="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500 mt-2">
                     <button id="register-btn" class="btn-primary w-full !mt-6">¡Entrar a la Sala!</button>
+                    <button id="back-to-home-btn" class="btn-secondary w-full !mt-2">Volver</button>
                 </div>
             </div>
         </div>
 
-        <div id="lobby-screen" class="hidden w-full">
+        <div id="lobby-screen" class="hidden w-full relative">
              <div class="card rounded-xl p-6 md:p-8 shadow-lg max-w-2xl mx-auto">
+                <button id="leave-lobby-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-sm py-1 px-2 rounded-md bg-red-800/50 hover:bg-red-700/80">Salir</button>
                 <h2 class="font-creepster text-4xl text-orange-500 mb-2 text-center">Sala de Espera</h2>
                 <div class="bg-gray-900 p-3 rounded-lg flex items-center justify-between mb-6">
                     <div>
@@ -245,8 +247,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- CORRECCIÓN DE PRIVACIDAD: ID de Aplicación Fijo y Único ---
-        // Todos los que usen este archivo compartirán el mismo espacio, permitiendo que las salas funcionen.
         const appId = 'concurso-halloween-shared-2025';
 
         const getContestRef = (id) => doc(db, `artifacts/${appId}/public/data/contests`, id);
@@ -408,6 +408,8 @@ Mateo Rojas,Fantasma Glitch</textarea>
             const id = document.getElementById('contest-id-input').value.trim().toUpperCase(); if (!id) return;
             if ((await getDoc(getContestRef(id))).exists()) { contestId = id; window.location.hash = id; showScreen('register'); } else { customAlert("Error", "Sala no encontrada."); }
         });
+        document.getElementById('back-to-home-btn').addEventListener('click', leaveContest);
+        document.getElementById('leave-lobby-btn').addEventListener('click', leaveContest);
 
         document.getElementById('register-btn').addEventListener('click', async () => {
             const name = document.getElementById('user-name-input').value.trim(); if (!name) return customAlert("Error", "Nombre requerido.");
@@ -711,6 +713,64 @@ Mateo Rojas,Fantasma Glitch</textarea>
                     if ((await getDoc(getContestRef(hashId))).exists()) {
                         subscribeToContest(contestId); 
                     } else {
+                        showScreen('register');
+                    }
+                } else { 
+                    showScreen('home'); 
+                }
+            } else { 
+                await signInAnonymously(auth);
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+                if(isAdmin) {
+                    controlsHTML += `<button data-action="restart" class="btn-secondary mt-6 w-full">Reiniciar Concurso</button>`;
+                }
+                controlsHTML += `<button data-action="leave" class="btn-danger mt-2 w-full">Volver al Inicio</button>`;
+            }
+            controlsContainer.innerHTML = controlsHTML;
+            
+            controlsContainer.onclick = async (e) => {
+                const target = e.target.closest('button[data-action]');
+                if (!target) return;
+                const action = target.dataset.action;
+                if(action === 'reveal') {
+                    await updateDoc(getContestRef(contestId), { revealStep: parseInt(target.dataset.nextStep) });
+                } else if (action === 'restart') {
+                    const batch = writeBatch(db);
+                    batch.update(getContestRef(contestId), { status: "lobby", currentlyVotingFor: null, votedOnParticipants: [], revealStep: 0, topResults: null, tiebreakerInfo: null });
+                    users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0 }));
+                    const allUsers = (await getDocs(getUsersCollectionRef(contestId))).docs;
+                    for (const userDoc of allUsers) {
+                        const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, userDoc.id));
+                        votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
+                    }
+                    await batch.commit();
+                } else if(action === 'leave') {
+                    leaveContest();
+                }
+            };
+        }
+
+        document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => { const list=document.getElementById('participants-list-input').value.trim(); if(!list)return; const batch=writeBatch(db); list.split('\n').forEach(l=>{const [name,costume='']=l.split(',').map(p=>p.trim()); if(name)batch.set(doc(getUsersCollectionRef(contestId)),{name,costume,isParticipant:true,isJuror:false,isManualEntry:true})}); await batch.commit(); document.getElementById('participants-list-input').value=''; });
+        document.getElementById('add-juror-btn')?.addEventListener('click', async () => { const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true}); document.getElementById('new-juror-name').value='';} });
+        document.getElementById('start-contest-btn')?.addEventListener('click', async () => { const users=(await getDocs(getUsersCollectionRef(contestId))).docs.map(d=>d.data()); if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante."); if(users.filter(u=>u.isJuror).length<1) return customAlert("Error","Debe haber al menos un jurado."); await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: []}); });
+        document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { if (e.target.disabled) return; e.target.disabled=true; e.target.textContent='Enviado'; const voteRef=doc(getVotesCollectionRef(contestId,localContestData.currentlyVotingFor), currentUserId); const batch=writeBatch(db); batch.set(voteRef,{jurorId:currentUserId,score:currentJurorScore}); batch.update(getUserRef(contestId,currentUserId),{hasVoted:true}); await batch.commit(); });
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) { 
+                currentUserId = user.uid; 
+                const hashId = window.location.hash.substring(1).toUpperCase(); 
+                if (hashId) { 
+                    contestId = hashId; 
+                    if ((await getDoc(getContestRef(hashId))).exists()) {
+                        subscribeToContest(contestId); 
+                    } else {
                         // If the room in the URL doesn't exist in our app space, offer to register for it.
                         showScreen('register');
                     }
@@ -724,5 +784,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
     </script>
 </body>
 </html>
+
 
 
