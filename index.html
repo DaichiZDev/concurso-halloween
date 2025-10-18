@@ -108,14 +108,6 @@
         <p class="font-creepster text-2xl text-orange-500 mt-4 tracking-wider">Conectando...</p>
     </div>
 
-    <header id="app-header" class="hidden absolute top-0 left-0 right-0 p-4 z-10">
-        <div class="container mx-auto flex justify-end">
-            <button id="leave-contest-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                Salir de la Sala
-            </button>
-        </div>
-    </header>
-
     <main class="container mx-auto p-4 max-w-5xl min-h-screen flex flex-col justify-center">
         <div id="home-screen" class="w-full">
             <div class="card rounded-xl p-6 md:p-8 text-center shadow-lg max-w-2xl mx-auto">
@@ -215,7 +207,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
                  <div id="results-container" class="space-y-4">
                      <p class="text-gray-400 text-lg">Esperando que el organizador revele los resultados...</p>
                  </div>
-                 <div id="results-admin-controls" class="mt-8 pt-4 border-t border-gray-700 hidden"></div>
+                 <div id="results-controls" class="mt-8 pt-4 border-t border-gray-700"></div>
             </div>
         </div>
     </main>
@@ -253,12 +245,9 @@ Mateo Rojas,Fantasma Glitch</textarea>
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- CORRECCIÓN DE PRIVACIDAD: ID de Aplicación Único ---
-        let appId = localStorage.getItem('halloweenAppId_v2');
-        if (!appId) {
-            appId = 'halloween-app-' + Math.random().toString(36).substring(2, 11);
-            localStorage.setItem('halloweenAppId_v2', appId);
-        }
+        // --- CORRECCIÓN DE PRIVACIDAD: ID de Aplicación Fijo y Único ---
+        // Todos los que usen este archivo compartirán el mismo espacio, permitiendo que las salas funcionen.
+        const appId = 'concurso-halloween-shared-2025';
 
         const getContestRef = (id) => doc(db, `artifacts/${appId}/public/data/contests`, id);
         const getUserRef = (cId, uId) => doc(db, `artifacts/${appId}/public/data/contests/${cId}/users`, uId);
@@ -267,7 +256,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
         
         const screens = { home: document.getElementById('home-screen'), register: document.getElementById('register-screen'), lobby: document.getElementById('lobby-screen'), voting: document.getElementById('voting-screen'), results: document.getElementById('results-screen') };
         const loadingOverlay = document.getElementById('loading-overlay');
-        const appHeader = document.getElementById('app-header');
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
         let currentJurorScore = 5;
@@ -315,7 +303,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
             navigator.clipboard.writeText(document.getElementById('contest-code').textContent).then(() => customAlert("Copiado", "Código de sala copiado.")).catch(() => customAlert("Error", "No se pudo copiar."));
         });
 
-        // --- NUEVA FUNCIÓN PARA SALIR DE UNA SALA ---
         function leaveContest() {
             if (contestUnsubscribe) contestUnsubscribe();
             if (usersUnsubscribe) usersUnsubscribe();
@@ -323,11 +310,10 @@ Mateo Rojas,Fantasma Glitch</textarea>
             usersUnsubscribe = null;
             contestId = null;
             localContestData = {};
-            window.location.hash = ''; // Limpia el código de la sala de la URL
+            window.location.hash = '';
             showScreen('home');
         }
-        document.getElementById('leave-contest-btn').addEventListener('click', leaveContest);
-
+        
         function processImageWithCancellation(file, signal) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -437,7 +423,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
             Object.values(screens).forEach(s => s.classList.add('hidden')); 
             screens[name]?.classList.remove('hidden'); 
             loadingOverlay.classList.add('hidden'); 
-            appHeader.classList.toggle('hidden', name === 'home'); // Show header on all screens except home
             if(name==='voting') renderScoringInputs(); 
         };
 
@@ -607,8 +592,8 @@ Mateo Rojas,Fantasma Glitch</textarea>
         async function renderResults(contestData, users) {
             const isAdmin = contestData.creatorId === currentUserId;
             const resultsContainer = document.getElementById('results-container');
-            const adminControlsContainer = document.getElementById('results-admin-controls');
-            adminControlsContainer.classList.toggle('hidden', !isAdmin);
+            const controlsContainer = document.getElementById('results-controls');
+            controlsContainer.innerHTML = ''; // Clear previous controls
 
             const finalResults = contestData.topResults ? JSON.parse(contestData.topResults) : [];
             const revealStep = contestData.revealStep || 0; 
@@ -661,8 +646,8 @@ Mateo Rojas,Fantasma Glitch</textarea>
             }
             resultsContainer.innerHTML = resultsHTML;
 
+            let controlsHTML = '';
             if (isAdmin) {
-                let adminControlsHTML = '';
                 ranks.forEach(rank => {
                     const result = finalResults.find(r => r.rank === rank);
                     const stepToTriggerReveal = 3 - rank;
@@ -671,32 +656,45 @@ Mateo Rojas,Fantasma Glitch</textarea>
                     const canReveal = revealStep === stepToTriggerReveal;
 
                     if (!result) {
-                        adminControlsHTML += `<button class="btn-primary w-full mt-2 bg-gray-700" disabled>${rank}º Lugar (N/A)</button>`;
+                        controlsHTML += `<button class="btn-primary w-full mt-2 bg-gray-700" disabled>${rank}º Lugar (N/A)</button>`;
                     } else if (isRevealed) {
-                        adminControlsHTML += `<button class="btn-primary w-full mt-2 bg-green-600 hover:bg-green-700" disabled>✔️ ${rank}º Lugar Revelado</button>`;
+                        controlsHTML += `<button class="btn-primary w-full mt-2 bg-green-600 hover:bg-green-700" disabled>✔️ ${rank}º Lugar Revelado</button>`;
                     } else if (canReveal) {
-                        adminControlsHTML += `<button data-next-step="${nextStepValue}" class="btn-primary w-full mt-2 animate-pulse bg-purple-600 hover:bg-purple-700">✨ Revelar ${rank}º Lugar</button>`;
+                        controlsHTML += `<button data-action="reveal" data-next-step="${nextStepValue}" class="btn-primary w-full mt-2 animate-pulse bg-purple-600 hover:bg-purple-700">✨ Revelar ${rank}º Lugar</button>`;
                     } else {
-                        adminControlsHTML += `<button class="btn-primary w-full mt-2" disabled>Revelar ${rank}º Lugar</button>`;
+                        controlsHTML += `<button class="btn-primary w-full mt-2" disabled>Revelar ${rank}º Lugar</button>`;
                     }
                 });
-                adminControlsHTML += `<button id="restart-contest-btn" class="btn-secondary mt-6 w-full">Reiniciar Concurso</button>`;
-                adminControlsContainer.innerHTML = adminControlsHTML;
+            }
 
-                adminControlsContainer.querySelectorAll('button[data-next-step]').forEach(btn => btn.addEventListener('click', e => updateDoc(getContestRef(contestId), { revealStep: parseInt(e.target.dataset.nextStep) })));
-                document.getElementById('restart-contest-btn')?.addEventListener('click', async () => {
+            if (revealStep >= 3) { // 1st place is revealed (step 3)
+                if(isAdmin) {
+                    controlsHTML += `<button data-action="restart" class="btn-secondary mt-6 w-full">Reiniciar Concurso</button>`;
+                }
+                controlsHTML += `<button data-action="leave" class="btn-danger mt-2 w-full">Volver al Inicio</button>`;
+            }
+            controlsContainer.innerHTML = controlsHTML;
+            
+            controlsContainer.onclick = async (e) => {
+                const target = e.target.closest('button[data-action]');
+                if (!target) return;
+                const action = target.dataset.action;
+                if(action === 'reveal') {
+                    await updateDoc(getContestRef(contestId), { revealStep: parseInt(target.dataset.nextStep) });
+                } else if (action === 'restart') {
                     const batch = writeBatch(db);
                     batch.update(getContestRef(contestId), { status: "lobby", currentlyVotingFor: null, votedOnParticipants: [], revealStep: 0, topResults: null, tiebreakerInfo: null });
                     users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0 }));
-                    
                     const allUsers = (await getDocs(getUsersCollectionRef(contestId))).docs;
                     for (const userDoc of allUsers) {
                         const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, userDoc.id));
                         votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
                     }
                     await batch.commit();
-                });
-            }
+                } else if(action === 'leave') {
+                    leaveContest();
+                }
+            };
         }
 
         document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => { const list=document.getElementById('participants-list-input').value.trim(); if(!list)return; const batch=writeBatch(db); list.split('\n').forEach(l=>{const [name,costume='']=l.split(',').map(p=>p.trim()); if(name)batch.set(doc(getUsersCollectionRef(contestId)),{name,costume,isParticipant:true,isJuror:false,isManualEntry:true})}); await batch.commit(); document.getElementById('participants-list-input').value=''; });
@@ -713,6 +711,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
                     if ((await getDoc(getContestRef(hashId))).exists()) {
                         subscribeToContest(contestId); 
                     } else {
+                        // If the room in the URL doesn't exist in our app space, offer to register for it.
                         showScreen('register');
                     }
                 } else { 
