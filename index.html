@@ -53,7 +53,7 @@
         .rank-3 { color: #d97706; } /* Bronce */
         
         .pumpkin-icon { 
-            font-size: 3rem; 
+            font-size: 2rem; /* Adjusted size for more icons */
             opacity: 0.3; 
             transition: all 0.1s ease; 
             cursor: pointer; 
@@ -67,6 +67,7 @@
         .pumpkin-icons { 
             user-select: none; 
             display: flex; 
+            flex-wrap: wrap; /* Allow icons to wrap */
             justify-content: center; 
             gap: 0.5rem; 
         }
@@ -107,10 +108,16 @@
         <p class="font-creepster text-2xl text-orange-500 mt-4 tracking-wider">Conectando...</p>
     </div>
 
-    <main class="container mx-auto p-4 max-w-5xl min-h-screen flex flex-col justify-center">
-        
+    <header id="app-header" class="hidden absolute top-0 left-0 right-0 p-4 z-10">
+        <div class="container mx-auto flex justify-end">
+            <button id="leave-contest-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                Salir de la Sala
+            </button>
+        </div>
+    </header>
 
-<div id="home-screen" class="w-full">
+    <main class="container mx-auto p-4 max-w-5xl min-h-screen flex flex-col justify-center">
+        <div id="home-screen" class="w-full">
             <div class="card rounded-xl p-6 md:p-8 text-center shadow-lg max-w-2xl mx-auto">
                 <h1 class="font-creepster text-5xl md:text-7xl text-orange-500 mb-4 tracking-widest">Noche de Brujas</h1>
                 <p class="text-gray-300 mb-8">Crea o únete a una sala de votación.</p>
@@ -213,9 +220,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
         </div>
     </main>
     
-    
-
-<div id="alert-modal" class="modal-backdrop"><div class="modal-content"><h2 id="alert-modal-title" class="font-creepster text-3xl text-orange-500 mb-4"></h2><p id="alert-modal-message" class="text-gray-300 mb-6"></p><button id="alert-modal-close" class="btn-primary">Entendido</button></div></div>
+    <div id="alert-modal" class="modal-backdrop"><div class="modal-content"><h2 id="alert-modal-title" class="font-creepster text-3xl text-orange-500 mb-4"></h2><p id="alert-modal-message" class="text-gray-300 mb-6"></p><button id="alert-modal-close" class="btn-primary">Entendido</button></div></div>
     <div id="name-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Editar Nombre</h2><input type="text" id="name-modal-input" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500"><div class="flex gap-4 mt-6"><button id="name-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="name-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
     <div id="costume-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Nombre del Disfraz</h2><input type="text" id="costume-modal-input" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500"><div class="flex gap-4 mt-6"><button id="costume-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="costume-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
     <div id="image-upload-modal" class="modal-backdrop">
@@ -231,12 +236,10 @@ Mateo Rojas,Fantasma Glitch</textarea>
     <input type="file" id="image-file-input" class="hidden" accept="image/*">
 
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
         
-        // --- CONFIGURACIÓN DE FIREBASE (INTEGRADA) ---
         const firebaseConfig = {
             apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
             authDomain: "concurso-halloween.firebaseapp.com",
@@ -250,28 +253,31 @@ Mateo Rojas,Fantasma Glitch</textarea>
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- REFERENCIAS A LA BASE DE DATOS ---
-        const appId = 'halloween-costume-contest-2025';
+        // --- CORRECCIÓN DE PRIVACIDAD: ID de Aplicación Único ---
+        let appId = localStorage.getItem('halloweenAppId_v2');
+        if (!appId) {
+            appId = 'halloween-app-' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('halloweenAppId_v2', appId);
+        }
+
         const getContestRef = (id) => doc(db, `artifacts/${appId}/public/data/contests`, id);
         const getUserRef = (cId, uId) => doc(db, `artifacts/${appId}/public/data/contests/${cId}/users`, uId);
         const getUsersCollectionRef = (cId) => collection(db, `artifacts/${appId}/public/data/contests/${cId}/users`);
         const getVotesCollectionRef = (cId, participantId) => collection(db, `artifacts/${appId}/public/data/contests/${cId}/users/${participantId}/votes`);
         
-        // --- VARIABLES GLOBALES Y ELEMENTOS DEL DOM ---
         const screens = { home: document.getElementById('home-screen'), register: document.getElementById('register-screen'), lobby: document.getElementById('lobby-screen'), voting: document.getElementById('voting-screen'), results: document.getElementById('results-screen') };
         const loadingOverlay = document.getElementById('loading-overlay');
+        const appHeader = document.getElementById('app-header');
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
-        let currentJurorScore = 3; 
-        const MAX_PUMPKINS = 5;
+        let currentJurorScore = 5;
+        const MAX_PUMPKINS = 10;
 
         const imageUploadModal = document.getElementById('image-upload-modal');
         const imageFileInput = document.getElementById('image-file-input');
         let imageUploadAbortController = null;
         let processedImageBase64 = null;
         let targetUserIdForImageUpload = null;
-
-        // --- FUNCIONES UTILITARIAS Y MODALES ---
 
         function customAlert(title, message) {
             document.getElementById('alert-modal-title').textContent = title;
@@ -308,6 +314,19 @@ Mateo Rojas,Fantasma Glitch</textarea>
         document.getElementById('copy-code-btn')?.addEventListener('click', () => {
             navigator.clipboard.writeText(document.getElementById('contest-code').textContent).then(() => customAlert("Copiado", "Código de sala copiado.")).catch(() => customAlert("Error", "No se pudo copiar."));
         });
+
+        // --- NUEVA FUNCIÓN PARA SALIR DE UNA SALA ---
+        function leaveContest() {
+            if (contestUnsubscribe) contestUnsubscribe();
+            if (usersUnsubscribe) usersUnsubscribe();
+            contestUnsubscribe = null;
+            usersUnsubscribe = null;
+            contestId = null;
+            localContestData = {};
+            window.location.hash = ''; // Limpia el código de la sala de la URL
+            showScreen('home');
+        }
+        document.getElementById('leave-contest-btn').addEventListener('click', leaveContest);
 
         function processImageWithCancellation(file, signal) {
             return new Promise((resolve, reject) => {
@@ -370,8 +389,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
 
         const getImageTag = (b64, cls, alt) => b64 ? `<img src="${b64}" class="${cls}" alt="${alt}">` : `<div class="${cls} bg-gray-700 flex items-center justify-center rounded-sm"><span class="text-gray-400 text-xs">IMG</span></div>`;
 
-        // --- LÓGICA DE VOTACIÓN ---
-
         function renderScoringInputs() {
             const container = document.getElementById('scoring-inputs');
             container.innerHTML = `<div class="text-center"><label class="block mb-4 text-xl font-bold">Puntaje: <span class="score-value text-orange-400 font-creepster text-3xl">${currentJurorScore}</span></label><div class="pumpkin-icons">${Array(MAX_PUMPKINS).fill(0).map((_,i)=>`<span class="pumpkin-icon" data-value="${i+1}">🎃</span>`).join('')}</div></div>`;
@@ -383,7 +400,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
         async function setInitialJurorScore(participantId) {
             if (!participantId || !currentUserId) return;
             const q = query(getVotesCollectionRef(contestId, participantId), where("jurorId", "==", currentUserId));
-            const snap = await getDocs(q); let hasVoted = false; currentJurorScore = 3;
+            const snap = await getDocs(q); let hasVoted = false; currentJurorScore = 5;
             if (!snap.empty) { currentJurorScore = snap.docs[0].data().score; hasVoted = true; }
             const scoreSpan = document.querySelector('#scoring-inputs .score-value'); if (scoreSpan) scoreSpan.textContent = currentJurorScore;
             updatePumpkinSelection(currentJurorScore);
@@ -400,12 +417,10 @@ Mateo Rojas,Fantasma Glitch</textarea>
             });
         }
         
-        // --- NAVEGACIÓN Y FLUJO DE LA APP ---
-
-        document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); showScreen('register'); });
+        document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
         document.getElementById('join-contest-btn').addEventListener('click', async () => {
             const id = document.getElementById('contest-id-input').value.trim().toUpperCase(); if (!id) return;
-            if ((await getDoc(getContestRef(id))).exists()) { contestId = id; showScreen('register'); } else { customAlert("Error", "Sala no encontrada."); }
+            if ((await getDoc(getContestRef(id))).exists()) { contestId = id; window.location.hash = id; showScreen('register'); } else { customAlert("Error", "Sala no encontrada."); }
         });
 
         document.getElementById('register-btn').addEventListener('click', async () => {
@@ -418,12 +433,18 @@ Mateo Rojas,Fantasma Glitch</textarea>
             subscribeToContest(contestId);
         });
         
-        const showScreen = name => { Object.values(screens).forEach(s => s.classList.add('hidden')); screens[name]?.classList.remove('hidden'); loadingOverlay.classList.add('hidden'); if(name==='voting') renderScoringInputs(); };
+        const showScreen = name => { 
+            Object.values(screens).forEach(s => s.classList.add('hidden')); 
+            screens[name]?.classList.remove('hidden'); 
+            loadingOverlay.classList.add('hidden'); 
+            appHeader.classList.toggle('hidden', name === 'home'); // Show header on all screens except home
+            if(name==='voting') renderScoringInputs(); 
+        };
 
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
             contestUnsubscribe = onSnapshot(getContestRef(id), (doc) => {
-                if (!doc.exists()) { showScreen('home'); return; }
+                if (!doc.exists()) { leaveContest(); customAlert("Error", "La sala ha sido eliminada o no existe."); return; }
                 localContestData = { id: doc.id, ...doc.data() };
                 const isTiebreaker = localContestData.status === 'tiebreaker';
                 const statusMap = { lobby: renderLobby, voting: renderVotingScreen, tiebreaker: renderVotingScreen, results: renderResults };
@@ -437,8 +458,6 @@ Mateo Rojas,Fantasma Glitch</textarea>
             usersUnsubscribe = onSnapshot(getUsersCollectionRef(id), (snap) => renderer(localContestData, snap.docs.map(d => ({ id: d.id, ...d.data() }))));
         }
         
-        // --- RENDERIZADO DE PANTALLAS ---
-
         function renderLobby(contestData, users) {
             document.getElementById('contest-code').textContent = contestId;
             const isAdmin = contestData.creatorId === currentUserId;
@@ -680,22 +699,22 @@ Mateo Rojas,Fantasma Glitch</textarea>
             }
         }
 
-        // --- MANEJO DE ACCIONES DE USUARIO ---
-
         document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => { const list=document.getElementById('participants-list-input').value.trim(); if(!list)return; const batch=writeBatch(db); list.split('\n').forEach(l=>{const [name,costume='']=l.split(',').map(p=>p.trim()); if(name)batch.set(doc(getUsersCollectionRef(contestId)),{name,costume,isParticipant:true,isJuror:false,isManualEntry:true})}); await batch.commit(); document.getElementById('participants-list-input').value=''; });
         document.getElementById('add-juror-btn')?.addEventListener('click', async () => { const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true}); document.getElementById('new-juror-name').value='';} });
         document.getElementById('start-contest-btn')?.addEventListener('click', async () => { const users=(await getDocs(getUsersCollectionRef(contestId))).docs.map(d=>d.data()); if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante."); if(users.filter(u=>u.isJuror).length<1) return customAlert("Error","Debe haber al menos un jurado."); await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: []}); });
         document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { if (e.target.disabled) return; e.target.disabled=true; e.target.textContent='Enviado'; const voteRef=doc(getVotesCollectionRef(contestId,localContestData.currentlyVotingFor), currentUserId); const batch=writeBatch(db); batch.set(voteRef,{jurorId:currentUserId,score:currentJurorScore}); batch.update(getUserRef(contestId,currentUserId),{hasVoted:true}); await batch.commit(); });
         
-        // --- INICIALIZACIÓN Y AUTENTICACIÓN ---
-
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
                 currentUserId = user.uid; 
                 const hashId = window.location.hash.substring(1).toUpperCase(); 
-                if (hashId && (await getDoc(getContestRef(hashId))).exists()) { 
+                if (hashId) { 
                     contestId = hashId; 
-                    subscribeToContest(contestId); 
+                    if ((await getDoc(getContestRef(hashId))).exists()) {
+                        subscribeToContest(contestId); 
+                    } else {
+                        showScreen('register');
+                    }
                 } else { 
                     showScreen('home'); 
                 }
