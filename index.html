@@ -102,7 +102,7 @@
         .editable-image-container:hover .editable-image-overlay { opacity: 1; }
     </style>
 </head>
-<body class="bg-cover bg-center bg-fixed" style="background-image: url('https://placehold.co/1920x1080/000000/FF7800?text=Halloween+Background')">
+<body class="bg-cover bg-center bg-fixed" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcvPQDIhWe3h_ziKkQDe65BTFOe3OHfec-A1GTFnyumw&s=10');">
     <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-90 flex flex-col justify-center items-center z-50">
         <svg class="animate-spin h-12 w-12 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
         <p class="font-creepster text-2xl text-orange-500 mt-4 tracking-wider">Conectando...</p>
@@ -175,7 +175,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
         </div>
 
         <div id="voting-screen" class="hidden w-full">
-            <div class="card rounded-xl p-6 md:p-8 shadow-lg w-full">
+            <div class="card rounded-xl p-6 md:p-8 shadow-lg w-full pb-24">
                 <h2 id="voting-screen-title" class="font-creepster text-4xl text-orange-500 mb-6 text-center">Votación en Progreso</h2>
                 <div id="admin-voting-view" class="hidden"></div>
                 <div id="voter-voting-view">
@@ -217,14 +217,41 @@ Mateo Rojas,Fantasma Glitch</textarea>
     <div id="alert-modal" class="modal-backdrop"><div class="modal-content"><h2 id="alert-modal-title" class="font-creepster text-3xl text-orange-500 mb-4"></h2><p id="alert-modal-message" class="text-gray-300 mb-6"></p><button id="alert-modal-close" class="btn-primary">Entendido</button></div></div>
     <div id="name-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Editar Nombre</h2><input type="text" id="name-modal-input" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500"><div class="flex gap-4 mt-6"><button id="name-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="name-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
     <div id="costume-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Nombre del Disfraz</h2><input type="text" id="costume-modal-input" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500"><div class="flex gap-4 mt-6"><button id="costume-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="costume-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
-    <div id="image-upload-modal" class="modal-backdrop">
+    <div id="description-modal" class="modal-backdrop">
         <div class="modal-content">
-            <h2 class="font-creepster text-3xl text-orange-500 mb-4">Subir Foto del Disfraz</h2>
-            <div id="image-upload-preview-container" class="mb-4 bg-black rounded-lg p-2 min-h-[200px] flex items-center justify-center">
-                 <img id="image-upload-preview" src="" alt="Previsualización" class="max-w-full max-h-[200px] object-contain rounded hidden">
-                 <div id="image-upload-status" class="text-gray-400"><p>Selecciona una imagen...</p></div>
+            <h2 class="font-creepster text-3xl text-orange-500 mb-4">Descripción del Disfraz</h2>
+            <textarea id="description-modal-input" rows="4" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Descripción..."></textarea>
+            <button id="description-modal-generate" class="btn-secondary w-full mt-4 bg-indigo-600 hover:bg-indigo-700">✨ Generar con IA</button>
+            <div class="flex gap-4 mt-6">
+                <button id="description-modal-cancel" class="btn-secondary flex-1">Cancelar</button>
+                <button id="description-modal-save" class="btn-primary flex-1">Guardar</button>
             </div>
-            <div class="flex gap-4 mt-6"><button id="image-upload-cancel" class="btn-secondary flex-1">Cancelar</button><button id="image-upload-save" class="btn-primary flex-1" disabled>Guardar</button></div>
+        </div>
+    </div>
+    <div id="image-choice-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h2 class="font-creepster text-3xl text-orange-500 mb-4">Elegir Imagen</h2>
+            <p class="text-gray-300 mb-6">¿Cómo quieres agregar la imagen del disfraz?</p>
+            <div class="flex flex-col gap-4">
+                <button id="image-choice-upload" class="btn-secondary w-full">⬆️ Subir Foto</button>
+                <button id="image-choice-generate" class="btn-secondary w-full bg-indigo-600 hover:bg-indigo-700">🤖 Generar con IA</button>
+                <button id="image-choice-cancel" class="btn-danger w-full mt-2">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    <div id="image-generation-modal" class="modal-backdrop">
+        <div class="modal-content">
+             <h2 class="font-creepster text-3xl text-orange-500 mb-4">Generar Imagen con IA</h2>
+             <div id="image-generation-preview-container" class="mb-4 bg-black rounded-lg p-2 min-h-[256px] flex items-center justify-center">
+                 <img id="image-generation-preview" src="" alt="Previsualización de IA" class="max-w-full max-h-[256px] object-contain rounded hidden">
+                 <div id="image-generation-status" class="text-gray-400"><p>Define tu idea y presiona "Generar".</p></div>
+             </div>
+             <textarea id="image-generation-prompt" rows="3" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Ej: Un vampiro elegante con un toque moderno..."></textarea>
+             <button id="image-generation-generate" class="btn-primary w-full mt-4">Generar Imagen</button>
+             <div class="flex gap-4 mt-6">
+                 <button id="image-generation-cancel" class="btn-secondary flex-1">Cancelar</button>
+                 <button id="image-generation-save" class="btn-primary flex-1" disabled>Guardar</button>
+             </div>
         </div>
     </div>
     <input type="file" id="image-file-input" class="hidden" accept="image/*">
@@ -260,12 +287,12 @@ Mateo Rojas,Fantasma Glitch</textarea>
         let contestUnsubscribe = null, usersUnsubscribe = null;
         let currentJurorScore = 5;
         const MAX_PUMPKINS = 10;
-
-        const imageUploadModal = document.getElementById('image-upload-modal');
-        const imageFileInput = document.getElementById('image-file-input');
-        let imageUploadAbortController = null;
-        let processedImageBase64 = null;
-        let targetUserIdForImageUpload = null;
+        
+        const imageChoiceModal = document.getElementById('image-choice-modal');
+        const imageGenerationModal = document.getElementById('image-generation-modal');
+        let generatedImageBase64 = null;
+        let targetUserIdForImage = null;
+        let existingImageForGenerator = null;
 
         function customAlert(title, message) {
             document.getElementById('alert-modal-title').textContent = title;
@@ -296,6 +323,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
 
         const namePrompt = setupModal(document.getElementById('name-modal'), 'name-modal-input', 'name-modal-save', 'name-modal-cancel');
         const costumePrompt = setupModal(document.getElementById('costume-modal'), 'costume-modal-input', 'costume-modal-save', 'costume-modal-cancel');
+        const descriptionPrompt = setupModal(document.getElementById('description-modal'), 'description-modal-input', 'description-modal-save', 'description-modal-cancel');
         
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
 
@@ -303,74 +331,113 @@ Mateo Rojas,Fantasma Glitch</textarea>
             navigator.clipboard.writeText(document.getElementById('contest-code').textContent).then(() => customAlert("Copiado", "Código de sala copiado.")).catch(() => customAlert("Error", "No se pudo copiar."));
         });
 
-        function leaveContest() {
+        async function deleteContest(contestIdToDelete) {
+            loadingOverlay.classList.remove('hidden');
+            try {
+                const usersSnapshot = await getDocs(getUsersCollectionRef(contestIdToDelete));
+                const batch = writeBatch(db);
+                for (const userDoc of usersSnapshot.docs) {
+                    const votesSnapshot = await getDocs(getVotesCollectionRef(contestIdToDelete, userDoc.id));
+                    votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
+                    batch.delete(userDoc.ref);
+                }
+                batch.delete(getContestRef(contestIdToDelete));
+                await batch.commit();
+            } catch (error) {
+                console.error("Error deleting contest:", error);
+                customAlert("Error", "No se pudo eliminar la sala.");
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        async function leaveContest() {
+            const contestIdToLeave = contestId;
+            const isOrganizer = localContestData.creatorId === currentUserId;
+
             if (contestUnsubscribe) contestUnsubscribe();
             if (usersUnsubscribe) usersUnsubscribe();
             contestUnsubscribe = null;
             usersUnsubscribe = null;
+
+            const shouldDeleteContest = isOrganizer && localContestData.status === 'lobby';
+
             contestId = null;
             localContestData = {};
             window.location.hash = '';
             showScreen('home');
+
+            if (contestIdToLeave && currentUserId) {
+                if (shouldDeleteContest) {
+                    await deleteContest(contestIdToLeave);
+                } else if (!isOrganizer) {
+                    await deleteDoc(getUserRef(contestIdToLeave, currentUserId));
+                }
+            }
         }
         
-        function processImageWithCancellation(file, signal) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                const cleanup = () => { signal.removeEventListener('abort', handleAbort); };
-                const handleAbort = () => { reader.abort(); cleanup(); reject(new DOMException('Cancelado.', 'AbortError')); };
-                signal.addEventListener('abort', handleAbort, { once: true });
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const MAX_SIDE = 400; let { width, height } = img;
-                        if (width > MAX_SIDE || height > MAX_SIDE) { if (width > height) { height *= MAX_SIDE / width; width = MAX_SIDE; } else { width *= MAX_SIDE / height; height = MAX_SIDE; } }
-                        const canvas = Object.assign(document.createElement('canvas'), { width, height });
-                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        cleanup(); resolve(canvas.toDataURL('image/jpeg', 0.7));
-                    };
-                    img.onerror = () => { cleanup(); reject(new Error("Error al cargar imagen.")); };
-                    img.src = e.target.result;
+        function processImage(base64Image) {
+             return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX_SIDE = 400; let { width, height } = img;
+                    if (width > MAX_SIDE || height > MAX_SIDE) { if (width > height) { height *= MAX_SIDE / width; width = MAX_SIDE; } else { width *= MAX_SIDE / height; height = MAX_SIDE; } }
+                    const canvas = Object.assign(document.createElement('canvas'), { width, height });
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
                 };
-                reader.onerror = () => { cleanup(); reject(new Error("Error al leer archivo.")); };
-                reader.readAsDataURL(file);
+                img.onerror = () => reject(new Error("Error al cargar imagen para procesar."));
+                img.src = base64Image;
             });
         }
-
-        function showImageUploadModal(userId) {
-            targetUserIdForImageUpload = userId; processedImageBase64 = null;
-            const preview = document.getElementById('image-upload-preview'), status = document.getElementById('image-upload-status'), saveBtn = document.getElementById('image-upload-save');
-            preview.classList.add('hidden'); status.innerHTML = '<p>Selecciona una imagen...</p>'; status.classList.remove('hidden'); saveBtn.disabled = true;
-            imageUploadModal.classList.add('visible'); imageFileInput.click();
-        }
-
-        function hideImageUploadModal() {
-            if (imageUploadAbortController) imageUploadAbortController.abort();
-            imageUploadModal.classList.remove('visible'); imageFileInput.value = '';
-        }
-
-        imageFileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0]; if (!file) { hideImageUploadModal(); return; }
-            const preview = document.getElementById('image-upload-preview'), status = document.getElementById('image-upload-status'), saveBtn = document.getElementById('image-upload-save');
-            imageUploadAbortController = new AbortController();
-            status.innerHTML = `<svg class="animate-spin h-8 w-8 text-orange-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-2">Procesando...</p>`;
-            saveBtn.disabled = true;
-            try {
-                processedImageBase64 = await processImageWithCancellation(file, imageUploadAbortController.signal);
-                preview.src = processedImageBase64; preview.classList.remove('hidden'); status.classList.add('hidden'); saveBtn.disabled = false;
-            } catch (error) { if (error.name !== 'AbortError') customAlert("Error de Imagen", error.message); hideImageUploadModal(); }
-            finally { imageUploadAbortController = null; }
+        
+        document.getElementById('image-choice-upload').addEventListener('click', () => {
+            imageChoiceModal.classList.remove('visible');
+            document.getElementById('image-file-input').click();
         });
 
-        document.getElementById('image-upload-cancel').addEventListener('click', hideImageUploadModal);
-        document.getElementById('image-upload-save').addEventListener('click', async () => {
-            if (!processedImageBase64 || !targetUserIdForImageUpload) return;
-            const btn = document.getElementById('image-upload-save'); btn.disabled = true; btn.textContent = 'Guardando...';
+        document.getElementById('image-choice-generate').addEventListener('click', () => {
+            imageChoiceModal.classList.remove('visible');
+            const preview = document.getElementById('image-generation-preview');
+            const status = document.getElementById('image-generation-status');
+            const saveBtn = document.getElementById('image-generation-save');
+
+            if (existingImageForGenerator) {
+                preview.src = existingImageForGenerator;
+                preview.classList.remove('hidden');
+                status.classList.add('hidden');
+                saveBtn.disabled = false;
+                generatedImageBase64 = existingImageForGenerator;
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+                status.innerHTML = '<p>Define tu idea y presiona "Generar".</p>';
+                status.classList.remove('hidden');
+                saveBtn.disabled = true;
+                generatedImageBase64 = null;
+            }
+            imageGenerationModal.classList.add('visible');
+        });
+        document.getElementById('image-choice-cancel').addEventListener('click', () => imageChoiceModal.classList.remove('visible'));
+
+        const imageFileInput = document.getElementById('image-file-input');
+        imageFileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            loadingOverlay.classList.remove('hidden');
             try {
-                await updateDoc(getUserRef(contestId, targetUserIdForImageUpload), { costumeImageBase64: processedImageBase64 });
-                hideImageUploadModal();
-            } catch (error) { customAlert("Error", "No se pudo guardar la imagen."); }
-            finally { btn.disabled = false; btn.textContent = 'Guardar'; }
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const processed = await processImage(event.target.result);
+                    await updateDoc(getUserRef(contestId, targetUserIdForImage), { costumeImageBase64: processed });
+                    loadingOverlay.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                customAlert("Error de Imagen", error.message);
+                loadingOverlay.classList.add('hidden');
+            }
         });
 
         const getImageTag = (b64, cls, alt) => b64 ? `<img src="${b64}" class="${cls}" alt="${alt}">` : `<div class="${cls} bg-gray-700 flex items-center justify-center rounded-sm"><span class="text-gray-400 text-xs">IMG</span></div>`;
@@ -417,7 +484,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
             const costume = document.getElementById('costume-name-input').value.trim();
             const isCreator = !(await getDoc(getContestRef(contestId))).exists();
             if (isCreator) { await setDoc(getContestRef(contestId), { status: "lobby", creatorId: currentUserId }); }
-            await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0 });
+            await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '' });
             subscribeToContest(contestId);
         });
         
@@ -453,22 +520,72 @@ Mateo Rojas,Fantasma Glitch</textarea>
             const list = document.getElementById('users-list'); list.innerHTML = '';
             const sortedUsers = [...users].sort((a,b) => (a.id === currentUserId) ? -1 : (b.id === currentUserId) ? 1 : 0);
             sortedUsers.forEach(user => {
-                const isMe = user.id === currentUserId, canEdit = isAdmin || isMe;
+                const isMe = user.id === currentUserId;
+                const canEdit = isAdmin || isMe;
+                const adminCanEditParticipant = isAdmin && user.isParticipant;
+
+                let actionButtons = '';
+                if(canEdit) actionButtons += `<button data-action="edit-name" data-userid="${user.id}" class="text-xl ml-2">✏️</button>`;
+                if(adminCanEditParticipant) actionButtons += `<button data-action="edit-description" data-userid="${user.id}" data-costume="${user.costume}" class="text-xl ml-2" title="Editar/Generar descripción">✨</button>`;
+                
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
-                const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
+                const imgContainer = (isAdmin || isMe) ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
+                
                 const costumeHTML = user.costume?.trim() ? `<div class="text-sm text-gray-300"><span>${user.costume}</span> ${canEdit ? `<button data-action="edit-costume" data-userid="${user.id}" class="text-xl ml-2">✏️</button>`:''}</div>` : `<div class="text-sm text-gray-500">No concursa ${canEdit ? `<button data-action="edit-costume" data-userid="${user.id}" class="text-xl ml-2">✏️</button>`:''}</div>`;
                 const rolesHTML = isAdmin ? `<div class="flex items-center gap-4 pt-2 border-t border-gray-700 mt-2"><label class="toggle-label flex-1"><span>Participa</span><input type="checkbox" class="toggle-checkbox" data-role="isParticipant" data-userid="${user.id}" ${user.isParticipant?'checked':''}><div class="toggle-switch"></div></label><label class="toggle-label flex-1"><span>Jurado</span><input type="checkbox" class="toggle-checkbox" data-role="isJuror" data-userid="${user.id}" ${user.isJuror?'checked':''}><div class="toggle-switch"></div></label></div>` : `<div class="text-sm text-orange-400 mt-1">${user.isParticipant?'Participante':''} ${user.isJuror?(user.isParticipant?'/ Jurado':'Jurado'):''}</div>`;
+                
                 const item = document.createElement('div'); item.className = `bg-gray-800 p-3 rounded-lg ${isMe ? 'border-2 border-orange-500' : ''}`;
-                item.innerHTML = `<div class="flex items-center">${imgContainer}<div class="flex-grow"><div class="font-bold"><span>${user.name} ${isMe?'(Tú)':''}</span> ${canEdit ? `<button data-action="edit-name" data-userid="${user.id}" class="text-xl ml-2">✏️</button>`:''}</div>${costumeHTML}</div></div>${rolesHTML}`;
+                item.innerHTML = `<div class="flex items-center">${imgContainer}<div class="flex-grow"><div class="font-bold"><span>${user.name} ${isMe?'(Tú)':''}</span> ${actionButtons}</div>${costumeHTML}</div></div>${rolesHTML}`;
                 list.appendChild(item);
             });
             list.onclick = (e) => {
                 const target = e.target.closest('[data-action], [data-role]'); if (!target) return;
-                const userId = target.dataset.userid, user = users.find(u => u.id === userId), action = target.dataset.action || target.dataset.role;
+                const userId = target.dataset.userid;
+                const user = users.find(u => u.id === userId);
+                const action = target.dataset.action;
+                
+                targetUserIdForImage = userId;
+
                 if (action === 'edit-name') namePrompt.show(user?.name || '', async val => { if(val) await updateDoc(getUserRef(contestId, userId), { name: val }); });
                 else if (action === 'edit-costume') costumePrompt.show(user?.costume || '', async val => await updateDoc(getUserRef(contestId, userId), { costume: val, isParticipant: !!val }));
-                else if (action === 'edit-image') showImageUploadModal(userId);
-                else if (target.dataset.role) {
+                else if (action === 'edit-image') {
+                    existingImageForGenerator = user.costumeImageBase64 || null;
+                    imageChoiceModal.classList.add('visible');
+                    const promptInput = document.getElementById('image-generation-prompt');
+                    promptInput.value = `Un retrato de ${target.dataset.costume}, estilo de arte digital, de baja fidelidad.`;
+                }
+                else if (action === 'edit-description') {
+                    const descInput = document.getElementById('description-modal-input');
+                    const genBtn = document.getElementById('description-modal-generate');
+                    
+                    descriptionPrompt.show(user?.costumeDescription || '', async val => {
+                        await updateDoc(getUserRef(contestId, userId), { costumeDescription: val });
+                    });
+
+                    const newGenBtn = genBtn.cloneNode(true);
+                    genBtn.parentNode.replaceChild(newGenBtn, genBtn);
+
+                    newGenBtn.onclick = async () => {
+                        const costumeName = user.costume;
+                        if (!costumeName) {
+                            customAlert("Error", "El participante necesita un nombre de disfraz para generar una descripción.");
+                            return;
+                        }
+                        newGenBtn.disabled = true;
+                        newGenBtn.innerHTML = `<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                        
+                        try {
+                            const description = await generateDescriptionWithGemini(costumeName);
+                            descInput.value = description;
+                        } catch (error) {
+                            customAlert("Error de IA", "No se pudo generar la descripción. Inténtalo de nuevo.");
+                        } finally {
+                            newGenBtn.disabled = false;
+                            newGenBtn.innerHTML = '✨ Generar con IA';
+                        }
+                    };
+
+                } else if (target.dataset.role) {
                     if (target.dataset.role === 'isParticipant' && target.checked && !user.costume?.trim()) { target.checked = false; customAlert("Disfraz Requerido", "Añade un nombre de disfraz antes de marcarlo como participante."); costumePrompt.show('', async val => { if (val) await updateDoc(getUserRef(contestId, userId), { costume: val, isParticipant: true }); }); }
                     else { updateDoc(getUserRef(contestId, userId), { [target.dataset.role]: target.checked }); }
                 }
@@ -585,9 +702,23 @@ Mateo Rojas,Fantasma Glitch</textarea>
                     }
                 };
             }
-            const votingDiv = document.getElementById('currently-voting-for'), jurorControls = document.getElementById('juror-controls'), pendingJurorsList = document.getElementById('pending-jurors-list-voter'); pendingJurorsList.innerHTML = '';
-            if(currentP) { votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume}"</p>`; const selfVote = me?.isParticipant&&me.id===currentP.id; jurorControls.classList.toggle('hidden', !isJuror || selfVote); if (isJuror && !selfVote) await setInitialJurorScore(currentPId); const votes = (await getDocs(getVotesCollectionRef(contestId,currentP.id))).docs.map(d=>d.data().jurorId); const pending = jurors.filter(j=>!votes.includes(j.id)); pendingJurorsList.innerHTML=pending.length?pending.map(j=>`<li>${j.name}</li>`).join(''):`<li class="text-green-400">¡Todos votaron!</li>`; }
-            else { votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allDone? (isTiebreaker ? '¡Desempate finalizado!' : '¡Votación Finalizada!') :'Esperando concursante...'}</h3>`; jurorControls.classList.add('hidden'); }
+            const votingDiv = document.getElementById('currently-voting-for');
+            const jurorControls = document.getElementById('juror-controls');
+            const pendingJurorsList = document.getElementById('pending-jurors-list-voter');
+            pendingJurorsList.innerHTML = '';
+            if(currentP) { 
+                const descriptionHTML = currentP.costumeDescription ? `<p class="text-lg text-gray-300 mt-2 italic">"${currentP.costumeDescription}"</p>` : '';
+                votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume}"</p>${descriptionHTML}`; 
+                const selfVote = me?.isParticipant&&me.id===currentP.id; 
+                jurorControls.classList.toggle('hidden', !isJuror || selfVote); 
+                if (isJuror && !selfVote) await setInitialJurorScore(currentPId); 
+                const votes = (await getDocs(getVotesCollectionRef(contestId,currentP.id))).docs.map(d=>d.data().jurorId); 
+                const pending = jurors.filter(j=>!votes.includes(j.id)); 
+                pendingJurorsList.innerHTML=pending.length?pending.map(j=>`<li>${j.name}</li>`).join(''):`<li class="text-green-400">¡Todos votaron!</li>`; 
+            } else { 
+                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allDone? (isTiebreaker ? '¡Desempate finalizado!' : '¡Votación Finalizada!') :'Esperando concursante...'}</h3>`; 
+                jurorControls.classList.add('hidden'); 
+            }
             const votedIds = contestData.votedOnParticipants || []; document.getElementById('voted-list').innerHTML = participants.filter(p=>votedIds.includes(p.id)).map(p=>`<li>${p.name}</li>`).join(''); document.getElementById('pending-list').innerHTML = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).map(p=>`<li>${p.name}</li>`).join('');
         }
         
@@ -686,7 +817,7 @@ Mateo Rojas,Fantasma Glitch</textarea>
                 } else if (action === 'restart') {
                     const batch = writeBatch(db);
                     batch.update(getContestRef(contestId), { status: "lobby", currentlyVotingFor: null, votedOnParticipants: [], revealStep: 0, topResults: null, tiebreakerInfo: null });
-                    users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0 }));
+                    users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0, costumeDescription: '' }));
                     const allUsers = (await getDocs(getUsersCollectionRef(contestId))).docs;
                     for (const userDoc of allUsers) {
                         const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, userDoc.id));
@@ -699,8 +830,111 @@ Mateo Rojas,Fantasma Glitch</textarea>
             };
         }
 
-        document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => { const list=document.getElementById('participants-list-input').value.trim(); if(!list)return; const batch=writeBatch(db); list.split('\n').forEach(l=>{const [name,costume='']=l.split(',').map(p=>p.trim()); if(name)batch.set(doc(getUsersCollectionRef(contestId)),{name,costume,isParticipant:true,isJuror:false,isManualEntry:true})}); await batch.commit(); document.getElementById('participants-list-input').value=''; });
-        document.getElementById('add-juror-btn')?.addEventListener('click', async () => { const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true}); document.getElementById('new-juror-name').value='';} });
+        async function generateDescriptionWithGemini(costumeName) {
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            const systemPrompt = "Actúa como un narrador entusiasta y con un gran conocimiento de la cultura popular, la mitología y los cuentos clásicos. Tu tarea es generar una descripción corta para un disfraz que está siendo presentado en un concurso. La descripción debe capturar la esencia del personaje, explicando brevemente quién es, de dónde viene y qué representa. Usa un tono accesible y directo (lenguaje \"corriente\"), pero que sea inmediatamente apropiado para la atmósfera del personaje. La descripción debe incluir siempre una línea de cierre que interactúe directamente con el personaje en el escenario o con el público presente. La respuesta debe ser en español y tener una longitud de dos a tres frases vibrantes.";
+            const userQuery = `Describe el disfraz de "${costumeName}" para un concurso.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            if (text) {
+                return text.trim();
+            } else {
+                throw new Error("No text received from API.");
+            }
+        }
+        
+        async function generateImageWithImagen(prompt) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+            const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            const result = await response.json();
+            const base64Data = result.predictions?.[0]?.bytesBase64Encoded;
+            
+            if (base64Data) {
+                return `data:image/png;base64,${base64Data}`;
+            } else {
+                throw new Error("No image data received from API.");
+            }
+        }
+        
+        document.getElementById('image-generation-cancel').addEventListener('click', () => imageGenerationModal.classList.remove('visible'));
+        
+        document.getElementById('image-generation-generate').addEventListener('click', async (e) => {
+            const btn = e.target;
+            const prompt = document.getElementById('image-generation-prompt').value;
+            if(!prompt) return customAlert("Error", "El prompt no puede estar vacío.");
+
+            const preview = document.getElementById('image-generation-preview');
+            const status = document.getElementById('image-generation-status');
+            const saveBtn = document.getElementById('image-generation-save');
+            
+            btn.disabled = true;
+            status.innerHTML = `<svg class="animate-spin h-8 w-8 text-orange-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-2">Generando imagen...</p>`;
+            preview.classList.add('hidden');
+            status.classList.remove('hidden');
+            saveBtn.disabled = true;
+
+            try {
+                const rawBase64 = await generateImageWithImagen(prompt);
+                const processed = await processImage(rawBase64);
+                generatedImageBase64 = processed;
+                preview.src = generatedImageBase64;
+                preview.classList.remove('hidden');
+                status.classList.add('hidden');
+                saveBtn.disabled = false;
+            } catch (error) {
+                customAlert("Error de IA", "No se pudo generar la imagen. Revisa el prompt o inténtalo de nuevo.");
+                status.innerHTML = `<p>Error al generar. Intenta de nuevo.</p>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('image-generation-save').addEventListener('click', async () => {
+            if (!generatedImageBase64 || !targetUserIdForImage) return;
+            loadingOverlay.classList.remove('hidden');
+            try {
+                await updateDoc(getUserRef(contestId, targetUserIdForImage), { costumeImageBase64: generatedImageBase64 });
+                imageGenerationModal.classList.remove('visible');
+            } catch(error) {
+                customAlert("Error", "No se pudo guardar la imagen.");
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => { const list=document.getElementById('participants-list-input').value.trim(); if(!list)return; const batch=writeBatch(db); list.split('\n').forEach(l=>{const [name,costume='']=l.split(',').map(p=>p.trim()); if(name)batch.set(doc(getUsersCollectionRef(contestId)),{name,costume,isParticipant:true,isJuror:false,isManualEntry:true,costumeDescription:''})}); await batch.commit(); document.getElementById('participants-list-input').value=''; });
+        document.getElementById('add-juror-btn')?.addEventListener('click', async () => { const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true,costumeDescription:''}); document.getElementById('new-juror-name').value='';} });
         document.getElementById('start-contest-btn')?.addEventListener('click', async () => { const users=(await getDocs(getUsersCollectionRef(contestId))).docs.map(d=>d.data()); if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante."); if(users.filter(u=>u.isJuror).length<1) return customAlert("Error","Debe haber al menos un jurado."); await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: []}); });
         document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { if (e.target.disabled) return; e.target.disabled=true; e.target.textContent='Enviado'; const voteRef=doc(getVotesCollectionRef(contestId,localContestData.currentlyVotingFor), currentUserId); const batch=writeBatch(db); batch.set(voteRef,{jurorId:currentUserId,score:currentJurorScore}); batch.update(getUserRef(contestId,currentUserId),{hasVoted:true}); await batch.commit(); });
         
