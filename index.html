@@ -1045,7 +1045,7 @@
         }
 
         async function generateDescriptionWithGemini(costumeName) {
-            const apiKey = ""; 
+            const apiKey = "AIzaSyCdGEsA6dEzs-ZFuOkj79cu7PUCmLP0hnw"; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const systemPrompt = "Actúa como un narrador entusiasta con gran conocimiento de la cultura popular, mitología y cuentos clásicos. Tu tarea es generar una descripción corta para un disfraz en un concurso. Debe capturar la esencia del personaje, explicando brevemente quién es o qué representa. Usa un tono accesible y directo, pero apropiado para la atmósfera del personaje. Incluye siempre una línea de cierre que interactúe con el personaje o el público. La respuesta debe ser en español, de dos a tres frases vibrantes.";
             const userQuery = `Describe el disfraz de "${costumeName}" para un concurso.`;
@@ -1059,7 +1059,7 @@
         }
         
         async function generateImageWithImagen(prompt) {
-            const apiKey = "";
+            const apiKey = "AIzaSyCdGEsA6dEzs-ZFuOkj79cu7PUCmLP0hnw";
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
             const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
             const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -1070,7 +1070,7 @@
         }
         
         async function extractTextWithGemini(base64Image) {
-            const apiKey = ""; 
+            const apiKey = "AIzaSyCdGEsA6dEzs-ZFuOkj79cu7PUCmLP0hnw"; 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const prompt = "Extrae el texto de esta imagen. Es una lista para un concurso con 3 campos separados por comas: 'Nombre, Disfraz, EsJurado'. El campo 'EsJurado' es opcional ('si', 'y', 'no', 'n', o vacío). Estandariza la salida a CSV, con cada persona en una nueva línea. Para 'EsJurado', usa 'si' para respuestas afirmativas ('si', 'y') y 'no' para todo lo demás (vacío, 'no', 'n'). Ejemplo: 'Pepito, Pez gordo, si' -> 'Pepito,Pez gordo,si'. 'Pac, payaso' -> 'Pac,payaso,no'.";
             const payload = { contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } } ] } ], };
