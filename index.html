@@ -52,9 +52,14 @@
         .modal-content { background-color: #2d2d2d; color: #f0f0f0; padding: 2rem; border-radius: 0.75rem; max-width: 90%; width: 500px; border: 1px solid #444; text-align: center; transform: scale(0.95); transition: transform 0.3s ease; }
         .modal-backdrop.visible .modal-content { transform: scale(1); }
         
-        .rank-1 { color: #facc15; } /* Amarillo */
-        .rank-2 { color: #e5e7eb; } /* Plata */
-        .rank-3 { color: #d97706; } /* Bronce */
+        #feedback-modal .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .rank-1 { color: #facc15; } /* Gold */
+        .rank-2 { color: #e5e7eb; } /* Silver */
+        .rank-3 { color: #d97706; } /* Bronze */
         
         .pumpkin-icon { 
             font-size: 2rem;
@@ -107,27 +112,8 @@
         
         .participant-me { border: 2px solid #facc15 !important; background-color: rgba(250, 204, 21, 0.1); }
         .participant-evaluated { background-color: rgba(22, 163, 74, 0.2) !important; border-left: 4px solid #16a34a; }
+        .participant-evaluating { background-color: rgba(250, 204, 21, 0.2) !important; border-left: 4px solid #facc15; }
 
-        .winner-notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-200%);
-            z-index: 110;
-            width: 90%;
-            max-width: 450px;
-            background: linear-gradient(145deg, #6d28d9, #4c1d95);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 2px solid #a78bfa;
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        .winner-notification.visible {
-            transform: translateX(-50%) translateY(0);
-        }
-        
         @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
         .emoji-pop { animation: pop-in 0.5s ease-out forwards; }
         
@@ -246,7 +232,8 @@
         </div>
 
         <div id="results-screen" class="hidden w-full">
-            <div class="card rounded-xl p-6 md:p-8 text-center shadow-lg w-full">
+            <div class="card rounded-xl p-6 md:p-8 shadow-lg w-full">
+                 <div id="winner-banner-container" class="mb-6"></div>
                  <h2 class="font-creepster text-5xl md:text-6xl text-orange-500 mb-6 tracking-widest">¡Resultados Finales!</h2>
                  <div id="results-container" class="space-y-4">
                      <p class="text-gray-400 text-lg">Esperando la revelación de los ganadores...</p>
@@ -305,12 +292,6 @@
                  <button id="submit-feedback-btn" class="btn-primary flex-1" disabled>Enviar Valoración</button>
             </div>
         </div>
-    </div>
-
-    <div id="winner-notification-modal" class="winner-notification text-center">
-        <h2 id="winner-notification-title" class="font-creepster text-4xl text-yellow-300 drop-shadow-lg"></h2>
-        <p id="winner-notification-message" class="text-lg mt-2"></p>
-        <button id="winner-notification-close" class="absolute top-2 right-3 text-2xl font-bold opacity-70 hover:opacity-100">&times;</button>
     </div>
 
     <div id="alert-modal" class="modal-backdrop"><div class="modal-content"><h2 id="alert-modal-title" class="font-creepster text-3xl text-orange-500 mb-4"></h2><p id="alert-modal-message" class="text-gray-300 mb-6"></p><button id="alert-modal-close" class="btn-primary">Entendido</button></div></div>
@@ -381,24 +362,11 @@
         const linkUserModal = document.getElementById('link-user-modal');
         const onDeckModal = document.getElementById('on-deck-modal');
         const isUpModal = document.getElementById('is-up-modal');
-        const winnerNotificationModal = document.getElementById('winner-notification-modal');
         let generatedImageBase64 = null;
         let targetUserIdForImage = null;
         let existingImageForGenerator = null;
         let selectedForActionId = null;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
-        let previousRevealStep = 0;
-
-        document.getElementById('winner-notification-close').addEventListener('click', () => {
-            winnerNotificationModal.classList.remove('visible');
-        });
-
-        function showWinnerNotification(rank) {
-            const rankText = rank === 1 ? '1er' : (rank === 2 ? '2do' : '3er');
-            document.getElementById('winner-notification-title').innerHTML = `🏆 ¡Felicidades, Ganaste el ${rankText} Lugar! 🏆`;
-            document.getElementById('winner-notification-message').textContent = '¡Tu disfraz fue increíble! Pasa a recoger tu premio y celebra tu victoria.';
-            winnerNotificationModal.classList.add('visible');
-        }
 
         function getApiKey() {
             return localStorage.getItem(API_KEY_STORAGE_KEY);
@@ -670,7 +638,6 @@
                 document.getElementById('paused-modal').classList.toggle('visible', newStatus === 'paused' && !isAdmin);
 
                 if (newStatus === 'voting' && oldStatus === 'lobby') {
-                    previousRevealStep = 0; // Reset for a new voting round
                     const meSnapshot = await getDoc(getUserRef(contestId, currentUserId));
                     if(meSnapshot.exists()) {
                         const me = meSnapshot.data();
@@ -909,13 +876,15 @@
                     participants.forEach(p => { 
                         const isSelected = p.id === selectedForActionId;
                         const evaluated = contestData.votedOnParticipants?.includes(p.id);
+                        const voting = p.id === currentPId;
+                        
                         let participantClasses = `flex justify-between items-center p-3 rounded-lg cursor-pointer bg-gray-800`;
-                        if(evaluated) participantClasses += ' participant-evaluated';
-                        if(isSelected) participantClasses += ' border-2 border-blue-500';
+                        if (voting) participantClasses += ' participant-evaluating';
+                        else if (evaluated) participantClasses += ' participant-evaluated';
+                        if (isSelected) participantClasses += ' border-2 border-blue-500';
 
                         const onDeck = contestData.onDeck?.userId === p.id, onDeckStatus = onDeck ? contestData.onDeck.status : null;
                         const isUp = contestData.isUp?.userId === p.id, acknowledgedUp = contestData.acknowledgedUp === p.id;
-                        const voting = p.id === currentPId;
                         
                         let statusIcon = !p.isManualEntry ? '🟢' : '';
                         if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
@@ -924,9 +893,9 @@
 
                         let statusText = 'Pendiente', statusColor = 'text-yellow-400';
                         if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
-                        if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
+                        if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-500'; }
                         
-                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`; 
+                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm font-bold ${statusColor}">${statusText}</span></div>`; 
                     });
                     html += `</div>`; 
 
@@ -1137,12 +1106,27 @@
             const isAdmin = contestData.creatorId === currentUserId;
             const resultsContainer = document.getElementById('results-container');
             const controlsContainer = document.getElementById('results-controls');
+            const winnerBannerContainer = document.getElementById('winner-banner-container');
+            
             controlsContainer.innerHTML = '';
+            winnerBannerContainer.innerHTML = '';
 
             const finalResults = contestData.topResults ? JSON.parse(contestData.topResults) : [];
             const newRevealStep = contestData.revealStep || 0; 
             let resultsHTML = '';
             const ranks = [3, 2, 1];
+
+            const myResult = finalResults.find(r => r.id === currentUserId);
+            if (myResult && newRevealStep >= (4 - myResult.rank)) {
+                const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+                const rankText = { 1: '1er Lugar', 2: '2do Lugar', 3: '3er Lugar' };
+                winnerBannerContainer.innerHTML = `
+                    <div class="bg-purple-800 border-2 border-purple-400 text-white p-4 rounded-xl text-center shadow-lg animate-pulse">
+                        <h3 class="font-creepster text-3xl">${medals[myResult.rank]} ¡Felicidades, Ganaste el ${rankText[myResult.rank]}! ${medals[myResult.rank]}</h3>
+                        <p>Pasa a recoger tu premio y celebra tu victoria.</p>
+                    </div>
+                `;
+            }
 
             if (finalResults.length === 0 && contestData.status === 'results') {
                 resultsHTML = '<p class="text-xl text-yellow-400">No hubo participantes con votos para mostrar.</p>';
@@ -1155,12 +1139,6 @@
                         const requiredStep = 4 - rank; 
                         const isRevealed = newRevealStep >= requiredStep;
 
-                        if (newRevealStep >= requiredStep && previousRevealStep < requiredStep) {
-                            if (result && result.id === currentUserId) {
-                                showWinnerNotification(rank);
-                            }
-                        }
-
                         if (!result) {
                             resultsHTML += `<div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center opacity-50"><p class="text-xl font-bold text-gray-600">${rank}º Lugar:</p><p class="text-gray-500">N/A</p></div>`;
                             return;
@@ -1169,7 +1147,7 @@
                         const imageTag = getImageTag(result.costumeImageBase64, 'image-preview-sm mr-3 flex-shrink-0', result.costume);
                         if (isRevealed) {
                             const colorClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : 'rank-3';
-                            const icon = rank === 1 ? '👑' : rank === 2 ? '🥈' : '🥉';
+                            const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
                             
                             resultsHTML += `
                                 <div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center border-l-4 border-orange-500 transform transition-transform hover:scale-[1.02]">
@@ -1250,7 +1228,6 @@
                     leaveContest();
                 }
             };
-            previousRevealStep = newRevealStep;
         }
 
         async function generateDescriptionWithGemini(costumeName) {
