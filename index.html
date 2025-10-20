@@ -53,11 +53,11 @@
             inset: 0; 
             background-color: rgba(0,0,0,0.7); 
             display: flex; 
-            align-items: flex-start; /* MODIFICADO: De 'center' a 'flex-start' */
+            align-items: flex-start;
             justify-content: center; 
             z-index: 100; 
-            padding: 2rem 1rem; /* MODIFICADO: Aumentado el padding vertical */
-            overflow-y: auto; /* AÑADIDO: Para asegurar el scroll */
+            padding: 2rem 1rem;
+            overflow-y: auto;
             opacity: 0; 
             pointer-events: none; 
             transition: opacity 0.3s ease; 
@@ -66,54 +66,23 @@
         .modal-content { background-color: #2d2d2d; color: #f0f0f0; padding: 2rem; border-radius: 0.75rem; max-width: 90%; width: 500px; border: 1px solid #444; text-align: center; transform: scale(0.95); transition: transform 0.3s ease; }
         .modal-backdrop.visible .modal-content { transform: scale(1); }
         
-        .rank-1 { color: #facc15; } /* Amarillo */
-        .rank-2 { color: #e5e7eb; } /* Plata */
-        .rank-3 { color: #d97706; } /* Bronce */
+        .rank-1 { color: #facc15; }
+        .rank-2 { color: #e5e7eb; }
+        .rank-3 { color: #d97706; }
         
-        .pumpkin-icon { 
-            font-size: 2rem;
-            opacity: 0.3; 
-            transition: all 0.1s ease; 
-            cursor: pointer; 
-        }
-        .pumpkin-icon.selected { 
-            opacity: 1; 
-            transform: scale(1.1); 
-            color: #ff7800; 
-            text-shadow: 0 0 10px rgba(255, 120, 0, 0.9); 
-        }
-        .pumpkin-icons { 
-            user-select: none; 
-            display: flex; 
-            flex-wrap: wrap;
-            justify-content: center; 
-            gap: 0.5rem; 
-        }
-        .image-preview-sm {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #ff7800;
-        }
-        .image-preview-lg {
-            width: 100%;
-            max-height: 400px;
-            object-fit: contain;
-            border-radius: 12px;
-            border: 3px solid #ff7800;
-            box-shadow: 0 0 20px rgba(255, 120, 0, 0.5);
-            margin-bottom: 1.5rem;
-            background-color: #000;
-        }
+        .pumpkin-icon { font-size: 2rem; opacity: 0.3; transition: all 0.1s ease; cursor: pointer; }
+        .pumpkin-icon.selected { opacity: 1; transform: scale(1.1); color: #ff7800; text-shadow: 0 0 10px rgba(255, 120, 0, 0.9); }
+        .pumpkin-icons { user-select: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+        
+        .image-preview-sm { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ff7800; }
+        .image-preview-lg { width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px; border: 3px solid #ff7800; box-shadow: 0 0 20px rgba(255, 120, 0, 0.5); margin-bottom: 1.5rem; background-color: #000; }
 
         .toggle-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 0.9rem; color: #ccc; }
-        .toggle-label span { margin-right: 0.5rem; }
         .toggle-checkbox { display: none; }
         .toggle-switch { position: relative; width: 48px; height: 24px; background-color: #555; border-radius: 12px; transition: background-color 0.4s; flex-shrink: 0; }
         .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background-color: #f0f0f0; border-radius: 50%; transition: transform 0.4s, background-color 0.4s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); }
         .toggle-checkbox:checked + .toggle-switch { background-color: #ff7800; }
-        .toggle-checkbox:checked + .toggle-switch::after { transform: translateX(24px); background-color: #f0f0f0; }
+        .toggle-checkbox:checked + .toggle-switch::after { transform: translateX(24px); }
 
         .editable-image-container { position: relative; cursor: pointer; }
         .editable-image-overlay { position: absolute; inset: 0; background-color: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0; transition: opacity 0.2s ease; border-radius: 4px; }
@@ -124,23 +93,24 @@
         .participant-evaluating { background-color: rgba(250, 204, 21, 0.2) !important; border-left: 4px solid #facc15; }
 
         .winner-notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-200%);
-            z-index: 110;
-            width: 90%;
-            max-width: 450px;
-            background: linear-gradient(145deg, #6d28d9, #4c1d95);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 2px solid #a78bfa;
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%) translateY(-200%); z-index: 110;
+            width: 90%; max-width: 450px;
+            background: linear-gradient(145deg, #6d28d9, #4c1d95); color: white;
+            padding: 1.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 2px solid #a78bfa;
             transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .winner-notification.visible {
-            transform: translateX(-50%) translateY(0);
+        .winner-notification.visible { transform: translateX(-50%) translateY(0); }
+        
+        @media (orientation: landscape) {
+            .winner-notification {
+                width: 100vw; height: 100vh;
+                top: 0; left: 0; transform: none; border-radius: 0;
+            }
+            #winner-notification-title { font-size: 5rem !important; }
+            #winner-notification-message { font-size: 2rem !important; max-width: 80%; }
         }
         
         @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
@@ -165,7 +135,7 @@
                 <p class="text-gray-300 mb-8">Crea o únete a una sala de votación.</p>
                 <button id="create-contest-btn" class="btn-primary w-full mb-4">Crear Nueva Sala</button>
                 <div class="flex flex-col sm:flex-row gap-2 mt-4">
-                     <input type="text" id="contest-id-input" placeholder="Pega el código de la sala" class="flex-grow bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                     <input type="text" id="contest-id-input" placeholder="Pega el código de la sala o 'DEBUGMODE'" class="flex-grow bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500">
                      <button id="join-contest-btn" class="btn-primary">Unirse</button>
                 </div>
             </div>
@@ -269,6 +239,30 @@
                  <div id="results-controls" class="mt-8 pt-4 border-t border-gray-700"></div>
             </div>
         </div>
+        
+        <div id="debug-panel" class="hidden w-full">
+             <div class="card rounded-xl p-8 shadow-lg max-w-2xl mx-auto">
+                <h2 class="font-creepster text-4xl text-orange-500 mb-6 text-center">Panel de Desarrollador</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <button data-debug="home" class="btn-secondary">Inicio</button>
+                    <button data-debug="lobby-admin" class="btn-secondary">Lobby (Admin)</button>
+                    <button data-debug="lobby-user" class="btn-secondary">Lobby (User)</button>
+                    <button data-debug="voting-admin" class="btn-secondary">Votación (Admin)</button>
+                    <button data-debug="voting-juror" class="btn-secondary">Votación (Jurado)</button>
+                    <button data-debug="voting-participant" class="btn-secondary">Votación (Participante)</button>
+                    <button data-debug="results-admin" class="btn-secondary">Resultados (Admin)</button>
+                    <button data-debug="results-user" class="btn-secondary">Resultados (User)</button>
+                    <button data-debug="on-deck" class="btn-secondary">Aviso "Prepárate"</button>
+                    <button data-debug="is-up" class="btn-secondary">Aviso "¡Ahora!"</button>
+                    <button data-debug="feedback" class="btn-secondary">Ventana Feedback</button>
+                    <button data-debug="winner-1" class="btn-primary">Ganador 1º</button>
+                    <button data-debug="winner-2" class="btn-primary">Ganador 2º</button>
+                    <button data-debug="winner-3" class="btn-primary">Ganador 3º</button>
+                </div>
+                 <button data-debug="exit" class="btn-danger w-full mt-6">Salir del Modo Debug</button>
+            </div>
+        </div>
+
     </main>
     
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
@@ -383,7 +377,7 @@
         const getVotesCollectionRef = (cId, participantId) => collection(db, `artifacts/${appId}/public/data/contests/${cId}/users/${participantId}/votes`);
         const getFeedbackCollectionRef = () => collection(db, `artifacts/${appId}/public/data/feedback`);
         
-        const screens = { home: document.getElementById('home-screen'), register: document.getElementById('register-screen'), lobby: document.getElementById('lobby-screen'), voting: document.getElementById('voting-screen'), results: document.getElementById('results-screen') };
+        const screens = { home: document.getElementById('home-screen'), register: document.getElementById('register-screen'), lobby: document.getElementById('lobby-screen'), voting: document.getElementById('voting-screen'), results: document.getElementById('results-screen'), debug: document.getElementById('debug-panel') };
         const loadingOverlay = document.getElementById('loading-overlay');
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
@@ -645,7 +639,12 @@
         
         document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
         document.getElementById('join-contest-btn').addEventListener('click', async () => {
-            const id = document.getElementById('contest-id-input').value.trim().toUpperCase(); if (!id) return;
+            const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
+            if (id === 'DEBUGMODE') {
+                 initializeDebugMode();
+                 return;
+            }
+            if (!id) return;
             if ((await getDoc(getContestRef(id))).exists()) { contestId = id; window.location.hash = id; showScreen('register'); } else { customAlert("Error", "Sala no encontrada."); }
         });
         document.getElementById('back-to-home-btn').addEventListener('click', leaveContest);
@@ -1494,6 +1493,57 @@
             modal.querySelector('#feedback-modal-title').textContent = "¡Una Noche Mágica!";
             modal.querySelector('#feedback-modal-message').textContent = message;
             modal.classList.add('visible');
+        }
+        
+        // --- DEBUG MODE ---
+        function initializeDebugMode() {
+             const mockUsers = [
+                { id: 'admin1', name: 'Organizador', isParticipant: false, isJuror: false },
+                { id: 'juror1', name: 'Jurado 1', isParticipant: false, isJuror: true },
+                { id: 'juror2', name: 'Jurado 2 (y participa)', costume: 'Vampiro', isParticipant: true, isJuror: true },
+                { id: 'participant1', name: 'Drácula', costume: 'Conde Drácula', isParticipant: true, isJuror: false, costumeDescription: 'El rey de los vampiros, elegante y sediento.' },
+                { id: 'participant2', name: 'Frankenstein', costume: 'Monstruo de Frank', isParticipant: true, isJuror: false },
+                { id: 'participant3', name: 'Momia', costume: 'Momia Egipcia', isParticipant: true, isJuror: false }
+            ];
+            const mockContest = {
+                creatorId: 'admin1',
+                status: 'lobby',
+                votedOnParticipants: ['participant2'],
+                currentlyVotingFor: 'participant1',
+                topResults: JSON.stringify([
+                    { id: 'participant1', rank: 1, name: 'Drácula', costume: 'Conde Drácula', overallScore: 9.50 },
+                    { id: 'juror2', rank: 2, name: 'Jurado 2 (y participa)', costume: 'Vampiro', overallScore: 8.75 },
+                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Momia Egipcia', overallScore: 8.20 }
+                ])
+            };
+            
+            showScreen('debug');
+            
+            document.querySelector('#debug-panel').addEventListener('click', (e) => {
+                const action = e.target.dataset.debug;
+                if (!action) return;
+                
+                // Hide all modals before showing a new one
+                document.querySelectorAll('.modal-backdrop, .winner-notification').forEach(el => el.classList.remove('visible'));
+
+                switch(action) {
+                    case 'home': showScreen('home'); break;
+                    case 'lobby-admin': currentUserId = 'admin1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
+                    case 'lobby-user': currentUserId = 'participant1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
+                    case 'voting-admin': currentUserId = 'admin1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'voting-juror': currentUserId = 'juror1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'voting-participant': currentUserId = 'participant2'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'results-admin': currentUserId = 'admin1'; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
+                    case 'results-user': currentUserId = 'participant1'; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
+                    case 'on-deck': onDeckModal.classList.add('visible'); break;
+                    case 'is-up': isUpModal.classList.add('visible'); break;
+                    case 'feedback': showFeedbackModal("Mensaje de prueba para la ventana de feedback. Gracias por jugar."); break;
+                    case 'winner-1': showWinnerNotification(1); break;
+                    case 'winner-2': showWinnerNotification(2); break;
+                    case 'winner-3': showWinnerNotification(3); break;
+                    case 'exit': showScreen('home'); break;
+                }
+            });
         }
 
         attachScoringListeners();
