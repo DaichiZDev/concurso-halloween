@@ -57,7 +57,7 @@
         .rank-3 { color: #d97706; } /* Bronce */
         
         .pumpkin-icon { 
-            font-size: 2rem; /* Adjusted size for more icons */
+            font-size: 2rem;
             opacity: 0.3; 
             transition: all 0.1s ease; 
             cursor: pointer; 
@@ -71,7 +71,7 @@
         .pumpkin-icons { 
             user-select: none; 
             display: flex; 
-            flex-wrap: wrap; /* Allow icons to wrap */
+            flex-wrap: wrap;
             justify-content: center; 
             gap: 0.5rem; 
         }
@@ -104,6 +104,9 @@
         .editable-image-container { position: relative; cursor: pointer; }
         .editable-image-overlay { position: absolute; inset: 0; background-color: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0; transition: opacity 0.2s ease; border-radius: 4px; }
         .editable-image-container:hover .editable-image-overlay { opacity: 1; }
+        
+        .participant-me { border: 2px solid #facc15 !important; background-color: rgba(250, 204, 21, 0.1); }
+        .participant-evaluated { background-color: rgba(22, 163, 74, 0.2) !important; border-left: 4px solid #16a34a; }
 
         @keyframes flash-blue-red {
             0%, 100% { background-color: #1e40af; } /* Blue */
@@ -207,6 +210,10 @@
                          <div id="scoring-inputs" class="space-y-6"></div>
                          <button id="submit-vote-btn" class="btn-primary w-full mt-6">Enviar Voto</button>
                     </div>
+                    <div id="pending-jurors-list-container" class="mb-6 pt-4 border-t border-gray-600">
+                        <h4 class="font-bold text-lg text-cyan-400 mb-2">Jurado pendiente de votar:</h4>
+                        <ul id="pending-jurors-list-voter" class="space-y-1"></ul>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h4 class="font-bold text-lg text-green-400 mb-2">Evaluados</h4>
@@ -216,10 +223,6 @@
                             <h4 class="font-bold text-lg text-yellow-400 mb-2">Pendientes</h4>
                             <ul id="pending-list" class="space-y-1"></ul>
                         </div>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-gray-600">
-                        <h4 class="font-bold text-lg text-cyan-400 mb-2">Jurado pendiente de votar:</h4>
-                        <ul id="pending-jurors-list-voter" class="space-y-1"></ul>
                     </div>
                 </div>
             </div>
@@ -238,8 +241,8 @@
     
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
         <div class="modal-content !bg-transparent border-none text-center">
-            <h2 class="font-creepster text-6xl text-yellow-300 drop-shadow-lg">¡Prepárate!</h2>
-            <p class="text-2xl text-white font-bold mt-4 drop-shadow-md">Eres el siguiente en pasar. ¿Estás listo?</p>
+            <h2 id="on-deck-title" class="font-creepster text-6xl text-yellow-300 drop-shadow-lg">¡Prepárate!</h2>
+            <p id="on-deck-message" class="text-2xl text-white font-bold mt-4 drop-shadow-md">Eres el siguiente en pasar. ¿Estás listo?</p>
             <div class="flex gap-4 mt-8">
                 <button id="on-deck-not-ready" class="btn-danger flex-1">Necesito un momento ⏳</button>
                 <button id="on-deck-ready" class="btn-primary flex-1 bg-green-600 hover:bg-green-700">¡Estoy listo! ✅</button>
@@ -642,8 +645,19 @@
 
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
+
                 if (onDeckData.userId === currentUserId && onDeckData.status === 'called') {
-                    onDeckModal.classList.add('visible'); if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
+                    if(isFirstCall) {
+                        document.getElementById('on-deck-title').textContent = "¡Rompe el Hielo!";
+                        document.getElementById('on-deck-message').textContent = "Eres el primero en pasar. ¿Estás listo?";
+                    } else {
+                        document.getElementById('on-deck-title').textContent = "¡Prepárate!";
+                        document.getElementById('on-deck-message').textContent = "Eres el siguiente en pasar. ¿Estás listo?";
+                    }
+
+                    onDeckModal.classList.add('visible'); 
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
                 }
                 if (isUpData.userId === currentUserId) {
                     isUpModal.classList.add('visible'); if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
@@ -711,7 +725,7 @@
 
                 const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manualmente"></span>`;
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
-                const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
+                const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}" data-description="${user.costumeDescription}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
                 
                 const rolesHTML = isAdmin ? `<div class="flex items-center gap-4 pt-2 border-t border-gray-700 mt-2"><label class="toggle-label flex-1"><span>Participa</span><input type="checkbox" class="toggle-checkbox" data-role="isParticipant" data-userid="${user.id}" ${user.isParticipant?'checked':''}><div class="toggle-switch"></div></label><label class="toggle-label flex-1"><span>Jurado</span><input type="checkbox" class="toggle-checkbox" data-role="isJuror" data-userid="${user.id}" ${user.isJuror?'checked':''}><div class="toggle-switch"></div></label></div>` : `<div class="text-sm text-orange-400 mt-1">${user.isParticipant?'Participante':''} ${user.isJuror?(user.isParticipant?'/ Jurado':'Jurado'):''}</div>`;
                 
@@ -774,10 +788,12 @@
                 else if (action === 'edit-costume') costumePrompt.show(user?.costume || '', async val => await updateDoc(getUserRef(contestId, userId), { costume: val, isParticipant: !!val }));
                 else if (action === 'edit-image') {
                     existingImageForGenerator = user.costumeImageBase64 || null;
-                    if(user.costumeDescription?.trim()){
-                         document.getElementById('image-generation-prompt').value = `Ilustración detallada de ${user.costume}. El protagonista es ${user.costumeDescription} en sí mismo, representado vívidamente y con gran detalle. Está ubicado en un ambiente icónico y atmosférico de Halloween. Estilo de arte conceptual, cuerpo completo, colores apropiados y una atmósfera inmersiva.`;
+                    const costumeName = target.dataset.costume;
+                    const description = target.dataset.description;
+                    if(description?.trim()){
+                         document.getElementById('image-generation-prompt').value = `Ilustración detallada de ${costumeName}. El protagonista es ${description} en sí mismo, representado vívidamente y con gran detalle. Está ubicado en un ambiente icónico y atmosférico de Halloween. Estilo de arte conceptual, cuerpo completo, colores apropiados y una atmósfera inmersiva.`;
                     } else {
-                        document.getElementById('image-generation-prompt').value = `Ilustración detallada de un personaje con un disfraz de '${user.costume}'. Estilo de arte conceptual, cuerpo completo, colores vibrantes en un ambiente de Halloween.`;
+                        document.getElementById('image-generation-prompt').value = `Ilustración detallada de un personaje con un disfraz de '${costumeName}'. Estilo de arte conceptual, cuerpo completo, colores vibrantes en un ambiente de Halloween.`;
                     }
                     imageChoiceModal.classList.add('visible');
                 }
@@ -851,11 +867,16 @@
 
                     participants.forEach(p => { 
                         const isSelected = p.id === selectedForActionId;
+                        const evaluated = contestData.votedOnParticipants?.includes(p.id);
+                        let participantClasses = `flex justify-between items-center p-3 rounded-lg cursor-pointer bg-gray-800`;
+                        if(evaluated) participantClasses += ' participant-evaluated';
+                        if(isSelected) participantClasses += ' border-2 border-blue-500';
+
                         const onDeck = contestData.onDeck?.userId === p.id, onDeckStatus = onDeck ? contestData.onDeck.status : null;
                         const isUp = contestData.isUp?.userId === p.id, acknowledgedUp = contestData.acknowledgedUp === p.id;
-                        const evaluated = contestData.votedOnParticipants?.includes(p.id), voting = p.id === currentPId;
+                        const voting = p.id === currentPId;
                         
-                        let statusIcon = '';
+                        let statusIcon = !p.isManualEntry ? '🟢' : '';
                         if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
                             if (onDeckStatus === 'acknowledged') statusIcon = '✅'; else if (onDeckStatus === 'not_ready') statusIcon = '⏳'; else statusIcon = '📣';
                         }
@@ -864,7 +885,7 @@
                         if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
                         if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
                         
-                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="flex justify-between items-center p-3 rounded-lg cursor-pointer ${isSelected ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-gray-800'}"><div><p class="font-bold flex items-center">${statusIcon ? `<span class="mr-2">${statusIcon}</span>` : ''}${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`; 
+                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`; 
                     });
                     html += `</div>`; 
 
@@ -923,6 +944,7 @@
 
             const votingDiv = document.getElementById('currently-voting-for'), jurorControls = document.getElementById('juror-controls');
             const selfVoteMessage = document.getElementById('self-vote-message'), pendingJurorsList = document.getElementById('pending-jurors-list-voter');
+            const pendingJurorsContainer = document.getElementById('pending-jurors-list-container');
 
             if (isJuror) {
                 const votedOnIds = contestData.votedOnParticipants || [];
@@ -939,6 +961,7 @@
             }
 
             if(currentP) { 
+                pendingJurorsContainer.classList.remove('hidden');
                 votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume}"</p>${currentP.costumeDescription ? `<p class="text-lg text-gray-300 mt-2 italic">"${currentP.costumeDescription}"</p>` : ''}`; 
                 const selfVote = me?.isParticipant && me.id === currentP.id;
                 jurorControls.classList.toggle('hidden', !isJuror);
@@ -955,11 +978,18 @@
                     await updateDoc(getContestRef(contestId), { currentlyVotingFor: null, votedOnParticipants: [...(contestData.votedOnParticipants || []), currentPId] });
                 }
             } else { 
-                 const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
+                pendingJurorsContainer.classList.add('hidden');
+                const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
                 votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allVoted ? '¡Votación Finalizada!' :'Esperando concursante...'}</h3>`; 
                 jurorControls.classList.add('hidden'); 
             }
-            const votedIds = contestData.votedOnParticipants || []; document.getElementById('voted-list').innerHTML = participants.filter(p=>votedIds.includes(p.id)).map(p=>`<li>${p.name}</li>`).join(''); document.getElementById('pending-list').innerHTML = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).map(p=>`<li>${p.name}</li>`).join('');
+            
+            const votedIds = contestData.votedOnParticipants || [];
+            const sortedVoted = participants.filter(p=>votedIds.includes(p.id)).sort((a,b) => (a.id === currentUserId) ? -1 : (b.id === currentUserId) ? 1 : 0);
+            const sortedPending = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).sort((a,b) => (a.id === currentUserId) ? -1 : (b.id === currentUserId) ? 1 : 0);
+
+            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join(''); 
+            document.getElementById('pending-list').innerHTML = sortedPending.map(p=>`<li class="${p.id === currentUserId ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
         }
         
         async function calculateAndFinalizeResults(allUsers) {
@@ -1325,11 +1355,22 @@
             if (user) { 
                 currentUserId = user.uid; 
                 const hashId = window.location.hash.substring(1).toUpperCase(); 
-                if (hashId) { 
-                    contestId = hashId; 
-                    if ((await getDoc(getContestRef(hashId))).exists()) subscribeToContest(contestId); 
-                    else showScreen('register');
-                } else showScreen('home'); 
+                if (hashId) {
+                    contestId = hashId;
+                    const contestDoc = await getDoc(getContestRef(hashId));
+                    if(contestDoc.exists()){
+                        const userDoc = await getDoc(getUserRef(hashId, currentUserId));
+                        if(userDoc.exists()){
+                            subscribeToContest(contestId);
+                        } else {
+                            showScreen('register');
+                        }
+                    } else {
+                         showScreen('register');
+                    }
+                } else {
+                    showScreen('home'); 
+                }
             } else {
                 loadingOverlay.classList.remove('hidden');
                 document.getElementById('loading-text').textContent = 'Autenticando...';
