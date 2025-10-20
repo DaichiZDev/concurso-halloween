@@ -774,8 +774,12 @@
                 else if (action === 'edit-costume') costumePrompt.show(user?.costume || '', async val => await updateDoc(getUserRef(contestId, userId), { costume: val, isParticipant: !!val }));
                 else if (action === 'edit-image') {
                     existingImageForGenerator = user.costumeImageBase64 || null;
+                    if(user.costumeDescription?.trim()){
+                         document.getElementById('image-generation-prompt').value = `Ilustración detallada de ${user.costume}. El protagonista es ${user.costumeDescription} en sí mismo, representado vívidamente y con gran detalle. Está ubicado en un ambiente icónico y atmosférico de Halloween. Estilo de arte conceptual, cuerpo completo, colores apropiados y una atmósfera inmersiva.`;
+                    } else {
+                        document.getElementById('image-generation-prompt').value = `Ilustración detallada de un personaje con un disfraz de '${user.costume}'. Estilo de arte conceptual, cuerpo completo, colores vibrantes en un ambiente de Halloween.`;
+                    }
                     imageChoiceModal.classList.add('visible');
-                    document.getElementById('image-generation-prompt').value = `Ilustración detallada de un personaje con un disfraz de '${target.dataset.costume}'. Estilo de arte conceptual, cuerpo completo, colores vibrantes.`;
                 }
                 else if (action === 'edit-description') {
                     const descInput = document.getElementById('description-modal-input');
@@ -833,46 +837,56 @@
             
             if (isAdmin) {
                 const view = document.getElementById('admin-voting-view');
-                let html = `<div class="mb-4 pb-4 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">Panel de Votación</h3><button id="pause-contest-btn" class="btn-secondary bg-yellow-600 hover:bg-yellow-700 text-sm py-2 px-3">Pausar</button></div><div class="space-y-2 mb-4">`;
+                let html = `<div class="mb-4 pb-4 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">Panel de Votación</h3><button id="pause-contest-btn" class="btn-secondary bg-yellow-600 hover:bg-yellow-700 text-sm py-2 px-3">Pausar</button></div>`;
                 
-                const votingJurorsForCurrentP = currentP ? jurors.filter(j => j.id !== currentP.id) : [];
-                const allVotesIn = currentP ? (await getDocs(getVotesCollectionRef(contestId, currentP.id))).size >= votingJurorsForCurrentP.length : false;
+                const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
+                if (allVoted && !isTiebreaker) {
+                    html += `<button id="calculate-results-btn" class="btn-primary w-full bg-green-600 hover:bg-green-700 mt-4">Calcular y Ver Resultados</button>`;
+                } else if (allVoted && isTiebreaker) {
+                    html += `<button id="calculate-results-btn" class="btn-primary w-full bg-purple-600 hover:bg-purple-700 mt-4">Finalizar Desempate y Ver Ganador</button>`;
+                } else {
+                    html += `<div class="space-y-2 mb-4 mt-4">`;
+                    const votingJurorsForCurrentP = currentP ? jurors.filter(j => j.id !== currentP.id) : [];
+                    const allVotesIn = currentP ? (await getDocs(getVotesCollectionRef(contestId, currentP.id))).size >= votingJurorsForCurrentP.length : false;
 
-                participants.forEach(p => { 
-                    const isSelected = p.id === selectedForActionId;
-                    const onDeck = contestData.onDeck?.userId === p.id, onDeckStatus = onDeck ? contestData.onDeck.status : null;
-                    const isUp = contestData.isUp?.userId === p.id, acknowledgedUp = contestData.acknowledgedUp === p.id;
-                    const evaluated = contestData.votedOnParticipants?.includes(p.id), voting = p.id === currentPId;
-                    
-                    let statusIcon = '';
-                    if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
-                        if (onDeckStatus === 'acknowledged') statusIcon = '✅'; else if (onDeckStatus === 'not_ready') statusIcon = '⏳'; else statusIcon = '📣';
+                    participants.forEach(p => { 
+                        const isSelected = p.id === selectedForActionId;
+                        const onDeck = contestData.onDeck?.userId === p.id, onDeckStatus = onDeck ? contestData.onDeck.status : null;
+                        const isUp = contestData.isUp?.userId === p.id, acknowledgedUp = contestData.acknowledgedUp === p.id;
+                        const evaluated = contestData.votedOnParticipants?.includes(p.id), voting = p.id === currentPId;
+                        
+                        let statusIcon = '';
+                        if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
+                            if (onDeckStatus === 'acknowledged') statusIcon = '✅'; else if (onDeckStatus === 'not_ready') statusIcon = '⏳'; else statusIcon = '📣';
+                        }
+
+                        let statusText = 'Pendiente', statusColor = 'text-yellow-400';
+                        if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
+                        if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
+                        
+                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="flex justify-between items-center p-3 rounded-lg cursor-pointer ${isSelected ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-gray-800'}"><div><p class="font-bold flex items-center">${statusIcon ? `<span class="mr-2">${statusIcon}</span>` : ''}${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`; 
+                    });
+                    html += `</div>`; 
+
+                    if(selectedForActionId) {
+                        const selectedUser = users.find(u=> u.id === selectedForActionId), canCall = selectedUser && !selectedUser.isManualEntry;
+                        const isEvaluated = contestData.votedOnParticipants?.includes(selectedForActionId);
+                        const callBtnClasses = `btn-secondary w-1/2 ${canCall ? 'bg-cyan-600 hover:bg-cyan-700' : ''}`;
+
+                        html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
+                        if(isEvaluated) html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
+                        else html += `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall ? 'disabled' : ''}>📣 Llamar</button><button id="admin-eval-btn" class="btn-primary w-1/2">Evaluar</button>`;
+                        html +=`</div></div>`;
                     }
-
-                    let statusText = 'Pendiente', statusColor = 'text-yellow-400';
-                    if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
-                    if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
-                    
-                    html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="flex justify-between items-center p-3 rounded-lg cursor-pointer ${isSelected ? 'bg-blue-900/50 border-2 border-blue-500' : 'bg-gray-800'}"><div><p class="font-bold flex items-center">${statusIcon ? `<span class="mr-2">${statusIcon}</span>` : ''}${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`; 
-                });
-                html += `</div>`; 
-
-                if(selectedForActionId) {
-                    const selectedUser = users.find(u=> u.id === selectedForActionId), canCall = selectedUser && !selectedUser.isManualEntry;
-                    const isEvaluated = contestData.votedOnParticipants?.includes(selectedForActionId);
-                    const callBtnClasses = `btn-secondary w-1/2 ${canCall ? 'bg-cyan-600 hover:bg-cyan-700' : ''}`;
-
-                    html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
-                    if(isEvaluated) html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
-                    else html += `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall ? 'disabled' : ''}>📣 Llamar</button><button id="admin-eval-btn" class="btn-primary w-1/2">Evaluar</button>`;
-                    html +=`</div></div>`;
                 }
+
                 view.innerHTML = html;
                 view.onclick = async e => { 
                     const target = e.target.closest('button, [data-userid]'); if (!target) return; 
                     if (target.dataset.userid) { selectedForActionId = target.dataset.userid === selectedForActionId ? null : target.dataset.userid; return renderVotingScreen(contestData, users); }
                     
                     if (target.id === 'pause-contest-btn') return await updateDoc(getContestRef(contestId), { status: 'paused' });
+                    if (target.id === 'calculate-results-btn') return await calculateAndFinalizeResults(users);
                     
                     if (selectedForActionId) {
                         const actionMap = {
@@ -894,7 +908,10 @@
                                 const batch = writeBatch(db); 
                                 const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId)); 
                                 votes.forEach(v => batch.delete(v.ref)); 
-                                batch.update(getContestRef(contestId), { votedOnParticipants: contestData.votedOnParticipants.filter(id => id !== selectedForActionId) }); 
+                                batch.update(getContestRef(contestId), { votedOnParticipants: contestData.votedOnParticipants.filter(id => id !== selectedForActionId) });
+                                if (isTiebreaker) { // Reset tiebreaker if a vote is reopened
+                                     batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
+                                }
                                 await batch.commit();
                                 selectedForActionId = null;
                             }
@@ -938,12 +955,64 @@
                     await updateDoc(getContestRef(contestId), { currentlyVotingFor: null, votedOnParticipants: [...(contestData.votedOnParticipants || []), currentPId] });
                 }
             } else { 
-                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${participants.every(p => contestData.votedOnParticipants?.includes(p.id)) ? '¡Votación Finalizada!' :'Esperando concursante...'}</h3>`; 
+                 const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
+                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allVoted ? '¡Votación Finalizada!' :'Esperando concursante...'}</h3>`; 
                 jurorControls.classList.add('hidden'); 
             }
             const votedIds = contestData.votedOnParticipants || []; document.getElementById('voted-list').innerHTML = participants.filter(p=>votedIds.includes(p.id)).map(p=>`<li>${p.name}</li>`).join(''); document.getElementById('pending-list').innerHTML = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).map(p=>`<li>${p.name}</li>`).join('');
         }
         
+        async function calculateAndFinalizeResults(allUsers) {
+            loadingOverlay.classList.remove('hidden');
+            document.getElementById('loading-text').textContent = 'Calculando Resultados...';
+
+            const results = await calculateFullRanking(contestId);
+            if (results.length === 0) {
+                 await updateDoc(getContestRef(contestId), { status: 'results', topResults: JSON.stringify([]) });
+                 loadingOverlay.classList.add('hidden');
+                 return;
+            }
+
+            const groupedByScore = results.reduce((acc, p) => {
+                const score = p.overallScore.toFixed(3); // Group by a fixed precision
+                if (!acc[score]) acc[score] = [];
+                acc[score].push(p);
+                return acc;
+            }, {});
+
+            let rank = 1;
+            let finalResults = [];
+            const sortedScores = Object.keys(groupedByScore).sort((a,b) => b-a);
+            
+            for(const score of sortedScores){
+                const group = groupedByScore[score];
+                if(rank <= 3 && group.length > 1){
+                    const isTiebreaker = localContestData.status === 'tiebreaker';
+                    const tieIsForCurrentRank = isTiebreaker && localContestData.tiebreakerInfo.rank === rank;
+
+                    if (!isTiebreaker || !tieIsForCurrentRank) {
+                        customAlert("¡Empate Detectado!", `Hay un empate por el ${rank}º lugar. Se iniciará una ronda de desempate.`);
+                        const batch = writeBatch(db);
+                        batch.update(getContestRef(contestId), { status: 'tiebreaker', votedOnParticipants: [], currentlyVotingFor: null, tiebreakerInfo: { rank, participantIds: group.map(p => p.id) } });
+                        // Reset votes for tied participants
+                         for (const p of group) {
+                            const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, p.id));
+                            votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
+                        }
+                        await batch.commit();
+                        loadingOverlay.classList.add('hidden');
+                        return;
+                    }
+                }
+                group.forEach(p => finalResults.push({ ...p, rank }));
+                rank += group.length;
+            }
+
+            const top3 = finalResults.filter(r => r.rank <= 3);
+            await updateDoc(getContestRef(contestId), { status: 'results', topResults: JSON.stringify(top3), tiebreakerInfo: null });
+            loadingOverlay.classList.add('hidden');
+        }
+
         function renderCatchupList(participants) {
             const container = document.getElementById('catchup-list-container');
             if (participants.length === 0) return container.classList.add('hidden');
