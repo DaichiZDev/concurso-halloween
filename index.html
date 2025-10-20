@@ -730,7 +730,7 @@
                         if (!user.costume) return customAlert("Error", "El participante necesita un disfraz para generar una descripción.");
                         newGenBtn.disabled = true; newGenBtn.innerHTML = `<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
                         try { descInput.value = await generateDescriptionWithGemini(user.costume); }
-                        catch (error) { customAlert("Error de IA", "No se pudo generar la descripción."); }
+                        catch (error) { customAlert("Error de IA", error.message); }
                         finally { newGenBtn.disabled = false; newGenBtn.innerHTML = '✨ Generar con IA'; }
                     };
                 } else if (target.dataset.role) {
@@ -1044,42 +1044,92 @@
             };
         }
 
-        async function generateDescriptionWithGemini(costumeName) {
-            const apiKey = "AIzaSyD0A5sh5N1qar8KvgULTulkO2b_sbEo7C4"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const systemPrompt = "Actúa como un narrador entusiasta con gran conocimiento de la cultura popular, mitología y cuentos clásicos. Tu tarea es generar una descripción corta para un disfraz en un concurso. Debe capturar la esencia del personaje, explicando brevemente quién es o qué representa. Usa un tono accesible y directo, pero apropiado para la atmósfera del personaje. Incluye siempre una línea de cierre que interactúe con el personaje o el público. La respuesta debe ser en español, de dos a tres frases vibrantes.";
-            const userQuery = `Describe el disfraz de "${costumeName}" para un concurso.`;
+        async function handleApiCall(apiCall, ...args) {
+            try {
+                return await apiCall(...args);
+            } catch (error) {
+                console.error(`Error en ${apiCall.name}:`, error);
+                if (error.message.includes("API key not valid")) {
+                    throw new Error("Clave de API no válida. Asegúrate de que la clave sea correcta y no haya expirado.");
+                }
+                if (error instanceof TypeError) {
+                     throw new Error("Error de red. Revisa tu conexión a internet o la configuración de CORS.");
+                }
+                throw error; // Re-throw the specific error from the function
+            }
+        }
 
-            const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] }, };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-            const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) return text.trim(); else throw new Error("No text received from API.");
+        async function generateDescriptionWithGemini(costumeName) {
+            try {
+                const apiKey = "AIzaSyD0A5sh5N1qar8KvgULTulkO2b_sbEo7C4"; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const systemPrompt = "Actúa como un narrador entusiasta con gran conocimiento de la cultura popular, mitología y cuentos clásicos. Tu tarea es generar una descripción corta para un disfraz en un concurso. Debe capturar la esencia del personaje, explicando brevemente quién es o qué representa. Usa un tono accesible y directo, pero apropiado para la atmósfera del personaje. Incluye siempre una línea de cierre que interactúe con el personaje o el público. La respuesta debe ser en español, de dos a tres frases vibrantes.";
+                const userQuery = `Describe el disfraz de "${costumeName}" para un concurso.`;
+                const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] }, };
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+                if (!response.ok) {
+                    let errorMsg = `Error de la API: ${response.status}`;
+                    try { const errorData = await response.json(); errorMsg = `Error ${response.status}: ${errorData.error.message}`; } catch (e) {}
+                    if (response.status === 400) throw new Error("La solicitud fue rechazada. Revisa el texto por contenido inapropiado.");
+                    if (response.status === 403) throw new Error("Error de autenticación (403). Verifica que la clave de API sea correcta, las APIs estén habilitadas y la facturación esté configurada en Google Cloud.");
+                    if (response.status === 429) throw new Error("Demasiadas solicitudes. Por favor, espera un momento.");
+                    throw new Error(errorMsg);
+                }
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return text.trim(); else throw new Error("La IA no devolvió una respuesta válida.");
+            } catch (error) {
+                console.error("Error en generateDescriptionWithGemini:", error);
+                throw error; 
+            }
         }
         
         async function generateImageWithImagen(prompt) {
-            const apiKey = "AIzaSyD0A5sh5N1qar8KvgULTulkO2b_sbEo7C4";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
-            const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-            const result = await response.json();
-            const base64Data = result.predictions?.[0]?.bytesBase64Encoded;
-            if (base64Data) return `data:image/png;base64,${base64Data}`; else throw new Error("No image data received from API.");
+            try {
+                const apiKey = "AIzaSyD0A5sh5N1qar8KvgULTulkO2b_sbEo7C4";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+                const payload = { instances: [{ prompt }], parameters: { "sampleCount": 1 } };
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) {
+                    let errorMsg = `Error de la API: ${response.status}`;
+                    try { const errorData = await response.json(); errorMsg = `Error ${response.status}: ${errorData.error.message}`; } catch (e) {}
+                    if (response.status === 400) throw new Error("La solicitud fue rechazada por la IA. Intenta con un prompt diferente o revisa si infringe las políticas de seguridad.");
+                    if (response.status === 403) throw new Error("Error de autenticación (403). Verifica que la clave de API sea correcta, la API 'Vertex AI' esté habilitada y la facturación esté configurada.");
+                    if (response.status === 429) throw new Error("Demasiadas solicitudes de imágenes. Por favor, espera un momento.");
+                    throw new Error(errorMsg);
+                }
+                const result = await response.json();
+                const base64Data = result.predictions?.[0]?.bytesBase64Encoded;
+                if (base64Data) return `data:image/png;base64,${base64Data}`; else throw new Error("La IA no devolvió una imagen válida.");
+            } catch (error) {
+                console.error("Error en generateImageWithImagen:", error);
+                throw error;
+            }
         }
         
         async function extractTextWithGemini(base64Image) {
-            const apiKey = "AIzaSyD0A5sh5N1qar8KvgULTulkO2b_sbEo7C4"; 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const prompt = "Extrae el texto de esta imagen. Es una lista para un concurso con 3 campos separados por comas: 'Nombre, Disfraz, EsJurado'. El campo 'EsJurado' es opcional ('si', 'y', 'no', 'n', o vacío). Estandariza la salida a CSV, con cada persona en una nueva línea. Para 'EsJurado', usa 'si' para respuestas afirmativas ('si', 'y') y 'no' para todo lo demás (vacío, 'no', 'n'). Ejemplo: 'Pepito, Pez gordo, si' -> 'Pepito,Pez gordo,si'. 'Pac, payaso' -> 'Pac,payaso,no'.";
-            const payload = { contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } } ] } ], };
-
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
-            const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) return text.trim(); else throw new Error("No text received from API.");
+            try {
+                const apiKey = "AIzaSyD0A5sh5N1qar8KvgULTulkO2b_sbEo7C4"; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const prompt = "Extrae el texto de esta imagen. Es una lista para un concurso con 3 campos separados por comas: 'Nombre, Disfraz, EsJurado'. El campo 'EsJurado' es opcional ('si', 'y', 'no', 'n', o vacío). Estandariza la salida a CSV, con cada persona en una nueva línea. Para 'EsJurado', usa 'si' para respuestas afirmativas ('si', 'y') y 'no' para todo lo demás (vacío, 'no', 'n'). Ejemplo: 'Pepito, Pez gordo, si' -> 'Pepito,Pez gordo,si'. 'Pac, payaso' -> 'Pac,payaso,no'.";
+                const payload = { contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } } ] } ], };
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) {
+                    let errorMsg = `Error de la API: ${response.status}`;
+                    try { const errorData = await response.json(); errorMsg = `Error ${response.status}: ${errorData.error.message}`; } catch (e) {}
+                    if (response.status === 400) throw new Error("La solicitud fue rechazada. La imagen podría ser inválida o contener contenido no permitido.");
+                    if (response.status === 403) throw new Error("Error de autenticación (403). Verifica que la clave de API sea correcta, la API 'Generative Language' esté habilitada y la facturación esté configurada.");
+                    if (response.status === 429) throw new Error("Demasiadas solicitudes de análisis de imagen. Por favor, espera un momento.");
+                    throw new Error(errorMsg);
+                }
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) return text.trim(); else throw new Error("La IA no pudo extraer texto de la imagen.");
+            } catch (error) {
+                console.error("Error en extractTextWithGemini:", error);
+                throw error;
+            }
         }
 
         document.getElementById('add-participants-from-photo-btn').addEventListener('click', () => document.getElementById('ocr-file-input').click());
@@ -1092,9 +1142,10 @@
             const reader = new FileReader();
             reader.onload = async (event) => {
                 try {
-                    document.getElementById('participants-list-input').value = await extractTextWithGemini(event.target.result);
+                    const textList = await extractTextWithGemini(event.target.result);
+                    document.getElementById('participants-list-input').value = textList;
                     customAlert("Revisión Necesaria", "La IA ha procesado la imagen. Por favor, revisa y corrige el texto antes de cargar la lista.");
-                } catch (error) { customAlert("Error de IA", "No se pudo leer el texto de la imagen."); }
+                } catch (error) { customAlert("Error al Leer Foto", error.message); }
                 finally { loadingOverlay.classList.add('hidden'); uploadBtn.disabled = false; e.target.value = ''; }
             };
             reader.onerror = () => { customAlert("Error de Archivo", "No se pudo leer el archivo."); loadingOverlay.classList.add('hidden'); uploadBtn.disabled = false; e.target.value = ''; };
@@ -1113,7 +1164,7 @@
                 generatedImageBase64 = await processImage(rawBase64);
                 preview.src = generatedImageBase64;
                 preview.classList.remove('hidden'); status.classList.add('hidden'); saveBtn.disabled = false;
-            } catch (error) { customAlert("Error de IA", "No se pudo generar la imagen."); status.innerHTML = `<p>Error al generar.</p>`; }
+            } catch (error) { customAlert("Error al Generar Imagen", error.message); status.innerHTML = `<p>Error al generar.</p>`; }
             finally { btn.disabled = false; }
         });
         document.getElementById('image-generation-save').addEventListener('click', async () => {
@@ -1201,3 +1252,4 @@
 </html>
 
 
+ 
