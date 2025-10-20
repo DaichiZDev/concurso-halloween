@@ -108,14 +108,11 @@
         .participant-me { border: 2px solid #facc15 !important; background-color: rgba(250, 204, 21, 0.1); }
         .participant-evaluated { background-color: rgba(22, 163, 74, 0.2) !important; border-left: 4px solid #16a34a; }
 
-        @keyframes flash-blue-red {
-            0%, 100% { background-color: #1e40af; } /* Blue */
-            50% { background-color: #7f1d1d; } /* Red */
-        }
-        @keyframes flash-green-purple {
-            0%, 100% { background-color: #065f46; } /* Green */
-            50% { background-color: #581c87; } /* Purple */
-        }
+        @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
+        .emoji-pop { animation: pop-in 0.5s ease-out forwards; }
+        
+        @keyframes flash-blue-red { 0%, 100% { background-color: #1e40af; } 50% { background-color: #7f1d1d; } }
+        @keyframes flash-green-purple { 0%, 100% { background-color: #065f46; } 50% { background-color: #581c87; } }
         .on-deck-alert { animation: flash-green-purple 1s infinite; }
         .is-up-alert { animation: flash-blue-red 0.5s infinite; }
     </style>
@@ -210,7 +207,7 @@
                          <div id="scoring-inputs" class="space-y-6"></div>
                          <button id="submit-vote-btn" class="btn-primary w-full mt-6">Enviar Voto</button>
                     </div>
-                    <div id="pending-jurors-list-container" class="mb-6 pt-4 border-t border-gray-600">
+                    <div id="pending-jurors-list-container" class="hidden mb-6 pt-4 border-t border-gray-600">
                         <h4 class="font-bold text-lg text-cyan-400 mb-2">Jurado pendiente de votar:</h4>
                         <ul id="pending-jurors-list-voter" class="space-y-1"></ul>
                     </div>
@@ -276,14 +273,17 @@
     <div id="feedback-modal" class="modal-backdrop">
         <div class="modal-content">
             <h2 id="feedback-modal-title" class="font-creepster text-3xl text-orange-500 mb-4"></h2>
-            <p id="feedback-modal-message" class="text-gray-300 mb-6 text-left whitespace-pre-wrap"></p>
-            <hr class="border-gray-600 my-6">
+            <p id="feedback-modal-message" class="text-gray-300 mb-4 text-left whitespace-pre-wrap"></p>
+            <div id="feedback-emoji-display" class="text-6xl h-20 flex items-center justify-center"></div>
             <h3 class="font-bold text-lg mb-3 text-orange-400">¿Te gustó la aplicación? Deja tu valoración.</h3>
             <div id="feedback-stars" class="flex justify-center text-4xl text-gray-500 cursor-pointer mb-4">
                 <span data-value="1">★</span><span data-value="2">★</span><span data-value="3">★</span><span data-value="4">★</span><span data-value="5">★</span>
             </div>
             <textarea id="feedback-comment" rows="3" class="w-full bg-gray-800 rounded p-2 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="(Opcional) ¿Alguna sugerencia o comentario?"></textarea>
-            <button id="submit-feedback-btn" class="btn-primary w-full mt-6">Enviar Valoración y Finalizar</button>
+            <div class="flex flex-col sm:flex-row gap-2 mt-6">
+                 <button id="skip-feedback-btn" class="btn-secondary flex-1">Finalizar sin valorar</button>
+                 <button id="submit-feedback-btn" class="btn-primary flex-1" disabled>Enviar Valoración</button>
+            </div>
         </div>
     </div>
     <div id="alert-modal" class="modal-backdrop"><div class="modal-content"><h2 id="alert-modal-title" class="font-creepster text-3xl text-orange-500 mb-4"></h2><p id="alert-modal-message" class="text-gray-300 mb-6"></p><button id="alert-modal-close" class="btn-primary">Entendido</button></div></div>
@@ -988,8 +988,8 @@
             const sortedVoted = participants.filter(p=>votedIds.includes(p.id)).sort((a,b) => (a.id === currentUserId) ? -1 : (b.id === currentUserId) ? 1 : 0);
             const sortedPending = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).sort((a,b) => (a.id === currentUserId) ? -1 : (b.id === currentUserId) ? 1 : 0);
 
-            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join(''); 
-            document.getElementById('pending-list').innerHTML = sortedPending.map(p=>`<li class="${p.id === currentUserId ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
+            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join(''); 
+            document.getElementById('pending-list').innerHTML = sortedPending.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
         }
         
         async function calculateAndFinalizeResults(allUsers) {
@@ -1182,7 +1182,7 @@
                     showConfirmation('Finalizar Concurso', '¿Estás seguro? Esto eliminará permanentemente la sala para todos los usuarios.', async () => {
                         await updateDoc(getContestRef(contestId), { 
                             status: 'finalized', 
-                            finalMessage: "¡Un aplauso grande para los ganadores y para cada uno de los participantes que llenaron esta noche de creatividad y espanto! El jurado ha deliberado y el concurso de disfraces ha concluido oficialmente.\n\nGracias a todos por hacer de este un evento inolvidable. ¡Ahora, que la fiesta continúe, y que la increíble creatividad de esta noche de Halloween se convierta en un recuerdo inolvidable para todos!"
+                            finalMessage: "¡Un aplauso grande para los ganadores y para cada uno de los participantes que llenaron esta noche de creatividad y espanto! El jurado ha deliberado y el concurso de disfraces ha concluido oficialmente.\n\nGracias a todos por hacer de este un evento inolvidable. ¡Ahora, que la fiesta continúe, y que esta noche se convierta en un recuerdo inolvidable para todos!"
                         });
                     });
                 } else if (action === 'restart') {
@@ -1254,7 +1254,7 @@
         
         async function extractTextWithGemini(base64Image) {
             const apiKey = getApiKey();
-            if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
+            if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.⚙️");
             try {
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                 const prompt = "Extrae el texto de esta imagen. Es una lista para un concurso con 3 campos separados por comas: 'Nombre, Disfraz, EsJurado'. El campo 'EsJurado' es opcional ('si', 'y', 'no', 'n', o vacío). Estandariza la salida a CSV, con cada persona en una nueva línea. Para 'EsJurado', usa 'si' para respuestas afirmativas ('si', 'y') y 'no' para todo lo demás (vacío, 'no', 'n'). Ejemplo: 'Pepito, Pez gordo, si' -> 'Pepito,Pez gordo,si'. 'Pac, payaso' -> 'Pac,payaso,no'.";
@@ -1380,13 +1380,22 @@
         
         let currentRating = 0;
         const stars = document.querySelectorAll('#feedback-stars span');
+        const emojiDisplay = document.getElementById('feedback-emoji-display');
+        const submitFeedbackBtn = document.getElementById('submit-feedback-btn');
+        const feedbackEmojis = ['😭', '😞', '🥺', '😊', '🤩'];
+
         stars.forEach(star => {
             star.addEventListener('click', () => {
                 currentRating = parseInt(star.dataset.value);
                 stars.forEach(s => s.classList.toggle('selected', parseInt(s.dataset.value) <= currentRating));
+                emojiDisplay.textContent = feedbackEmojis[currentRating - 1];
+                emojiDisplay.classList.add('emoji-pop');
+                emojiDisplay.addEventListener('animationend', () => emojiDisplay.classList.remove('emoji-pop'), { once: true });
+                submitFeedbackBtn.disabled = false;
             });
         });
-        document.getElementById('submit-feedback-btn').addEventListener('click', async (e) => {
+
+        submitFeedbackBtn.addEventListener('click', async (e) => {
             e.target.disabled = true;
             e.target.textContent = 'Enviando...';
             const comment = document.getElementById('feedback-comment').value;
@@ -1400,9 +1409,14 @@
             leaveContest();
         });
 
+        document.getElementById('skip-feedback-btn').addEventListener('click', () => {
+             document.getElementById('feedback-modal').classList.remove('visible');
+             leaveContest();
+        });
+
         function showFeedbackModal(message) {
             const modal = document.getElementById('feedback-modal');
-            modal.querySelector('#feedback-modal-title').textContent = "¡Una Noche Mágica!";
+            modal.querySelector('#feedback-modal-title').textContent = "¡Halloween Una Noche Mágica!";
             modal.querySelector('#feedback-modal-message').textContent = message;
             modal.classList.add('visible');
         }
