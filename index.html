@@ -308,7 +308,7 @@
                     <button data-debug="winner-3" class="btn-primary">Ganador 3º</button>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-700 text-center">
-                    <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">DaiciPC</span></p>
+                    <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">Daichi PC</span></p>
                 </div>
                  <button data-debug="exit" class="btn-danger w-full mt-4">Salir del Modo Debug</button>
             </div>
@@ -321,7 +321,7 @@
     </div>
     
     <div id="easter-egg-overlay" class="hidden fixed inset-0 z-[200] cursor-pointer">
-        <p class="absolute bottom-4 right-4 font-creepster text-2xl text-orange-500 text-shadow-lg">Crédito: DaiciPC</p>
+        <p class="absolute bottom-4 right-4 font-creepster text-2xl text-orange-500 text-shadow-lg">Daichi PC</p>
     </div>
     
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
@@ -741,7 +741,6 @@
             }
             if (!id) return;
 
-            // Lógica de unión mejorada para la seguridad y el bloqueo de sala
             try {
                 const contestDoc = await getDoc(getContestRef(id));
                 if (!contestDoc.exists()) {
@@ -901,8 +900,6 @@
             
             if (isAdmin) {
                 const lockToggle = document.getElementById('lock-contest-toggle');
-                // `isLocked` podría ser undefined en salas antiguas, por lo que `!!` lo convierte a booleano.
-                // Lo establecemos como `!isLocked` porque el texto es "Permitir nuevos", es decir, el interruptor está encendido cuando NO está bloqueado.
                 lockToggle.checked = !contestData.isLocked;
             }
 
@@ -1669,7 +1666,7 @@
 
         function showFeedbackModal(message) {
             const modal = document.getElementById('feedback-modal');
-            modal.querySelector('#feedback-modal-title').textContent = "¡Una Noche Mágica!";
+            modal.querySelector('#feedback-modal-title').textContent = "¡Halloween una Noche Mágica!";
             modal.querySelector('#feedback-modal-message').textContent = message;
             modal.classList.add('visible');
         }
@@ -1736,6 +1733,7 @@
     </script>
 </body>
 </html>
+
 
 
 
