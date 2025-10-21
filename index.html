@@ -158,6 +158,12 @@
         @keyframes flash-green-purple { 0%, 100% { background-color: #065f46; } 50% { background-color: #581c87; } }
         .on-deck-alert { animation: flash-green-purple 1s infinite; }
         .is-up-alert { animation: flash-blue-red 0.5s infinite; }
+
+        /* Estilos para el slider de calificación */
+        .score-slider-container { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; }
+        .score-slider { -webkit-appearance: none; width: 100%; height: 8px; background: #4a5568; border-radius: 5px; outline: none; transition: opacity .2s; }
+        .score-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #ff7800; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 5px rgba(255,120,0,0.7); }
+        .score-slider::-moz-range-thumb { width: 24px; height: 24px; background: #ff7800; border: 2px solid #fff; border-radius: 50%; cursor: pointer; }
     </style>
 </head>
 <body class="bg-cover bg-center bg-fixed" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcvPQDIhWe3h_ziKkQDe65BTFOe3OHfec-A1GTFnyumw&s=10');">
@@ -210,6 +216,21 @@
                 <div id="users-list" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-2"></div>
                 
                 <div id="admin-controls" class="hidden mt-6 pt-6 border-t border-gray-600">
+                    <div id="criteria-settings" class="mb-6 bg-gray-900 p-4 rounded-lg">
+                        <h3 class="font-bold text-lg mb-3 text-center text-orange-400">Criterios de Votación</h3>
+                        <div class="mb-4">
+                            <label for="scoring-method-select" class="block text-sm font-medium text-gray-300 mb-2">Método de Cálculo Final:</label>
+                            <select id="scoring-method-select" class="w-full bg-gray-800 rounded p-2 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="weighted_average">Múltiples + Promedio Avanzado (Ponderado)</option>
+                                <option value="simple_average">Múltiples + Promedio Simple</option>
+                                <option value="sum">Múltiples + Suma</option>
+                            </select>
+                        </div>
+                        <div id="criteria-list" class="space-y-3 mb-4">
+                            </div>
+                        <button id="add-criterion-btn" class="btn-secondary w-full bg-blue-600 hover:bg-blue-700 text-sm py-2">Añadir Criterio</button>
+                        <p id="criteria-weight-warning" class="text-xs text-yellow-400 mt-2 text-center hidden">La suma de los valores debe ser 100.</p>
+                    </div>
                     <div id="bulk-participant-form" class="mb-6">
                         <h3 class="font-bold text-lg mb-3 text-center text-gray-300">Carga Masiva de Participantes</h3>
                         <textarea id="participants-list-input" placeholder="Pega aquí tu lista de participantes o usa la opción de cargar desde foto." rows="5" class="w-full bg-gray-800 rounded p-2 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
@@ -226,7 +247,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Controles del Organizador -->
                     <div class="space-y-4">
                         <div class="bg-gray-900 p-4 rounded-lg">
                             <label class="toggle-label">
@@ -256,7 +276,7 @@
                          <div id="self-vote-message" class="hidden p-4 rounded-lg bg-yellow-900/50 border border-yellow-700 text-yellow-300 font-bold">
                             Eres Jurado y participante, no tienes permitido votar por ti mismo. Espera al siguiente participante para votar.
                          </div>
-                         <h3 class="font-bold text-xl mb-4 text-center text-orange-400">¡Emite tu puntaje de calabazas!</h3>
+                         <h3 class="font-bold text-xl mb-4 text-center text-orange-400">¡Emite tu puntaje!</h3>
                          <div id="scoring-inputs" class="space-y-6"></div>
                          <button id="submit-vote-btn" class="btn-primary w-full mt-6">Enviar Voto</button>
                     </div>
@@ -296,7 +316,7 @@
                     <button data-debug="lobby-admin" class="btn-secondary">Lobby (Admin)</button>
                     <button data-debug="lobby-user" class="btn-secondary">Lobby (User)</button>
                     <button data-debug="voting-admin" class="btn-secondary">Votación (Admin)</button>
-                    <button data-debug="voting-juror" class="btn-secondary">Votación (Jurado)</button>
+                    <button data-debug="voting-juror-criteria" class="btn-secondary bg-blue-600">Votación (Jurado Múltiple)</button>
                     <button data-debug="voting-participant" class="btn-secondary">Votación (Participante)</button>
                     <button data-debug="results-admin" class="btn-secondary">Resultados (Admin)</button>
                     <button data-debug="results-user" class="btn-secondary">Resultados (User)</button>
@@ -445,8 +465,8 @@
         const easterEggOverlay = document.getElementById('easter-egg-overlay');
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
-        let currentJurorScore = 5;
-        const MAX_PUMPKINS = 10;
+        let currentJurorScores = {}; // CAMBIO: Usar un objeto para múltiples criterios
+        const MAX_SCORE = 10; // CAMBIO: Definir puntaje máximo
         
         const imageChoiceModal = document.getElementById('image-choice-modal');
         const imageGenerationModal = document.getElementById('image-generation-modal');
@@ -674,34 +694,86 @@
 
         const getImageTag = (b64, cls, alt) => b64 ? `<img src="${b64}" class="${cls}" alt="${alt}">` : `<div class="${cls} bg-gray-700 flex items-center justify-center rounded-sm"><span class="text-gray-400 text-xs">IMG</span></div>`;
 
-        function renderScoringInputs(containerSelector = '#scoring-inputs', scoreValueSelector = '.score-value', currentScore = currentJurorScore) {
+        // CAMBIO: Nueva función para renderizar los sliders de los criterios
+        function renderScoringInputs(containerSelector = '#scoring-inputs') {
             const container = document.querySelector(containerSelector);
             if (!container) return;
-            container.innerHTML = `<div class="text-center"><label class="block mb-4 text-xl font-bold">Puntaje: <span class="${scoreValueSelector.substring(1)} text-orange-400 font-creepster text-3xl">${currentScore}</span></label><div class="pumpkin-icons">${Array(MAX_PUMPKINS).fill(0).map((_,i)=>`<span class="pumpkin-icon" data-value="${i+1}">🎃</span>`).join('')}</div></div>`;
-            updatePumpkinSelection(currentScore, container);
+
+            const criteria = localContestData.criteria || [];
+            if (criteria.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400">No se han definido criterios de votación.</p>';
+                document.getElementById('submit-vote-btn').disabled = true;
+                return;
+            }
+
+            let html = '';
+            criteria.forEach(crit => {
+                const currentScore = currentJurorScores[crit.id] || 5; // Default a 5
+                html += `
+                    <div>
+                        <label class="block mb-2 text-lg font-bold text-gray-200">${crit.name}</label>
+                        <div class="score-slider-container">
+                            <input type="range" min="1" max="${MAX_SCORE}" value="${currentScore}" class="score-slider" data-criterion-id="${crit.id}">
+                            <span class="font-creepster text-3xl text-orange-400 score-value">${currentScore}</span>
+                        </div>
+                    </div>`;
+            });
+            container.innerHTML = html;
         }
 
-        const updatePumpkinSelection = (score, parentElement = document) => parentElement.querySelectorAll('.pumpkin-icon').forEach(p => p.classList.toggle('selected', p.dataset.value <= score));
-
-        async function setInitialJurorScore(participantId) {
+        // CAMBIO: Nueva función para inicializar los puntajes del jurado
+        async function setInitialJurorScores(participantId) {
             if (!participantId || !currentUserId) return;
             const q = query(getVotesCollectionRef(contestId, participantId), where("jurorId", "==", currentUserId));
-            const snap = await getDocs(q); let hasVoted = false; currentJurorScore = 5;
-            if (!snap.empty) { currentJurorScore = snap.docs[0].data().score; hasVoted = true; }
-            const scoreSpan = document.querySelector('#scoring-inputs .score-value'); if (scoreSpan) scoreSpan.textContent = currentJurorScore;
-            updatePumpkinSelection(currentJurorScore);
-            const btn = document.getElementById('submit-vote-btn'); if (btn) { btn.disabled = hasVoted; btn.textContent = hasVoted ? 'Voto Enviado' : 'Enviar Voto'; btn.classList.toggle('ready-to-send', !hasVoted); }
+            const snap = await getDocs(q);
+            let hasVoted = false;
+            
+            const criteria = localContestData.criteria || [];
+            if (criteria.length > 0) {
+                if (!snap.empty) {
+                    currentJurorScores = snap.docs[0].data().scores || {};
+                    hasVoted = true;
+                } else {
+                    // Si no ha votado, inicializa los scores a 5
+                    currentJurorScores = criteria.reduce((acc, crit) => {
+                        acc[crit.id] = 5;
+                        return acc;
+                    }, {});
+                }
+            } else {
+                currentJurorScores = {};
+            }
+            
+            const btn = document.getElementById('submit-vote-btn');
+            if (btn) {
+                btn.disabled = hasVoted;
+                btn.textContent = hasVoted ? 'Voto Enviado' : 'Enviar Voto';
+                btn.classList.toggle('ready-to-send', !hasVoted);
+            }
         }
-
+        
+        // CAMBIO: El listener ahora actualiza el objeto de scores
         function attachScoringListeners() {
-            document.querySelector('#voter-voting-view').addEventListener('click', (e) => {
-                const target = e.target.closest('.pumpkin-icon'); if (!target) return;
-                const parentModal = target.closest('.modal-backdrop');
-                if (parentModal && parentModal.id === 'catchup-vote-modal') return; // Handled by modal-specific listener
-                currentJurorScore = parseInt(target.dataset.value);
-                document.querySelector('#scoring-inputs .score-value').textContent = currentJurorScore;
-                updatePumpkinSelection(currentJurorScore);
-                const btn = document.getElementById('submit-vote-btn'); if (btn.disabled) { btn.disabled = false; btn.textContent = 'Enviar Voto'; btn.classList.add('ready-to-send'); }
+            document.querySelector('#voter-voting-view').addEventListener('input', (e) => {
+                const target = e.target.closest('.score-slider');
+                if (!target) return;
+                
+                const criterionId = target.dataset.criterionId;
+                const score = parseInt(target.value);
+                currentJurorScores[criterionId] = score;
+
+                // Actualizar el display del número
+                const scoreDisplay = target.nextElementSibling;
+                if (scoreDisplay && scoreDisplay.classList.contains('score-value')) {
+                    scoreDisplay.textContent = score;
+                }
+
+                const btn = document.getElementById('submit-vote-btn');
+                if (btn.disabled) {
+                    btn.disabled = false;
+                    btn.textContent = 'Enviar Voto';
+                    btn.classList.add('ready-to-send');
+                }
             });
         }
         
@@ -775,11 +847,17 @@
             const contestDoc = await getDoc(getContestRef(contestId));
 
             if (!contestDoc.exists()) {
-                 // El usuario está creando la sala
+                 // El usuario está creando la sala, se establecen los valores por defecto para criterios.
                 await setDoc(getContestRef(contestId), { 
                     status: "lobby", 
                     creatorId: currentUserId,
-                    isLocked: false // Valor inicial para el candado
+                    isLocked: false,
+                    scoringMethod: "weighted_average", // Método por defecto
+                    criteria: [ // Criterios de ejemplo
+                        { id: 'crit1', name: 'Creatividad y Originalidad', weight: 40 },
+                        { id: 'crit2', name: 'Ejecución y Detalle', weight: 40 },
+                        { id: 'crit3', name: 'Presentación', weight: 20 }
+                    ]
                 });
             } else {
                  // El usuario se está uniendo a una sala existente, se vuelve a verificar el bloqueo
@@ -891,6 +969,80 @@
             usersUnsubscribe = onSnapshot(getUsersCollectionRef(id), (snap) => renderer(localContestData, snap.docs.map(d => ({ id: d.id, ...d.data() }))));
         }
         
+        // CAMBIO: Lógica para renderizar y manejar los criterios en el lobby
+        function renderCriteriaSettings(contestData) {
+            const criteria = contestData.criteria || [];
+            const scoringMethod = contestData.scoringMethod || 'weighted_average';
+            const criteriaListContainer = document.getElementById('criteria-list');
+            const isWeighted = scoringMethod === 'weighted_average';
+
+            document.getElementById('scoring-method-select').value = scoringMethod;
+            criteriaListContainer.innerHTML = ''; // Limpiar la lista
+
+            let totalWeight = 0;
+            criteria.forEach(crit => {
+                totalWeight += (crit.weight || 0);
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-2';
+                item.innerHTML = `
+                    <input type="text" value="${crit.name}" data-criterion-id="${crit.id}" class="criterion-name-input flex-grow bg-gray-700 rounded p-2 border border-gray-600 text-white">
+                    <input type="number" value="${crit.weight}" data-criterion-id="${crit.id}" class="criterion-weight-input w-20 bg-gray-700 rounded p-2 border border-gray-600 text-white ${isWeighted ? '' : 'hidden'}" placeholder="Valor %">
+                    <button data-criterion-id="${crit.id}" class="remove-criterion-btn bg-red-700 hover:bg-red-800 text-white font-bold p-2 rounded-full leading-none flex items-center justify-center h-8 w-8">&times;</button>
+                `;
+                criteriaListContainer.appendChild(item);
+            });
+
+            // Mostrar advertencia si los pesos no suman 100
+            const warningEl = document.getElementById('criteria-weight-warning');
+            if (isWeighted) {
+                warningEl.textContent = `Suma de valores: ${totalWeight}%. Debe ser 100%.`;
+                warningEl.classList.toggle('hidden', totalWeight === 100);
+                warningEl.classList.toggle('text-red-500', totalWeight !== 100);
+                warningEl.classList.toggle('text-green-400', totalWeight === 100);
+            } else {
+                warningEl.classList.add('hidden');
+            }
+        }
+        
+        // CAMBIO: Delegación de eventos para los controles de criterios
+        document.getElementById('admin-controls').addEventListener('change', async (e) => {
+            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+
+            const target = e.target;
+            const criteria = localContestData.criteria || [];
+
+            if (target.id === 'scoring-method-select') {
+                await updateDoc(getContestRef(contestId), { scoringMethod: target.value });
+            } else if (target.classList.contains('criterion-name-input')) {
+                const id = target.dataset.criterionId;
+                const newName = target.value.trim();
+                const updatedCriteria = criteria.map(c => c.id === id ? { ...c, name: newName } : c);
+                await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
+            } else if (target.classList.contains('criterion-weight-input')) {
+                const id = target.dataset.criterionId;
+                const newWeight = parseInt(target.value) || 0;
+                const updatedCriteria = criteria.map(c => c.id === id ? { ...c, weight: newWeight } : c);
+                await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
+            }
+        });
+
+        document.getElementById('admin-controls').addEventListener('click', async (e) => {
+            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+            
+            const target = e.target.closest('button');
+            if (!target) return;
+
+            const criteria = localContestData.criteria || [];
+            if (target.id === 'add-criterion-btn') {
+                const newCriterion = { id: `crit${Date.now()}`, name: 'Nuevo Criterio', weight: 10 };
+                await updateDoc(getContestRef(contestId), { criteria: [...criteria, newCriterion] });
+            } else if (target.classList.contains('remove-criterion-btn')) {
+                const id = target.dataset.criterionId;
+                const updatedCriteria = criteria.filter(c => c.id !== id);
+                await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
+            }
+        });
+
         function renderLobby(contestData, users) {
             document.getElementById('contest-code').textContent = contestId;
             const isAdmin = contestData.creatorId === currentUserId;
@@ -899,6 +1051,7 @@
             document.getElementById('open-settings-btn').classList.toggle('hidden', !isAdmin);
             
             if (isAdmin) {
+                renderCriteriaSettings(contestData); // Renderizar panel de criterios
                 const lockToggle = document.getElementById('lock-contest-toggle');
                 lockToggle.checked = !contestData.isLocked;
             }
@@ -1027,17 +1180,52 @@
             document.getElementById('link-user-modal-cancel').onclick = () => linkUserModal.classList.remove('visible');
         }
         
+        // CAMBIO: Lógica de cálculo de ranking actualizada para los 3 métodos
         async function calculateFullRanking(contestId) {
-             const usersSnapshot = await getDocs(getUsersCollectionRef(contestId));
+            const contestDoc = await getDoc(getContestRef(contestId));
+            const contestData = contestDoc.data();
+            const criteria = contestData.criteria || [];
+            const scoringMethod = contestData.scoringMethod || 'weighted_average';
+
+            const usersSnapshot = await getDocs(getUsersCollectionRef(contestId));
             const allUsers = usersSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             const participants = allUsers.filter(u => u.isParticipant);
             const results = [];
+
             for (const p of participants) {
                 const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, p.id));
-                 const totalScore = votesSnapshot.docs.reduce((sum, doc) => sum + doc.data().score, 0);
-                 const voteCount = votesSnapshot.size;
-                 const averageScore = voteCount > 0 ? totalScore / voteCount : 0;
-                results.push({ ...p, voteCount: voteCount, overallScore: averageScore });
+                const votes = votesSnapshot.docs.map(d => d.data());
+                
+                if (votes.length === 0) {
+                    results.push({ ...p, voteCount: 0, overallScore: 0 });
+                    continue;
+                }
+                
+                const jurorScores = votes.map(vote => {
+                    const scores = vote.scores || {};
+                    let finalJurorScore = 0;
+
+                    if (scoringMethod === 'sum') {
+                        finalJurorScore = Object.values(scores).reduce((sum, s) => sum + s, 0);
+                    } else if (scoringMethod === 'simple_average') {
+                        const scoreValues = Object.values(scores);
+                        finalJurorScore = scoreValues.length > 0 ? scoreValues.reduce((sum, s) => sum + s, 0) / scoreValues.length : 0;
+                    } else { // weighted_average
+                        let weightedSum = 0;
+                        let totalWeight = 0;
+                        criteria.forEach(crit => {
+                            if (scores[crit.id] !== undefined) {
+                                weightedSum += scores[crit.id] * (crit.weight || 0);
+                                totalWeight += (crit.weight || 0);
+                            }
+                        });
+                        finalJurorScore = totalWeight > 0 ? weightedSum / totalWeight : 0;
+                    }
+                    return finalJurorScore;
+                });
+                
+                const overallScore = jurorScores.reduce((sum, s) => sum + s, 0) / jurorScores.length;
+                results.push({ ...p, voteCount: votes.length, overallScore });
             }
             return results.sort((a, b) => b.overallScore - a.overallScore);
         }
@@ -1179,7 +1367,7 @@
                 if (isJuror) {
                     selfVoteMessage.classList.toggle('hidden', !selfVote);
                     ['#scoring-inputs', '#submit-vote-btn', 'h3'].forEach(sel => jurorControls.querySelector(sel).classList.toggle('hidden', selfVote));
-                    if (!selfVote) { renderScoringInputs(); await setInitialJurorScore(currentPId); }
+                    if (!selfVote) { await setInitialJurorScores(currentPId); renderScoringInputs(); } // CAMBIO: Llama a las nuevas funciones
                 }
                 const votes = (await getDocs(getVotesCollectionRef(contestId,currentP.id))).docs.map(d=>d.data().jurorId); 
                 const pending = jurors.filter(j => !votes.includes(j.id) && j.id !== currentP.id);
@@ -1275,21 +1463,37 @@
             };
         }
 
-        let catchupScore = 5;
+        let catchupScores = {};
         function showCatchupVoteModal(participant) {
             const modal = document.getElementById('catchup-vote-modal');
             modal.querySelector('#catchup-participant-info').innerHTML = `<p class="text-xl font-bold">${participant.name}</p><p class="text-gray-400">"${participant.costume}"</p>`;
-            catchupScore = 5;
-            renderScoringInputs('#catchup-scoring-inputs', '.catchup-score-value', catchupScore);
             
+            const criteria = localContestData.criteria || [];
+            catchupScores = criteria.reduce((acc, crit) => ({...acc, [crit.id]: 5}), {});
+
+            const scoringContainer = modal.querySelector('#catchup-scoring-inputs');
+            scoringContainer.innerHTML = '';
+             let html = '';
+            criteria.forEach(crit => {
+                html += `
+                    <div>
+                        <label class="block mb-2 text-md font-bold">${crit.name}</label>
+                        <div class="score-slider-container">
+                            <input type="range" min="1" max="${MAX_SCORE}" value="5" class="score-slider" data-criterion-id="${crit.id}">
+                            <span class="font-creepster text-2xl text-orange-400 score-value">5</span>
+                        </div>
+                    </div>`;
+            });
+            scoringContainer.innerHTML = html;
+
             const scoreHandler = e => {
-                const target = e.target.closest('.pumpkin-icon');
+                const target = e.target.closest('.score-slider');
                 if (!target) return;
-                catchupScore = parseInt(target.dataset.value);
-                modal.querySelector('.catchup-score-value').textContent = catchupScore;
-                updatePumpkinSelection(catchupScore, modal);
+                const score = parseInt(target.value);
+                catchupScores[target.dataset.criterionId] = score;
+                target.nextElementSibling.textContent = score;
             };
-            modal.querySelector('.pumpkin-icons').onclick = scoreHandler;
+            scoringContainer.oninput = scoreHandler;
             
             const saveBtn = document.getElementById('catchup-vote-save');
             const newSaveBtn = saveBtn.cloneNode(true);
@@ -1297,7 +1501,7 @@
 
             newSaveBtn.addEventListener('click', async () => {
                 const voteRef = doc(getVotesCollectionRef(contestId, participant.id), currentUserId);
-                await setDoc(voteRef, { jurorId: currentUserId, score: catchupScore });
+                await setDoc(voteRef, { jurorId: currentUserId, scores: catchupScores });
                 modal.classList.remove('visible');
             });
             modal.classList.add('visible');
@@ -1585,13 +1789,32 @@
         document.getElementById('start-contest-btn')?.addEventListener('click', async () => { 
             if (localContestData.creatorId !== currentUserId) return; // Client-side check
             if (localContestData.status === 'paused') return await updateDoc(getContestRef(contestId), { status: 'voting' });
+            
+            // CAMBIO: Verificación de criterios
+            if (localContestData.scoringMethod === 'weighted_average') {
+                const totalWeight = (localContestData.criteria || []).reduce((sum, c) => sum + (c.weight || 0), 0);
+                if (totalWeight !== 100) {
+                    return customAlert("Error de Criterios", `La suma de los valores de los criterios es ${totalWeight}%. Debe ser exactamente 100% para usar el modo 'Promedio Avanzado'.`);
+                }
+            }
+
             const users = (await getDocs(getUsersCollectionRef(contestId))).docs.map(d => d.data());
             if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante."); 
             if(users.filter(u=>u.isJuror).length<3) return customAlert("Regla del Concurso","Debe haber al menos 3 jurados para iniciar."); 
             await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: [], onDeck: null, isUp: null, acknowledgedUp: null }); 
         });
 
-        document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { if (e.target.disabled) return; e.target.disabled=true; e.target.textContent='Enviado'; const voteRef=doc(getVotesCollectionRef(contestId,localContestData.currentlyVotingFor), currentUserId); const batch=writeBatch(db); batch.set(voteRef,{jurorId:currentUserId,score:currentJurorScore}); batch.update(getUserRef(contestId,currentUserId),{hasVoted:true}); await batch.commit(); });
+        // CAMBIO: Guardar el objeto de scores en lugar de un solo valor
+        document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { 
+            if (e.target.disabled) return; 
+            e.target.disabled = true; 
+            e.target.textContent = 'Enviado'; 
+            const voteRef = doc(getVotesCollectionRef(contestId, localContestData.currentlyVotingFor), currentUserId); 
+            const batch = writeBatch(db); 
+            batch.set(voteRef, { jurorId: currentUserId, scores: currentJurorScores }); // Guardar el objeto de scores
+            batch.update(getUserRef(contestId, currentUserId), { hasVoted: true }); 
+            await batch.commit(); 
+        });
         
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
@@ -1688,6 +1911,11 @@
                 isLocked: false,
                 votedOnParticipants: ['participant2'],
                 currentlyVotingFor: 'participant1',
+                scoringMethod: 'weighted_average', // MODO DE PRUEBA
+                criteria: [ // CRITERIOS DE PRUEBA
+                    { id: 'crit1', name: 'Creatividad', weight: 60 },
+                    { id: 'crit2', name: 'Ejecución', weight: 40 }
+                ],
                 topResults: JSON.stringify([
                     { id: 'participant1', rank: 1, name: 'Drácula', costume: 'Conde Drácula', overallScore: 9.50 },
                     { id: 'juror2', rank: 2, name: 'Jurado 2 (y participa)', costume: 'Vampiro', overallScore: 8.75 },
@@ -1708,7 +1936,7 @@
                     case 'lobby-admin': currentUserId = 'admin1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
                     case 'lobby-user': currentUserId = 'participant1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
                     case 'voting-admin': currentUserId = 'admin1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
-                    case 'voting-juror': currentUserId = 'juror1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'voting-juror-criteria': currentUserId = 'juror1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
                     case 'voting-participant': currentUserId = 'participant2'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
                     case 'results-admin': currentUserId = 'admin1'; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
                     case 'results-user': currentUserId = 'participant1'; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
@@ -1732,8 +1960,4 @@
         attachScoringListeners();
     </script>
 </body>
-</html>
-
-
-
-
+                            </html>
