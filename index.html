@@ -9,10 +9,20 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
         body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #f0f0f0; }
         .font-creepster { font-family: 'Creepster', cursive; }
         .card { background-color: rgba(40, 40, 40, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         
+        #main-container {
+            min-height: 100vh; /* Fallback for older browsers */
+            min-height: -webkit-fill-available; /* Correct height for modern mobile browsers */
+        }
+
         .btn-primary { 
             background: linear-gradient(145deg, #ff7800, #ff5400); 
             border: none; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; 
@@ -139,6 +149,7 @@
             }
         }
         
+        .text-shadow-lg { text-shadow: 2px 2px 4px rgba(0,0,0,0.7); }
         @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
         .emoji-pop { animation: pop-in 0.5s ease-out forwards; }
         
@@ -154,7 +165,7 @@
         <p id="loading-text" class="font-creepster text-2xl text-orange-500 mt-4 tracking-wider">Conectando...</p>
     </div>
 
-    <main class="container mx-auto p-4 max-w-5xl min-h-screen flex flex-col justify-center">
+    <main id="main-container" class="container mx-auto p-4 max-w-5xl flex flex-col justify-center">
         <div id="home-screen" class="w-full">
             <div class="card rounded-xl p-6 md:p-8 text-center shadow-lg max-w-2xl mx-auto">
                 <h1 class="font-creepster text-5xl md:text-7xl text-orange-500 mb-4 tracking-widest">Noche de Brujas</h1>
@@ -182,7 +193,7 @@
         <div id="lobby-screen" class="hidden w-full relative">
              <div class="card rounded-xl p-6 md:p-8 shadow-lg max-w-2xl mx-auto">
                 <button id="leave-lobby-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-sm py-1 px-2 rounded-md bg-red-800/50 hover:bg-red-700/80">Salir</button>
-                <button id="open-settings-btn" class="absolute top-4 right-16 text-gray-400 hover:text-white p-2 rounded-md bg-gray-700/50 hover:bg-gray-600/80" title="Configuración de IA">
+                <button id="open-settings-btn" class="absolute top-4 right-16 text-gray-400 hover:text-white p-2 rounded-md bg-gray-700/50 hover:bg-gray-600/80 hidden" title="Configuración de IA">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </button>
 
@@ -285,11 +296,22 @@
                     <button data-debug="winner-2" class="btn-primary">Ganador 2º</button>
                     <button data-debug="winner-3" class="btn-primary">Ganador 3º</button>
                 </div>
-                 <button data-debug="exit" class="btn-danger w-full mt-6">Salir del Modo Debug</button>
+                <div class="mt-6 pt-4 border-t border-gray-700 text-center">
+                    <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">DaiciPC</span></p>
+                </div>
+                 <button data-debug="exit" class="btn-danger w-full mt-4">Salir del Modo Debug</button>
             </div>
         </div>
 
     </main>
+
+    <div id="debug-back-button-container" class="hidden fixed bottom-4 right-4 z-[200]">
+        <button id="debug-back-button" class="btn-secondary bg-purple-700 hover:bg-purple-800 shadow-lg">Volver al Panel</button>
+    </div>
+    
+    <div id="easter-egg-overlay" class="hidden fixed inset-0 z-[200] cursor-pointer">
+        <p class="absolute bottom-4 right-4 font-creepster text-2xl text-orange-500 text-shadow-lg">Crédito: DaiciPC</p>
+    </div>
     
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
         <div class="modal-content !bg-transparent border-none text-center">
@@ -408,6 +430,8 @@
         
         const screens = { home: document.getElementById('home-screen'), register: document.getElementById('register-screen'), lobby: document.getElementById('lobby-screen'), voting: document.getElementById('voting-screen'), results: document.getElementById('results-screen'), debug: document.getElementById('debug-panel') };
         const loadingOverlay = document.getElementById('loading-overlay');
+        const debugBackButtonContainer = document.getElementById('debug-back-button-container');
+        const easterEggOverlay = document.getElementById('easter-egg-overlay');
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
         let currentJurorScore = 5;
@@ -424,6 +448,7 @@
         let targetUserIdForImage = null;
         let existingImageForGenerator = null;
         let selectedForActionId = null;
+        let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
 
@@ -668,8 +693,35 @@
         }
         
         document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
+        
         document.getElementById('join-contest-btn').addEventListener('click', async () => {
             const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
+
+            if (id === 'HALLOWEENDPC') {
+                document.getElementById('home-screen').classList.add('hidden');
+                easterEggOverlay.classList.remove('hidden');
+                let tapCount = 0;
+                let tapTimeout = null;
+                const exitEasterEgg = () => {
+                    tapCount = 0;
+                    clearTimeout(tapTimeout);
+                    easterEggOverlay.classList.add('hidden');
+                    document.getElementById('home-screen').classList.remove('hidden');
+                    easterEggOverlay.removeEventListener('click', handleTap);
+                };
+                const handleTap = () => {
+                    clearTimeout(tapTimeout);
+                    tapCount++;
+                    if (tapCount >= 3) {
+                        exitEasterEgg();
+                    } else {
+                        tapTimeout = setTimeout(() => { tapCount = 0; }, 800);
+                    }
+                };
+                easterEggOverlay.addEventListener('click', handleTap);
+                return;
+            }
+
             if (id === 'DEBUGMODE') {
                  initializeDebugMode();
                  return;
@@ -677,6 +729,7 @@
             if (!id) return;
             if ((await getDoc(getContestRef(id))).exists()) { contestId = id; window.location.hash = id; showScreen('register'); } else { customAlert("Error", "Sala no encontrada."); }
         });
+
         document.getElementById('back-to-home-btn').addEventListener('click', leaveContest);
         document.getElementById('leave-lobby-btn').addEventListener('click', leaveContest);
 
@@ -694,6 +747,11 @@
         const showScreen = name => { 
             Object.values(screens).forEach(s => s.classList.add('hidden')); 
             screens[name]?.classList.remove('hidden'); 
+            
+            if (isInDebugMode) {
+                debugBackButtonContainer.classList.toggle('hidden', name === 'debug' || name === 'home');
+            }
+
             loadingOverlay.classList.add('hidden');
         };
 
@@ -786,6 +844,7 @@
             const isAdmin = contestData.creatorId === currentUserId;
             document.getElementById('admin-controls').classList.toggle('hidden', !isAdmin);
             document.getElementById('wait-for-admin').classList.toggle('hidden', isAdmin);
+            document.getElementById('open-settings-btn').classList.toggle('hidden', !isAdmin);
             
             const startBtn = document.getElementById('start-contest-btn');
             startBtn.textContent = contestData.status === 'paused' ? 'Reanudar Votación' : '¡Comenzar Votación!';
@@ -881,6 +940,7 @@
                     } else {
                         document.getElementById('image-generation-prompt').value = `Ilustración detallada de un personaje con un disfraz de '${costumeName}'. Estilo de arte conceptual, cuerpo completo, colores vibrantes en un ambiente de Halloween.`;
                     }
+                    document.getElementById('image-choice-generate').classList.toggle('hidden', !isAdmin);
                     imageChoiceModal.classList.add('visible');
                 }
                 else if (action === 'edit-description') {
@@ -1527,13 +1587,14 @@
         
         // --- DEBUG MODE ---
         function initializeDebugMode() {
+            isInDebugMode = true;
              const mockUsers = [
                 { id: 'admin1', name: 'Organizador', isParticipant: false, isJuror: false },
                 { id: 'juror1', name: 'Jurado 1', isParticipant: false, isJuror: true },
                 { id: 'juror2', name: 'Jurado 2 (y participa)', costume: 'Vampiro', isParticipant: true, isJuror: true },
                 { id: 'participant1', name: 'Drácula', costume: 'Conde Drácula', isParticipant: true, isJuror: false, costumeDescription: 'El rey de los vampiros, elegante y sediento.' },
                 { id: 'participant2', name: 'Frankenstein', costume: 'Monstruo de Frank', isParticipant: true, isJuror: false },
-                { id: 'participant3', name: 'Momia', costume: 'Momia Egipcia', isParticipant: true, isJuror: false }
+                { id: 'participant3', name: 'Momia', costume: 'Momia Egipsia', isParticipant: true, isJuror: false }
             ];
             const mockContest = {
                 creatorId: 'admin1',
@@ -1543,7 +1604,7 @@
                 topResults: JSON.stringify([
                     { id: 'participant1', rank: 1, name: 'Drácula', costume: 'Conde Drácula', overallScore: 9.50 },
                     { id: 'juror2', rank: 2, name: 'Jurado 2 (y participa)', costume: 'Vampiro', overallScore: 8.75 },
-                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Momia Egipcia', overallScore: 8.20 }
+                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Momia Egipsia', overallScore: 8.20 }
                 ])
             };
             
@@ -1570,14 +1631,19 @@
                     case 'winner-1': showWinnerNotification(1); break;
                     case 'winner-2': showWinnerNotification(2); break;
                     case 'winner-3': showWinnerNotification(3); break;
-                    case 'exit': window.location.reload(); break;
+                    case 'exit': 
+                        isInDebugMode = false;
+                        debugBackButtonContainer.classList.add('hidden');
+                        window.location.reload(); 
+                        break;
                 }
             });
+
+            document.getElementById('debug-back-button').addEventListener('click', () => showScreen('debug'));
         }
 
         attachScoringListeners();
     </script>
 </body>
 </html>
-
 
