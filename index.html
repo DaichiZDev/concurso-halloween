@@ -9,6 +9,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* La seguridad real de una aplicación de Firebase reside en las Reglas de Seguridad de Firestore,
+           que se ejecutan en el servidor. El código del cliente (como este) puede ser manipulado.
+           Las reglas adecuadas garantizarían, por ejemplo, que solo el creador del concurso
+           pueda modificar el estado del concurso (`status`, `isLocked`) y que los usuarios
+           solo puedan editar su propia información. Este código incluye validaciones del lado del
+           cliente como una buena práctica, pero no sustituyen a las reglas del servidor. */
+
         html, body {
             height: 100%;
             width: 100%;
@@ -225,8 +232,18 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-center text-yellow-400 mb-4 font-bold">Eres el organizador. Asigna los roles:</p>
-                    <button id="start-contest-btn" class="btn-primary w-full">¡Comenzar Votación!</button>
+                    <!-- Controles del Organizador -->
+                    <div class="space-y-4">
+                        <div class="bg-gray-900 p-4 rounded-lg">
+                            <label class="toggle-label">
+                                <span class="font-bold text-lg">Permitir nuevos participantes</span>
+                                <input type="checkbox" class="toggle-checkbox" id="lock-contest-toggle">
+                                <div class="toggle-switch"></div>
+                            </label>
+                            <p class="text-xs text-gray-400 mt-2">Desactiva para cerrar la sala a nuevos usuarios. Los usuarios existentes podrán volver a conectarse.</p>
+                        </div>
+                        <button id="start-contest-btn" class="btn-primary w-full">¡Comenzar Votación!</button>
+                    </div>
                 </div>
                 <div id="wait-for-admin" class="mt-8 text-center text-gray-400">
                     <p>Esperando que el organizador inicie el concurso...</p>
@@ -297,7 +314,7 @@
                     <button data-debug="winner-3" class="btn-primary">Ganador 3º</button>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-700 text-center">
-                    <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">Daichi PC</span></p>
+                    <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">DaiciPC</span></p>
                 </div>
                  <button data-debug="exit" class="btn-danger w-full mt-4">Salir del Modo Debug</button>
             </div>
@@ -310,7 +327,7 @@
     </div>
     
     <div id="easter-egg-overlay" class="hidden fixed inset-0 z-[200] cursor-pointer">
-        <p class="absolute bottom-4 right-4 font-creepster text-2xl text-orange-500 text-shadow-lg">Daichi PC</p>
+        <p class="absolute bottom-4 right-4 font-creepster text-2xl text-orange-500 text-shadow-lg">Crédito: DaiciPC</p>
     </div>
     
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
@@ -587,6 +604,8 @@
                 if (shouldDeleteContest) {
                     await deleteContest(contestIdToLeave);
                 } else if (!isOrganizer) {
+                    // Solo elimina el documento del usuario si no es el organizador.
+                    // El organizador permanece en el concurso hasta que se elimina.
                     await deleteDoc(getUserRef(contestIdToLeave, currentUserId));
                 }
             }
@@ -727,7 +746,29 @@
                  return;
             }
             if (!id) return;
-            if ((await getDoc(getContestRef(id))).exists()) { contestId = id; window.location.hash = id; showScreen('register'); } else { customAlert("Error", "Sala no encontrada."); }
+
+            // Lógica de unión mejorada para la seguridad y el bloqueo de sala
+            try {
+                const contestDoc = await getDoc(getContestRef(id));
+                if (!contestDoc.exists()) {
+                    return customAlert("Error", "Sala no encontrada.");
+                }
+                const contestData = contestDoc.data();
+                const userDoc = await getDoc(getUserRef(id, currentUserId));
+
+                // Si la sala está cerrada y el usuario NO está registrado previamente, se le niega el acceso.
+                if (contestData.isLocked && !userDoc.exists()) {
+                    return customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
+                }
+
+                // Si la sala está abierta o el usuario ya existe, se le permite continuar.
+                contestId = id; 
+                window.location.hash = id; 
+                showScreen('register');
+            } catch(e) {
+                console.error("Error al unirse a la sala:", e);
+                customAlert("Error", "Ocurrió un problema al intentar unirse a la sala.");
+            }
         });
 
         document.getElementById('back-to-home-btn').addEventListener('click', leaveContest);
@@ -738,8 +779,26 @@
             loadingOverlay.classList.remove('hidden');
             document.getElementById('loading-text').textContent = 'Registrando...';
             const costume = document.getElementById('costume-name-input').value.trim();
-            const isCreator = !(await getDoc(getContestRef(contestId))).exists();
-            if (isCreator) { await setDoc(getContestRef(contestId), { status: "lobby", creatorId: currentUserId }); }
+            const contestDoc = await getDoc(getContestRef(contestId));
+
+            if (!contestDoc.exists()) {
+                 // El usuario está creando la sala
+                await setDoc(getContestRef(contestId), { 
+                    status: "lobby", 
+                    creatorId: currentUserId,
+                    isLocked: false // Valor inicial para el candado
+                });
+            } else {
+                 // El usuario se está uniendo a una sala existente, se vuelve a verificar el bloqueo
+                 if(contestDoc.data().isLocked){
+                    const userDoc = await getDoc(getUserRef(contestId, currentUserId));
+                    if(!userDoc.exists()){
+                        loadingOverlay.classList.add('hidden');
+                        return customAlert("Acceso Denegado", "La sala se cerró mientras te registrabas.");
+                    }
+                 }
+            }
+
             await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
             subscribeToContest(contestId);
         });
@@ -846,6 +905,13 @@
             document.getElementById('wait-for-admin').classList.toggle('hidden', isAdmin);
             document.getElementById('open-settings-btn').classList.toggle('hidden', !isAdmin);
             
+            if (isAdmin) {
+                const lockToggle = document.getElementById('lock-contest-toggle');
+                // `isLocked` podría ser undefined en salas antiguas, por lo que `!!` lo convierte a booleano.
+                // Lo establecemos como `!isLocked` porque el texto es "Permitir nuevos", es decir, el interruptor está encendido cuando NO está bloqueado.
+                lockToggle.checked = !contestData.isLocked;
+            }
+
             const startBtn = document.getElementById('start-contest-btn');
             startBtn.textContent = contestData.status === 'paused' ? 'Reanudar Votación' : '¡Comenzar Votación!';
 
@@ -903,8 +969,11 @@
                 
                 targetUserIdForImage = userId;
 
-                if (action === 'delete-user') showConfirmation('Eliminar Usuario', `¿Estás seguro de que quieres eliminar a ${user.name}?`, () => deleteDoc(getUserRef(contestId, userId)));
-                else if (action === 'link-user') {
+                if (action === 'delete-user') {
+                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
+                    showConfirmation('Eliminar Usuario', `¿Estás seguro de que quieres eliminar a ${user.name}?`, () => deleteDoc(getUserRef(contestId, userId)));
+                } else if (action === 'link-user') {
+                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
                     const onlineUsers = users.filter(u => !u.isManualEntry);
                     const linkUserList = document.getElementById('link-user-list');
                     linkUserList.innerHTML = '';
@@ -944,6 +1013,7 @@
                     imageChoiceModal.classList.add('visible');
                 }
                 else if (action === 'edit-description') {
+                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
                     const descInput = document.getElementById('description-modal-input');
                     const genBtn = document.getElementById('description-modal-generate');
                     descriptionPrompt.show(user?.costumeDescription || '', val => updateDoc(getUserRef(contestId, userId), { costumeDescription: val }));
@@ -958,6 +1028,7 @@
                         finally { newGenBtn.disabled = false; newGenBtn.innerHTML = '✨ Generar con IA'; }
                     };
                 } else if (target.dataset.role) {
+                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
                     if (target.dataset.role === 'isParticipant' && target.checked && !user.costume?.trim()) { target.checked = false; customAlert("Disfraz Requerido", "Añade un nombre de disfraz antes de marcarlo como participante."); costumePrompt.show('', async val => { if (val) await updateDoc(getUserRef(contestId, userId), { costume: val, isParticipant: true }); }); }
                     else { updateDoc(getUserRef(contestId, userId), { [target.dataset.role]: target.checked }); }
                 }
@@ -1053,6 +1124,8 @@
                     const target = e.target.closest('button, [data-userid]'); if (!target) return; 
                     if (target.dataset.userid) { selectedForActionId = target.dataset.userid === selectedForActionId ? null : target.dataset.userid; return renderVotingScreen(contestData, users); }
                     
+                    if (localContestData.creatorId !== currentUserId) return; // Client-side check for all admin actions
+                    
                     if (target.id === 'pause-contest-btn') return await updateDoc(getContestRef(contestId), { status: 'paused' });
                     if (target.id === 'calculate-results-btn') return await calculateAndFinalizeResults(users);
                     
@@ -1140,6 +1213,7 @@
         }
         
         async function calculateAndFinalizeResults(allUsers) {
+            if (localContestData.creatorId !== currentUserId) return; // Client-side check
             loadingOverlay.classList.remove('hidden');
             document.getElementById('loading-text').textContent = 'Calculando Resultados...';
 
@@ -1339,6 +1413,10 @@
                 const target = e.target.closest('button[data-action]');
                 if (!target) return;
                 const action = target.dataset.action;
+
+                // Client-side check for all admin actions
+                if (['reveal', 'finalize', 'restart'].includes(action) && localContestData.creatorId !== currentUserId) return;
+
                 if(action === 'reveal') {
                     await updateDoc(getContestRef(contestId), { revealStep: parseInt(target.dataset.nextStep) });
                 } else if (action === 'finalize') {
@@ -1490,6 +1568,7 @@
         });
 
         document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => {
+            if (localContestData.creatorId !== currentUserId) return; // Client-side check
             const list = document.getElementById('participants-list-input').value.trim(); if (!list) return;
             const batch = writeBatch(db);
             list.split('\n').forEach(line => {
@@ -1503,9 +1582,17 @@
             await batch.commit(); document.getElementById('participants-list-input').value = '';
         });
 
-        document.getElementById('add-juror-btn')?.addEventListener('click', async () => { const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true,costumeDescription:''}); document.getElementById('new-juror-name').value='';} });
+        document.getElementById('add-juror-btn')?.addEventListener('click', async () => { if (localContestData.creatorId !== currentUserId) return; const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true,costumeDescription:''}); document.getElementById('new-juror-name').value='';} });
+        
+        document.getElementById('lock-contest-toggle')?.addEventListener('change', async (e) => {
+             if (localContestData.creatorId !== currentUserId) return; // Client-side check
+             const isChecked = e.target.checked; // true si está "permitido"
+             const isLocked = !isChecked; // se bloquea cuando no está chequeado
+             await updateDoc(getContestRef(contestId), { isLocked: isLocked });
+        });
         
         document.getElementById('start-contest-btn')?.addEventListener('click', async () => { 
+            if (localContestData.creatorId !== currentUserId) return; // Client-side check
             if (localContestData.status === 'paused') return await updateDoc(getContestRef(contestId), { status: 'voting' });
             const users = (await getDocs(getUsersCollectionRef(contestId))).docs.map(d => d.data());
             if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante."); 
@@ -1527,9 +1614,17 @@
                         if(userDoc.exists()){
                             subscribeToContest(contestId);
                         } else {
-                            showScreen('register');
+                             // Si el usuario no existe, comprueba si la sala está bloqueada antes de mostrar el registro
+                             if(contestDoc.data().isLocked) {
+                                customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
+                                window.location.hash = ''; // Limpia el hash para evitar bucles
+                                showScreen('home');
+                             } else {
+                                showScreen('register');
+                             }
                         }
                     } else {
+                         // La sala no existe, el usuario puede crearla en la pantalla de registro
                          showScreen('register');
                     }
                 } else {
@@ -1580,7 +1675,7 @@
 
         function showFeedbackModal(message) {
             const modal = document.getElementById('feedback-modal');
-            modal.querySelector('#feedback-modal-title').textContent = "¡Halloween una Noche Mágica!";
+            modal.querySelector('#feedback-modal-title').textContent = "¡Una Noche Mágica!";
             modal.querySelector('#feedback-modal-message').textContent = message;
             modal.classList.add('visible');
         }
@@ -1599,6 +1694,7 @@
             const mockContest = {
                 creatorId: 'admin1',
                 status: 'lobby',
+                isLocked: false,
                 votedOnParticipants: ['participant2'],
                 currentlyVotingFor: 'participant1',
                 topResults: JSON.stringify([
@@ -1646,6 +1742,5 @@
     </script>
 </body>
 </html>
-
 
 
