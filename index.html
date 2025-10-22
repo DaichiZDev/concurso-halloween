@@ -164,6 +164,16 @@
         .score-slider { -webkit-appearance: none; width: 100%; height: 8px; background: #4a5568; border-radius: 5px; outline: none; transition: opacity .2s; }
         .score-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #ff7800; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 5px rgba(255,120,0,0.7); }
         .score-slider::-moz-range-thumb { width: 24px; height: 24px; background: #ff7800; border: 2px solid #fff; border-radius: 50%; cursor: pointer; }
+
+        /* Estilos para el menú de ayuda de notificaciones */
+        details > summary { cursor: pointer; list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #ayuda-container[open] { animation: fadeIn 0.5s ease-out; }
+
     </style>
 </head>
 <body class="bg-cover bg-center bg-fixed" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcvPQDIhWe3h_ziKkQDe65BTFOe3OHfec-A1GTFnyumw&s=10');">
@@ -205,17 +215,48 @@
                 </button>
 
                 <h2 class="font-creepster text-4xl text-orange-500 mb-2 text-center">Sala de Espera</h2>
-                <div class="bg-gray-900 p-3 rounded-lg flex items-center justify-between mb-6">
+                <div class="bg-gray-900 p-3 rounded-lg flex items-center justify-between mb-4">
                     <div>
                         <span class="text-gray-400 text-sm block">Código de Sala:</span>
                         <span id="contest-code" class="text-orange-400 text-lg font-bold tracking-widest"></span>
                     </div>
                     <button id="copy-code-btn" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-3 rounded-lg text-sm flex-shrink-0">Copiar</button>
                 </div>
+                
+                <!-- INICIO: UI DE NOTIFICACIONES -->
+                <div id="notification-setup" class="mb-4 space-y-3">
+                    <div id="diagnostic-box">
+                        <!-- El JS de notificaciones pondrá aquí el estado del permiso -->
+                    </div>
+                    <div id="ayuda-container" class="hidden">
+                        <details class="bg-yellow-900/50 rounded-md border border-yellow-700">
+                            <summary class="p-3 font-semibold text-yellow-300 flex items-center">
+                                <span class="text-xl mr-2">🔔</span>
+                                <span class="flex-1">
+                                    <b>Ayuda:</b> ¿Notificación silenciosa?
+                                </span>
+                                <span class="text-xs font-normal ml-2 text-yellow-400">(Presiona)</span>
+                            </summary>
+                            <div class="p-3 border-t border-yellow-700 text-xs text-yellow-200 space-y-2">
+                                <p>Para asegurar que las alertas vibren o suenen, revisa los permisos del sitio.</p>
+                                <p class="font-semibold">Ruta rápida (en Chrome):</p>
+                                <ol class="list-decimal list-inside space-y-1">
+                                    <li>Toca el candado (🔒) en la barra de direcciones.</li>
+                                    <li>Toca <b class="text-white">"Permisos"</b> (o "Configuración de sitios").</li>
+                                    <li>Toca <b class="text-white">"Notificaciones"</b>.</li>
+                                    <li>Activa el interruptor de <b class="text-white">"Vibración"</b> y "Sonido".</li>
+                                </ol>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                <!-- FIN: UI DE NOTIFICACIONES -->
+
                 <h3 class="font-bold text-xl mb-3 text-gray-200">Usuarios Conectados</h3>
                 <div id="users-list" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-2"></div>
                 
                 <div id="admin-controls" class="hidden mt-6 pt-6 border-t border-gray-600">
+                    <!-- INICIO: SECCIÓN DE CRITERIOS DE VOTACIÓN -->
                     <div id="criteria-settings" class="mb-6 bg-gray-900 p-4 rounded-lg">
                         <h3 class="font-bold text-lg mb-3 text-center text-orange-400">Criterios de Votación</h3>
                         <div class="mb-4">
@@ -227,10 +268,12 @@
                             </select>
                         </div>
                         <div id="criteria-list" class="space-y-3 mb-4">
-                            </div>
+                            <!-- Los criterios se insertarán aquí dinámicamente -->
+                        </div>
                         <button id="add-criterion-btn" class="btn-secondary w-full bg-blue-600 hover:bg-blue-700 text-sm py-2">Añadir Criterio</button>
                         <p id="criteria-weight-warning" class="text-xs text-yellow-400 mt-2 text-center hidden">La suma de los valores debe ser 100.</p>
                     </div>
+                    <!-- FIN: SECCIÓN DE CRITERIOS DE VOTACIÓN -->
                     <div id="bulk-participant-form" class="mb-6">
                         <h3 class="font-bold text-lg mb-3 text-center text-gray-300">Carga Masiva de Participantes</h3>
                         <textarea id="participants-list-input" placeholder="Pega aquí tu lista de participantes o usa la opción de cargar desde foto." rows="5" class="w-full bg-gray-800 rounded p-2 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
@@ -247,6 +290,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Controles del Organizador -->
                     <div class="space-y-4">
                         <div class="bg-gray-900 p-4 rounded-lg">
                             <label class="toggle-label">
@@ -277,6 +321,7 @@
                             Eres Jurado y participante, no tienes permitido votar por ti mismo. Espera al siguiente participante para votar.
                          </div>
                          <h3 class="font-bold text-xl mb-4 text-center text-orange-400">¡Emite tu puntaje!</h3>
+                         <!-- El contenedor de calificación ahora usará sliders -->
                          <div id="scoring-inputs" class="space-y-6"></div>
                          <button id="submit-vote-btn" class="btn-primary w-full mt-6">Enviar Voto</button>
                     </div>
@@ -326,6 +371,12 @@
                     <button data-debug="winner-1" class="btn-primary">Ganador 1º</button>
                     <button data-debug="winner-2" class="btn-primary">Ganador 2º</button>
                     <button data-debug="winner-3" class="btn-primary">Ganador 3º</button>
+                    <!-- INICIO: Botones de prueba de notificaciones -->
+                    <button data-debug="notif-perm" class="btn-secondary bg-purple-600">Pedir Permiso Notif.</button>
+                    <button data-debug="notif-deck" class="btn-secondary bg-purple-600">Test Notif. (Deck)</button>
+                    <button data-debug="notif-up" class="btn-secondary bg-purple-600">Test Notif. (Up)</button>
+                    <button data-debug="notif-win" class="btn-secondary bg-purple-600">Test Notif. (Win)</button>
+                    <!-- FIN: Botones de prueba de notificaciones -->
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-700 text-center">
                     <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">Daichi PC</span></p>
@@ -463,10 +514,12 @@
         const loadingOverlay = document.getElementById('loading-overlay');
         const debugBackButtonContainer = document.getElementById('debug-back-button-container');
         const easterEggOverlay = document.getElementById('easter-egg-overlay');
+        let diagnosticBox = document.getElementById('diagnostic-box'); // Para notificaciones
+        let ayudaContainer = document.getElementById('ayuda-container'); // Para notificaciones
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
-        let currentJurorScores = {}; // CAMBIO: Usar un objeto para múltiples criterios
-        const MAX_SCORE = 10; // CAMBIO: Definir puntaje máximo
+        let currentJurorScores = {};
+        const MAX_SCORE = 10;
         
         const imageChoiceModal = document.getElementById('image-choice-modal');
         const imageGenerationModal = document.getElementById('image-generation-modal');
@@ -618,8 +671,6 @@
                 if (shouldDeleteContest) {
                     await deleteContest(contestIdToLeave);
                 } else if (!isOrganizer) {
-                    // Solo elimina el documento del usuario si no es el organizador.
-                    // El organizador permanece en el concurso hasta que se elimina.
                     await deleteDoc(getUserRef(contestIdToLeave, currentUserId));
                 }
             }
@@ -694,7 +745,6 @@
 
         const getImageTag = (b64, cls, alt) => b64 ? `<img src="${b64}" class="${cls}" alt="${alt}">` : `<div class="${cls} bg-gray-700 flex items-center justify-center rounded-sm"><span class="text-gray-400 text-xs">IMG</span></div>`;
 
-        // CAMBIO: Nueva función para renderizar los sliders de los criterios
         function renderScoringInputs(containerSelector = '#scoring-inputs') {
             const container = document.querySelector(containerSelector);
             if (!container) return;
@@ -708,7 +758,7 @@
 
             let html = '';
             criteria.forEach(crit => {
-                const currentScore = currentJurorScores[crit.id] || 5; // Default a 5
+                const currentScore = currentJurorScores[crit.id] || 5; 
                 html += `
                     <div>
                         <label class="block mb-2 text-lg font-bold text-gray-200">${crit.name}</label>
@@ -721,7 +771,6 @@
             container.innerHTML = html;
         }
 
-        // CAMBIO: Nueva función para inicializar los puntajes del jurado
         async function setInitialJurorScores(participantId) {
             if (!participantId || !currentUserId) return;
             const q = query(getVotesCollectionRef(contestId, participantId), where("jurorId", "==", currentUserId));
@@ -734,7 +783,6 @@
                     currentJurorScores = snap.docs[0].data().scores || {};
                     hasVoted = true;
                 } else {
-                    // Si no ha votado, inicializa los scores a 5
                     currentJurorScores = criteria.reduce((acc, crit) => {
                         acc[crit.id] = 5;
                         return acc;
@@ -752,7 +800,6 @@
             }
         }
         
-        // CAMBIO: El listener ahora actualiza el objeto de scores
         function attachScoringListeners() {
             document.querySelector('#voter-voting-view').addEventListener('input', (e) => {
                 const target = e.target.closest('.score-slider');
@@ -762,7 +809,6 @@
                 const score = parseInt(target.value);
                 currentJurorScores[criterionId] = score;
 
-                // Actualizar el display del número
                 const scoreDisplay = target.nextElementSibling;
                 if (scoreDisplay && scoreDisplay.classList.contains('score-value')) {
                     scoreDisplay.textContent = score;
@@ -821,12 +867,10 @@
                 const contestData = contestDoc.data();
                 const userDoc = await getDoc(getUserRef(id, currentUserId));
 
-                // Si la sala está cerrada y el usuario NO está registrado previamente, se le niega el acceso.
                 if (contestData.isLocked && !userDoc.exists()) {
                     return customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
                 }
 
-                // Si la sala está abierta o el usuario ya existe, se le permite continuar.
                 contestId = id; 
                 window.location.hash = id; 
                 showScreen('register');
@@ -847,20 +891,18 @@
             const contestDoc = await getDoc(getContestRef(contestId));
 
             if (!contestDoc.exists()) {
-                 // El usuario está creando la sala, se establecen los valores por defecto para criterios.
                 await setDoc(getContestRef(contestId), { 
                     status: "lobby", 
                     creatorId: currentUserId,
                     isLocked: false,
-                    scoringMethod: "weighted_average", // Método por defecto
-                    criteria: [ // Criterios de ejemplo
+                    scoringMethod: "weighted_average",
+                    criteria: [
                         { id: 'crit1', name: 'Creatividad y Originalidad', weight: 40 },
                         { id: 'crit2', name: 'Ejecución y Detalle', weight: 40 },
                         { id: 'crit3', name: 'Presentación', weight: 20 }
                     ]
                 });
             } else {
-                 // El usuario se está uniendo a una sala existente, se vuelve a verificar el bloqueo
                  if(contestDoc.data().isLocked){
                     const userDoc = await getDoc(getUserRef(contestId, currentUserId));
                     if(!userDoc.exists()){
@@ -883,6 +925,12 @@
             }
 
             loadingOverlay.classList.add('hidden');
+
+            // Re-asignar elementos del DOM que pueden cambiar de pantalla
+            if (name === 'lobby') {
+                diagnosticBox = document.getElementById('diagnostic-box');
+                ayudaContainer = document.getElementById('ayuda-container');
+            }
         };
 
         function subscribeToContest(id) {
@@ -903,7 +951,7 @@
                 document.getElementById('paused-modal').classList.toggle('visible', newStatus === 'paused' && !isAdmin);
 
                 if (newStatus === 'voting' && oldStatus === 'lobby') {
-                    previousRevealStep = 0; // Reset for a new voting round
+                    previousRevealStep = 0; 
                     const meSnapshot = await getDoc(getUserRef(contestId, currentUserId));
                     if(meSnapshot.exists()) {
                         const me = meSnapshot.data();
@@ -932,9 +980,20 @@
 
                     onDeckModal.classList.add('visible'); 
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+                    // INICIO: Trigger de Notificación
+                    const title = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
+                    const body = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!";
+                    showNotification(title, body, 'on-deck-alert');
+                    // FIN: Trigger de Notificación
                 }
                 if (isUpData.userId === currentUserId) {
-                    isUpModal.classList.add('visible'); if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                    isUpModal.classList.add('visible'); 
+                    if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                    
+                    // INICIO: Trigger de Notificación
+                    showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
+                    // FIN: Trigger de Notificación
                 }
 
                 if (newStatus === 'paused' && isAdmin) {
@@ -969,7 +1028,6 @@
             usersUnsubscribe = onSnapshot(getUsersCollectionRef(id), (snap) => renderer(localContestData, snap.docs.map(d => ({ id: d.id, ...d.data() }))));
         }
         
-        // CAMBIO: Lógica para renderizar y manejar los criterios en el lobby
         function renderCriteriaSettings(contestData) {
             const criteria = contestData.criteria || [];
             const scoringMethod = contestData.scoringMethod || 'weighted_average';
@@ -977,22 +1035,21 @@
             const isWeighted = scoringMethod === 'weighted_average';
 
             document.getElementById('scoring-method-select').value = scoringMethod;
-            criteriaListContainer.innerHTML = ''; // Limpiar la lista
+            criteriaListContainer.innerHTML = '';
 
             let totalWeight = 0;
             criteria.forEach(crit => {
                 totalWeight += (crit.weight || 0);
                 const item = document.createElement('div');
-                item.className = 'flex items-center gap-2';
+                item.className = 'grid grid-cols-[1fr,auto,auto] items-center gap-2';
                 item.innerHTML = `
-                    <input type="text" value="${crit.name}" data-criterion-id="${crit.id}" class="criterion-name-input flex-grow bg-gray-700 rounded p-2 border border-gray-600 text-white">
-                    <input type="number" value="${crit.weight}" data-criterion-id="${crit.id}" class="criterion-weight-input w-20 bg-gray-700 rounded p-2 border border-gray-600 text-white ${isWeighted ? '' : 'hidden'}" placeholder="Valor %">
-                    <button data-criterion-id="${crit.id}" class="remove-criterion-btn bg-red-700 hover:bg-red-800 text-white font-bold p-2 rounded-full leading-none flex items-center justify-center h-8 w-8">&times;</button>
+                    <input type="text" value="${crit.name}" data-criterion-id="${crit.id}" class="criterion-name-input w-full bg-gray-700 rounded p-2 border border-gray-600 text-white">
+                    <input type="number" value="${crit.weight}" data-criterion-id="${crit.id}" class="criterion-weight-input w-20 bg-gray-700 rounded p-2 border border-gray-600 text-white text-center ${isWeighted ? '' : 'hidden'}" placeholder="%">
+                    <button data-criterion-id="${crit.id}" class="remove-criterion-btn bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg flex items-center justify-center h-10 w-10 text-xl">&times;</button>
                 `;
                 criteriaListContainer.appendChild(item);
             });
 
-            // Mostrar advertencia si los pesos no suman 100
             const warningEl = document.getElementById('criteria-weight-warning');
             if (isWeighted) {
                 warningEl.textContent = `Suma de valores: ${totalWeight}%. Debe ser 100%.`;
@@ -1004,9 +1061,8 @@
             }
         }
         
-        // CAMBIO: Delegación de eventos para los controles de criterios
         document.getElementById('admin-controls').addEventListener('change', async (e) => {
-            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+            if (localContestData.creatorId !== currentUserId) return;
 
             const target = e.target;
             const criteria = localContestData.criteria || [];
@@ -1027,7 +1083,7 @@
         });
 
         document.getElementById('admin-controls').addEventListener('click', async (e) => {
-            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+            if (localContestData.creatorId !== currentUserId) return;
             
             const target = e.target.closest('button');
             if (!target) return;
@@ -1051,7 +1107,7 @@
             document.getElementById('open-settings-btn').classList.toggle('hidden', !isAdmin);
             
             if (isAdmin) {
-                renderCriteriaSettings(contestData); // Renderizar panel de criterios
+                renderCriteriaSettings(contestData);
                 const lockToggle = document.getElementById('lock-contest-toggle');
                 lockToggle.checked = !contestData.isLocked;
             }
@@ -1078,7 +1134,7 @@
                     ${adminCanEditParticipant ? `<button data-action="edit-description" data-userid="${user.id}" data-costume="${user.costume}" class="p-1 rounded bg-gray-700 hover:bg-gray-600" title="Editar/Generar descripción">✨</button>` : ''}
                 `;
 
-                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manualmente"></span>`;
+                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manually"></span>`;
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
                 const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}" data-description="${user.costumeDescription}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
                 
@@ -1114,10 +1170,10 @@
                 targetUserIdForImage = userId;
 
                 if (action === 'delete-user') {
-                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
+                    if (localContestData.creatorId !== currentUserId) return;
                     showConfirmation('Eliminar Usuario', `¿Estás seguro de que quieres eliminar a ${user.name}?`, () => deleteDoc(getUserRef(contestId, userId)));
                 } else if (action === 'link-user') {
-                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
+                    if (localContestData.creatorId !== currentUserId) return;
                     const onlineUsers = users.filter(u => !u.isManualEntry);
                     const linkUserList = document.getElementById('link-user-list');
                     linkUserList.innerHTML = '';
@@ -1157,7 +1213,7 @@
                     imageChoiceModal.classList.add('visible');
                 }
                 else if (action === 'edit-description') {
-                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
+                    if (localContestData.creatorId !== currentUserId) return;
                     const descInput = document.getElementById('description-modal-input');
                     const genBtn = document.getElementById('description-modal-generate');
                     descriptionPrompt.show(user?.costumeDescription || '', val => updateDoc(getUserRef(contestId, userId), { costumeDescription: val }));
@@ -1172,7 +1228,7 @@
                         finally { newGenBtn.disabled = false; newGenBtn.innerHTML = '✨ Generar con IA'; }
                     };
                 } else if (target.dataset.role) {
-                    if (localContestData.creatorId !== currentUserId) return; // Client-side check
+                    if (localContestData.creatorId !== currentUserId) return;
                     if (target.dataset.role === 'isParticipant' && target.checked && !user.costume?.trim()) { target.checked = false; customAlert("Disfraz Requerido", "Añade un nombre de disfraz antes de marcarlo como participante."); costumePrompt.show('', async val => { if (val) await updateDoc(getUserRef(contestId, userId), { costume: val, isParticipant: true }); }); }
                     else { updateDoc(getUserRef(contestId, userId), { [target.dataset.role]: target.checked }); }
                 }
@@ -1180,7 +1236,6 @@
             document.getElementById('link-user-modal-cancel').onclick = () => linkUserModal.classList.remove('visible');
         }
         
-        // CAMBIO: Lógica de cálculo de ranking actualizada para los 3 métodos
         async function calculateFullRanking(contestId) {
             const contestDoc = await getDoc(getContestRef(contestId));
             const contestData = contestDoc.data();
@@ -1303,7 +1358,7 @@
                     const target = e.target.closest('button, [data-userid]'); if (!target) return; 
                     if (target.dataset.userid) { selectedForActionId = target.dataset.userid === selectedForActionId ? null : target.dataset.userid; return renderVotingScreen(contestData, users); }
                     
-                    if (localContestData.creatorId !== currentUserId) return; // Client-side check for all admin actions
+                    if (localContestData.creatorId !== currentUserId) return;
                     
                     if (target.id === 'pause-contest-btn') return await updateDoc(getContestRef(contestId), { status: 'paused' });
                     if (target.id === 'calculate-results-btn') return await calculateAndFinalizeResults(users);
@@ -1329,7 +1384,7 @@
                                 const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId)); 
                                 votes.forEach(v => batch.delete(v.ref)); 
                                 batch.update(getContestRef(contestId), { votedOnParticipants: contestData.votedOnParticipants.filter(id => id !== selectedForActionId) });
-                                if (isTiebreaker) { // Reset tiebreaker if a vote is reopened
+                                if (isTiebreaker) {
                                      batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
                                 }
                                 await batch.commit();
@@ -1367,7 +1422,7 @@
                 if (isJuror) {
                     selfVoteMessage.classList.toggle('hidden', !selfVote);
                     ['#scoring-inputs', '#submit-vote-btn', 'h3'].forEach(sel => jurorControls.querySelector(sel).classList.toggle('hidden', selfVote));
-                    if (!selfVote) { await setInitialJurorScores(currentPId); renderScoringInputs(); } // CAMBIO: Llama a las nuevas funciones
+                    if (!selfVote) { await setInitialJurorScores(currentPId); renderScoringInputs(); }
                 }
                 const votes = (await getDocs(getVotesCollectionRef(contestId,currentP.id))).docs.map(d=>d.data().jurorId); 
                 const pending = jurors.filter(j => !votes.includes(j.id) && j.id !== currentP.id);
@@ -1392,7 +1447,7 @@
         }
         
         async function calculateAndFinalizeResults(allUsers) {
-            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+            if (localContestData.creatorId !== currentUserId) return;
             loadingOverlay.classList.remove('hidden');
             document.getElementById('loading-text').textContent = 'Calculando Resultados...';
 
@@ -1404,7 +1459,7 @@
             }
 
             const groupedByScore = results.reduce((acc, p) => {
-                const score = p.overallScore.toFixed(3); // Group by a fixed precision
+                const score = p.overallScore.toFixed(3);
                 if (!acc[score]) acc[score] = [];
                 acc[score].push(p);
                 return acc;
@@ -1424,7 +1479,6 @@
                         customAlert("¡Empate Detectado!", `Hay un empate por el ${rank}º lugar. Se iniciará una ronda de desempate.`);
                         const batch = writeBatch(db);
                         batch.update(getContestRef(contestId), { status: 'tiebreaker', votedOnParticipants: [], currentlyVotingFor: null, tiebreakerInfo: { rank, participantIds: group.map(p => p.id) } });
-                        // Reset votes for tied participants
                          for (const p of group) {
                             const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, p.id));
                             votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
@@ -1533,6 +1587,10 @@
                         if (newRevealStep >= requiredStep && previousRevealStep < requiredStep) {
                             if (result && result.id === currentUserId) {
                                 showWinnerNotification(rank);
+                                // INICIO: Trigger de Notificación
+                                const rankText = rank === 1 ? '1er' : (rank === 2 ? '2do' : '3er');
+                                showNotification(`🥇 ¡FELICIDADES! 🥇`, `¡Ganaste el ${rankText} Lugar! Pasa a recoger tu premio.`, `winner-rank-${rank}`);
+                                // FIN: Trigger de Notificación
                             }
                         }
 
@@ -1609,7 +1667,6 @@
                 if (!target) return;
                 const action = target.dataset.action;
 
-                // Client-side check for all admin actions
                 if (['reveal', 'finalize', 'restart'].includes(action) && localContestData.creatorId !== currentUserId) return;
 
                 if(action === 'reveal') {
@@ -1763,7 +1820,7 @@
         });
 
         document.getElementById('add-participants-from-list-btn')?.addEventListener('click', async () => {
-            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+            if (localContestData.creatorId !== currentUserId) return;
             const list = document.getElementById('participants-list-input').value.trim(); if (!list) return;
             const batch = writeBatch(db);
             list.split('\n').forEach(line => {
@@ -1780,17 +1837,16 @@
         document.getElementById('add-juror-btn')?.addEventListener('click', async () => { if (localContestData.creatorId !== currentUserId) return; const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true,costumeDescription:''}); document.getElementById('new-juror-name').value='';} });
         
         document.getElementById('lock-contest-toggle')?.addEventListener('change', async (e) => {
-             if (localContestData.creatorId !== currentUserId) return; // Client-side check
-             const isChecked = e.target.checked; // true si está "permitido"
-             const isLocked = !isChecked; // se bloquea cuando no está chequeado
+             if (localContestData.creatorId !== currentUserId) return;
+             const isChecked = e.target.checked;
+             const isLocked = !isChecked;
              await updateDoc(getContestRef(contestId), { isLocked: isLocked });
         });
         
         document.getElementById('start-contest-btn')?.addEventListener('click', async () => { 
-            if (localContestData.creatorId !== currentUserId) return; // Client-side check
+            if (localContestData.creatorId !== currentUserId) return;
             if (localContestData.status === 'paused') return await updateDoc(getContestRef(contestId), { status: 'voting' });
             
-            // CAMBIO: Verificación de criterios
             if (localContestData.scoringMethod === 'weighted_average') {
                 const totalWeight = (localContestData.criteria || []).reduce((sum, c) => sum + (c.weight || 0), 0);
                 if (totalWeight !== 100) {
@@ -1804,21 +1860,103 @@
             await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: [], onDeck: null, isUp: null, acknowledgedUp: null }); 
         });
 
-        // CAMBIO: Guardar el objeto de scores en lugar de un solo valor
         document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { 
             if (e.target.disabled) return; 
             e.target.disabled = true; 
             e.target.textContent = 'Enviado'; 
             const voteRef = doc(getVotesCollectionRef(contestId, localContestData.currentlyVotingFor), currentUserId); 
             const batch = writeBatch(db); 
-            batch.set(voteRef, { jurorId: currentUserId, scores: currentJurorScores }); // Guardar el objeto de scores
+            batch.set(voteRef, { jurorId: currentUserId, scores: currentJurorScores });
             batch.update(getUserRef(contestId, currentUserId), { hasVoted: true }); 
             await batch.commit(); 
         });
         
+        // INICIO: Funciones de Notificación
+        async function registerServiceWorker() {
+            console.log('Iniciando registro de Service Worker (SW)...');
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+                    console.log('Service Worker registrado.');
+                    await navigator.serviceWorker.ready;
+                    console.log('Service Worker listo y controlando.');
+                    checkNotificationPermission();
+                } catch (error) {
+                    console.error(`Error en registro de SW: ${error.message}`);
+                    if(diagnosticBox) diagnosticBox.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded"><p><b>Error Crítico:</b> No se pudo registrar el SW.</p></div>`;
+                }
+            } else {
+                if(diagnosticBox) diagnosticBox.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded"><p><b>Error:</b> Service Workers no soportados.</p></div>`;
+            }
+        }
+
+        function checkNotificationPermission(forceRequest = false) {
+             if (!diagnosticBox || !ayudaContainer) {
+                 console.log("Elementos de UI para notificación no encontrados, reintentando...");
+                 setTimeout(() => {
+                    diagnosticBox = document.getElementById('diagnostic-box');
+                    ayudaContainer = document.getElementById('ayuda-container');
+                    if (diagnosticBox) checkNotificationPermission(forceRequest);
+                 }, 500);
+                 return;
+             }
+
+             if ('Notification' in window) {
+                const permission = Notification.permission;
+                if (permission === 'granted') {
+                     diagnosticBox.innerHTML = `<div class="bg-green-100 text-green-800 p-3 rounded"><p><b>Notificaciones:</b> ✅ Activadas</p></div>`;
+                     ayudaContainer.classList.remove('hidden');
+                } else if (permission === 'denied') {
+                     diagnosticBox.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded"><p><b>Notificaciones:</b> ❌ Denegadas. Habilita en los ajustes del navegador.</p></div>`;
+                     ayudaContainer.classList.add('hidden');
+                } else {
+                    diagnosticBox.innerHTML = `<div class="bg-yellow-100 text-yellow-800 p-3 rounded"><p><b>Notificaciones:</b> ⏳ <button id="request-perm-btn" class="font-bold underline">Activar notificaciones</button></p></div>`;
+                    ayudaContainer.classList.add('hidden');
+                    
+                    const newDiagBox = diagnosticBox.cloneNode(true);
+                    diagnosticBox.parentNode.replaceChild(newDiagBox, diagnosticBox);
+                    diagnosticBox = newDiagBox;
+
+                    diagnosticBox.onclick = (e) => {
+                        if (e.target.id === 'request-perm-btn') {
+                            Notification.requestPermission().then(permission => checkNotificationPermission(false));
+                        }
+                    };
+                    
+                    if (forceRequest) {
+                         Notification.requestPermission().then(permission => checkNotificationPermission(false));
+                    }
+                }
+            } else {
+                diagnosticBox.innerHTML = `<div class="bg-gray-700 text-gray-300 p-3 rounded"><p><b>Notificaciones:</b> No soportadas en este navegador.</p></div>`;
+            }
+        }
+        
+        function showNotification(title, body, tag = 'halloween-alert') {
+            if (Notification.permission !== 'granted') {
+                console.log('Permiso para notificaciones no concedido.');
+                return;
+            }
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'show_notification',
+                    title: title,
+                    body: body,
+                    tag: tag
+                });
+            } else {
+                console.log('Service Worker no está listo para enviar notificación.');
+            }
+        }
+        // FIN: Funciones de Notificación
+
         onAuthStateChanged(auth, async (user) => {
             if (user) { 
                 currentUserId = user.uid; 
+                
+                // Registrar Service Worker al autenticar
+                registerServiceWorker();
+
                 const hashId = window.location.hash.substring(1).toUpperCase(); 
                 if (hashId) {
                     contestId = hashId;
@@ -1828,17 +1966,15 @@
                         if(userDoc.exists()){
                             subscribeToContest(contestId);
                         } else {
-                             // Si el usuario no existe, comprueba si la sala está bloqueada antes de mostrar el registro
                              if(contestDoc.data().isLocked) {
                                 customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
-                                window.location.hash = ''; // Limpia el hash para evitar bucles
+                                window.location.hash = '';
                                 showScreen('home');
                              } else {
                                 showScreen('register');
                              }
                         }
                     } else {
-                         // La sala no existe, el usuario puede crearla en la pantalla de registro
                          showScreen('register');
                     }
                 } else {
@@ -1911,8 +2047,8 @@
                 isLocked: false,
                 votedOnParticipants: ['participant2'],
                 currentlyVotingFor: 'participant1',
-                scoringMethod: 'weighted_average', // MODO DE PRUEBA
-                criteria: [ // CRITERIOS DE PRUEBA
+                scoringMethod: 'weighted_average',
+                criteria: [
                     { id: 'crit1', name: 'Creatividad', weight: 60 },
                     { id: 'crit2', name: 'Ejecución', weight: 40 }
                 ],
@@ -1946,6 +2082,12 @@
                     case 'winner-1': showWinnerNotification(1); break;
                     case 'winner-2': showWinnerNotification(2); break;
                     case 'winner-3': showWinnerNotification(3); break;
+                    // INICIO: Casos de prueba de notificaciones
+                    case 'notif-perm': checkNotificationPermission(true); break;
+                    case 'notif-deck': showNotification("¡Prepárate! (Prueba)", "Eres el siguiente en pasar.", 'test-deck'); break;
+                    case 'notif-up': showNotification("¡AHORA! (Prueba)", "Es tu turno de brillar.", 'test-up'); break;
+                    case 'notif-win': showNotification("🥇 ¡FELICIDADES! (Prueba) 🥇", "Ganaste el 1er Lugar.", 'test-win'); break;
+                    // FIN: Casos de prueba de notificaciones
                     case 'exit': 
                         isInDebugMode = false;
                         debugBackButtonContainer.classList.add('hidden');
@@ -1960,4 +2102,6 @@
         attachScoringListeners();
     </script>
 </body>
-                            </html>
+</html>
+
+
