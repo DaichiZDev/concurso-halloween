@@ -159,82 +159,96 @@
         .on-deck-alert { animation: flash-green-purple 1s infinite; }
         .is-up-alert { animation: flash-blue-red 0.5s infinite; }
 
-        /* === INICIO: Estilos Slider Calabaza Rediseñado === */
+        /* === INICIO: Estilos Slider Calabaza Corregidos === */
         .score-slider-wrapper {
             text-align: center;
-            padding-top: 1rem; /* Espacio para el separador superior */
-            padding-bottom: 1.5rem; /* Espacio antes del siguiente separador */
+            padding-top: 1rem;
+            padding-bottom: 1.5rem;
         }
         .criterion-label {
             font-weight: bold;
-            color: #cbd5e1; /* gris claro */
-            font-size: 1.1rem; /* Ligeramente más grande */
-            margin-bottom: 0.5rem; /* Espacio antes del número */
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
         }
          .score-value-display {
              font-family: 'Creepster', cursive;
-             font-size: 3rem;  /* Más grande */
-             color: #ff7800; /* Naranja */
-             margin-bottom: 0.75rem; /* Espacio antes de la barra */
+             font-size: 3rem;
+             color: #ff7800;
+             margin-bottom: 0.75rem;
              text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
-             line-height: 1; /* Ajustar altura de línea */
+             line-height: 1;
          }
         .score-slider-container {
             position: relative;
-            height: 40px; /* Asegurar altura suficiente */
+            height: 40px;
             display: flex;
             align-items: center;
-            padding: 0 10px; /* Pequeño padding lateral */
+            padding: 0 10px;
         }
         .score-slider {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 10px; /* Barra un poco más gruesa */
-            background: linear-gradient(to right, #4a5568, #718096); /* Gradiente sutil */
+            height: 10px;
+            background: linear-gradient(to right, #4a5568, #718096);
             border-radius: 5px;
             outline: none;
             cursor: pointer;
             margin: 0;
             padding: 0;
+            z-index: 1;
         }
-        /* Calabaza para Webkit (Chrome, Safari, Edge) */
+
+        /* --- CORRECCIÓN: INICIO --- */
+        /* Estilo para Webkit (Chrome, Safari, Edge) */
         .score-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 60px; /* Tamaño calabaza más grande */
-            height: 60px; /* Tamaño calabaza más grande */
-            background-color: transparent; /* Fondo transparente */
+            width: 44px;  /* Tamaño de la calabaza */
+            height: 44px; /* Tamaño de la calabaza */
             border: none;
             cursor: pointer;
-            /* Usar pseudo-elemento para el emoji */
-            position: relative; /* Necesario para posicionar el ::before */
-            top: 50%; /* Centrar verticalmente */
-            transform: translateY(-50%); /* Centrar verticalmente */
+            background-color: transparent; /* El fondo es el SVG */
+            
+            /* Aquí está la corrección: 
+              Usamos un SVG en línea como fondo en lugar de un pseudo-elemento ::before.
+            */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='50' dy='.35em' font-size='80' text-anchor='middle'%3E🎃%3C/text%3E%3C/svg%3E");
+            background-size: 90%; /* 90% del tamaño del thumb */
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.5));
+            
+            /* Ajuste vertical para centrar el emoji en la barra */
+            margin-top: -17px; 
+            position: relative;
+            z-index: 2;
         }
-         /* Añadir el emoji usando ::before */
-         .score-slider::-webkit-slider-thumb::before {
-             content: '🎃';
-             font-size: 38px; /* Tamaño del emoji */
-             line-height: 44px; /* Centrar emoji verticalmente */
-             display: block; /* Necesario para aplicar tamaño */
-             width: 44px;
-             height: 44px;
-             text-align: center;
-             /* Sombra sutil para destacar */
-             filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.5));
-         }
 
-        /* Fallback básico para Firefox (círculo naranja) */
+         /* Estilo para Firefox */
         .score-slider::-moz-range-thumb {
-            width: 30px; /* Más grande que antes */
-            height: 30px;
-            background: #ff7800;
-            border: 2px solid #fff;
-            border-radius: 50%;
+            width: 40px;  /* Tamaño de la calabaza (ligeramente ajustado para FF) */
+            height: 40px; /* Tamaño de la calabaza */
+            border: none;
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(255,120,0,0.7);
+            background-color: transparent; /* El fondo es el SVG */
+
+            /* Usamos el mismo SVG para consistencia */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='50' dy='.35em' font-size='80' text-anchor='middle'%3E🎃%3C/text%3E%3C/svg%3E");
+            background-size: 90%;
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.5));
+            
+            /* Firefox maneja el centrado vertical de manera diferente */
+            position: relative;
+            z-index: 2;
         }
+        /* --- CORRECCIÓN: FIN --- */
+
 
         /* Separador entre criterios */
         .criterion-separator {
@@ -243,7 +257,7 @@
              margin-top: 0; /* Sin margen superior extra */
              margin-bottom: 0; /* Sin margen inferior extra */
         }
-        /* === FIN: Estilos Slider Calabaza Rediseñado === */
+        /* === FIN: Estilos Slider Calabaza === */
 
         /* Estilos para el menú de ayuda de notificaciones */
         details > summary { cursor: pointer; list-style: none; }
@@ -303,11 +317,13 @@
                     <button id="copy-code-btn" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-3 rounded-lg text-sm flex-shrink-0">Copiar</button>
                 </div>
 
-                <!-- INICIO: UI DE NOTIFICACIONES -->
-                <div id="notification-setup" class="mb-4 space-y-3">
+                
+
+<div id="notification-setup" class="mb-4 space-y-3">
                     <div id="diagnostic-box">
-                        <!-- El JS de notificaciones pondrá aquí el estado del permiso -->
-                    </div>
+                        
+
+</div>
                     <div id="ayuda-container" class="hidden">
                         <details class="bg-yellow-900/50 rounded-md border border-yellow-700">
                             <summary class="p-3 font-semibold text-yellow-300 flex items-center">
@@ -330,14 +346,15 @@
                         </details>
                     </div>
                 </div>
-                <!-- FIN: UI DE NOTIFICACIONES -->
+                
 
-                <h3 class="font-bold text-xl mb-3 text-gray-200">Usuarios Conectados</h3>
+<h3 class="font-bold text-xl mb-3 text-gray-200">Usuarios Conectados</h3>
                 <div id="users-list" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-2"></div>
 
                 <div id="admin-controls" class="hidden mt-6 pt-6 border-t border-gray-600">
-                    <!-- INICIO: SECCIÓN DE CRITERIOS DE VOTACIÓN -->
-                    <div id="criteria-settings" class="mb-6 bg-gray-900 p-4 rounded-lg">
+                    
+
+<div id="criteria-settings" class="mb-6 bg-gray-900 p-4 rounded-lg">
                         <h3 class="font-bold text-lg mb-3 text-center text-orange-400">Criterios de Votación</h3>
                         <div class="mb-4">
                             <label for="scoring-method-select" class="block text-sm font-medium text-gray-300 mb-2">Método de Cálculo Final:</label>
@@ -348,13 +365,15 @@
                             </select>
                         </div>
                         <div id="criteria-list" class="space-y-3 mb-4">
-                            <!-- Los criterios se insertarán aquí dinámicamente -->
-                        </div>
+                            
+
+</div>
                         <button id="add-criterion-btn" class="btn-secondary w-full bg-blue-600 hover:bg-blue-700 text-sm py-2">Añadir Criterio</button>
                         <p id="criteria-weight-warning" class="text-xs text-yellow-400 mt-2 text-center hidden">La suma de los valores debe ser 100.</p>
                     </div>
-                    <!-- FIN: SECCIÓN DE CRITERIOS DE VOTACIÓN -->
-                    <div id="bulk-participant-form" class="mb-6">
+                    
+
+<div id="bulk-participant-form" class="mb-6">
                         <h3 class="font-bold text-lg mb-3 text-center text-gray-300">Carga Masiva de Participantes</h3>
                         <textarea id="participants-list-input" placeholder="Pega aquí tu lista de participantes o usa la opción de cargar desde foto." rows="5" class="w-full bg-gray-800 rounded p-2 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"></textarea>
                         <div class="flex gap-2 mt-2">
@@ -370,8 +389,9 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Controles del Organizador -->
-                    <div class="space-y-4">
+                    
+
+<div class="space-y-4">
                         <div class="bg-gray-900 p-4 rounded-lg">
                             <label class="toggle-label">
                                 <span class="font-bold text-lg">Permitir nuevos participantes</span>
@@ -401,9 +421,11 @@
                             Eres Jurado y participante, no tienes permitido votar por ti mismo. Espera al siguiente participante para votar.
                          </div>
                          <h3 class="font-bold text-xl mb-4 text-center text-orange-400">¡Emite tu puntaje!</h3>
-                         <!-- Contenedor con nuevo estilo de sliders -->
-                         <div id="scoring-inputs" class="space-y-4"></div> <!-- Reducir espacio entre sliders -->
-                         <button id="submit-vote-btn" class="btn-primary w-full mt-8">Enviar Voto</button>
+                         
+
+<div id="scoring-inputs" class="space-y-4"></div> 
+
+<button id="submit-vote-btn" class="btn-primary w-full mt-8">Enviar Voto</button>
                     </div>
                     <div id="pending-jurors-list-container" class="hidden mb-6 pt-4 border-t border-gray-600">
                         <h4 class="font-bold text-lg text-cyan-400 mb-2">Jurado pendiente de votar:</h4>
@@ -500,8 +522,9 @@
         <div class="modal-content">
             <h2 class="font-creepster text-3xl text-orange-500 mb-4">Voto Pendiente</h2>
             <div id="catchup-participant-info" class="mb-6"></div>
-             <!-- Usará el nuevo estilo de slider aquí también -->
-            <div id="catchup-scoring-inputs" class="space-y-4"></div>
+             
+
+<div id="catchup-scoring-inputs" class="space-y-4"></div>
             <div class="flex gap-4 mt-6">
                 <button id="catchup-vote-cancel" class="btn-secondary flex-1">Cancelar</button>
                 <button id="catchup-vote-save" class="btn-primary flex-1">Enviar Voto</button>
@@ -614,7 +637,8 @@
         let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
-        let notificationState = { // Objeto para rastrear estado de notificaciones y evitar bucles
+        // **FIX:** Declare notificationState globally ONCE.
+        var notificationState = { // Use 'var' or declare it outside any function if preferred
              lastOnDeckStatus: null,
              lastIsUpUserId: null
          };
@@ -1000,7 +1024,7 @@
             const name = document.getElementById('user-name-input').value.trim(); if (!name) return customAlert("Error", "Nombre requerido.");
             loadingOverlay.classList.remove('hidden');
             document.getElementById('loading-text').textContent = 'Registrando...';
-            const costume = document.getElementById('costume-name-input').value.trim();
+            const costume = document.getElementById('user-name-input').value.trim();
             const contestDoc = await getDoc(getContestRef(contestId));
 
             if (!contestDoc.exists()) {
@@ -1046,18 +1070,15 @@
             }
         };
 
-        // CAMBIO: Mover el estado de notificación fuera para persistencia entre llamadas
-        let notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
 
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
-            // Resetear estado de notificación al suscribirse a una nueva sala (o re-suscribirse)
+            // Resetear estado de notificación al suscribirse
             notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
 
             contestUnsubscribe = onSnapshot(getContestRef(id), async (doc) => {
                 if (!doc.exists()) { leaveContest(); customAlert("Error", "La sala ha sido eliminada."); return; }
                 const oldStatus = localContestData.status;
-                // const previousData = { ...localContestData }; // No es necesario para el bug de notificación
                 localContestData = { id: doc.id, ...doc.data() };
 
                 const newStatus = localContestData.status;
@@ -1100,7 +1121,7 @@
                 // --- INICIO: Lógica Anti-Loop de Notificación CORREGIDA ---
                 const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
                 if (currentOnDeckStatus === 'called' && notificationState.lastOnDeckStatus !== 'called') {
-                    notificationState.lastOnDeckStatus = 'called'; // Marcar que YA MOSTRAMOS 'called'
+                    notificationState.lastOnDeckStatus = 'called';
 
                     const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
                     document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
@@ -1113,21 +1134,17 @@
                     const body = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!";
                     showNotification(title, body, 'on-deck-alert');
                 } else if (currentOnDeckStatus !== 'called') {
-                    // Si el estado actual NO es 'called' (sea null, acknowledged, o not_ready),
-                    // actualizamos el último estado visto para permitir una futura notificación 'called'.
                     notificationState.lastOnDeckStatus = currentOnDeckStatus;
                 }
 
                 const currentIsUpUserId = isUpData.userId;
                 if (currentIsUpUserId === currentUserId && notificationState.lastIsUpUserId !== currentUserId) {
-                    notificationState.lastIsUpUserId = currentUserId; // Marcar que YA MOSTRAMOS para este usuario
+                    notificationState.lastIsUpUserId = currentUserId;
 
                     isUpModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
                     showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
                 } else if (currentIsUpUserId !== currentUserId) {
-                    // Si el llamado actual NO es para nosotros, reseteamos el tracker
-                    // para permitir una futura notificación si nos llaman.
                     notificationState.lastIsUpUserId = null;
                 }
                 // --- FIN: Lógica Anti-Loop de Notificación CORREGIDA ---
@@ -1148,17 +1165,17 @@
 
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
             onDeckModal.classList.remove('visible');
-            notificationState.lastOnDeckStatus = 'acknowledged'; // Actualizar estado local también
+            notificationState.lastOnDeckStatus = 'acknowledged';
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
             onDeckModal.classList.remove('visible');
-            notificationState.lastOnDeckStatus = 'not_ready'; // Actualizar estado local también
+            notificationState.lastOnDeckStatus = 'not_ready';
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
         });
         document.getElementById('is-up-close').addEventListener('click', async () => {
             isUpModal.classList.remove('visible');
-            notificationState.lastIsUpUserId = null; // Resetear al cerrar
+            notificationState.lastIsUpUserId = null;
             if (localContestData.isUp && localContestData.isUp.userId) {
                 await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
             }
@@ -1681,10 +1698,13 @@
                  }
                 const currentScore = catchupScores[crit.id] || 5;
                 html += `
-                     <div class="score-slider-wrapper !pb-0"> <!-- Quitar padding inferior extra en modal -->
-                          <label class="criterion-label block !text-lg">${crit.name}</label> <!-- Nombre un poco más grande en modal -->
-                          <div class="score-value-display !text-3xl">${currentScore}</div> <!-- Número un poco más pequeño en modal -->
-                          <div class="score-slider-container">
+                     <div class="score-slider-wrapper !pb-0"> 
+
+<label class="criterion-label block !text-lg">${crit.name}</label> 
+
+<div class="score-value-display !text-3xl">${currentScore}</div> 
+
+<div class="score-slider-container">
                               <input type="range" min="1" max="${MAX_SCORE}" value="${currentScore}" class="score-slider" data-criterion-id="${crit.id}">
                           </div>
                       </div>`;
