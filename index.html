@@ -18,29 +18,29 @@
         body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #f0f0f0; }
         .font-creepster { font-family: 'Creepster', cursive; }
         .card { background-color: rgba(40, 40, 40, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
+
         #main-container {
             min-height: 100vh; /* Fallback for older browsers */
             min-height: -webkit-fill-available; /* Correct height for modern mobile browsers */
         }
 
-        .btn-primary { 
-            background: linear-gradient(145deg, #ff7800, #ff5400); 
-            border: none; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold; 
-            text-transform: uppercase; letter-spacing: 1px; 
-            box-shadow: 0 4px 15px rgba(255, 120, 0, 0.3); 
-            transition: all 0.3s ease; 
+        .btn-primary {
+            background: linear-gradient(145deg, #ff7800, #ff5400);
+            border: none; color: white; padding: 12px 24px; border-radius: 8px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 120, 0, 0.3);
+            transition: all 0.3s ease;
         }
-        .btn-primary:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(255, 120, 0, 0.5); 
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 120, 0, 0.5);
         }
-        .btn-primary:disabled { 
-            background: #555; 
-            cursor: not-allowed; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); 
-            opacity: 0.8; 
-            transform: translateY(0); 
+        .btn-primary:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            opacity: 0.8;
+            transform: translateY(0);
         }
         .btn-primary.ready-to-send:not(:disabled) {
             background: linear-gradient(145deg, #00b469, #008f53);
@@ -52,39 +52,39 @@
         .btn-secondary:disabled { background-color: #555; cursor: not-allowed; opacity: 0.7; }
         .btn-danger { background-color: #dc2626; color: white; padding: 12px 24px; border-radius: 8px; transition: background-color 0.2s ease; }
         .btn-danger:hover:not(:disabled) { background-color: #b91c1c; }
-        
+
         #feedback-stars span { transition: color 0.2s; }
         #feedback-stars span.selected { color: #facc15; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .modal-backdrop { 
-            position: fixed; 
-            inset: 0; 
-            background-color: rgba(0,0,0,0.7); 
-            display: flex; 
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
             align-items: flex-start;
-            justify-content: center; 
-            z-index: 100; 
+            justify-content: center;
+            z-index: 100;
             padding: 2rem 1rem;
             overflow-y: auto;
-            opacity: 0; 
-            pointer-events: none; 
-            transition: opacity 0.3s ease; 
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
         .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
         .modal-content { background-color: #2d2d2d; color: #f0f0f0; padding: 2rem; border-radius: 0.75rem; max-width: 90%; width: 500px; border: 1px solid #444; text-align: center; transform: scale(0.95); transition: transform 0.3s ease; }
         .modal-backdrop.visible .modal-content { transform: scale(1); }
-        
+
         .rank-1 { color: #facc15; }
         .rank-2 { color: #e5e7eb; }
         .rank-3 { color: #d97706; }
-        
+
         .pumpkin-icon { font-size: 2rem; opacity: 0.3; transition: all 0.1s ease; cursor: pointer; }
         .pumpkin-icon.selected { opacity: 1; transform: scale(1.1); color: #ff7800; text-shadow: 0 0 10px rgba(255, 120, 0, 0.9); }
         .pumpkin-icons { user-select: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
-        
+
         .image-preview-sm { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ff7800; }
         .image-preview-lg { width: 100%; max-height: 400px; object-fit: contain; border-radius: 12px; border: 3px solid #ff7800; box-shadow: 0 0 20px rgba(255, 120, 0, 0.5); margin-bottom: 1.5rem; background-color: #000; }
 
@@ -98,7 +98,7 @@
         .editable-image-container { position: relative; cursor: pointer; }
         .editable-image-overlay { position: absolute; inset: 0; background-color: rgba(0,0,0,0.5); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0; transition: opacity 0.2s ease; border-radius: 4px; }
         .editable-image-container:hover .editable-image-overlay { opacity: 1; }
-        
+
         .participant-me { border: 2px solid #facc15 !important; background-color: rgba(250, 204, 21, 0.1); }
         .participant-evaluated { background-color: rgba(22, 163, 74, 0.2) !important; border-left: 4px solid #16a34a; }
         .participant-evaluating { background-color: rgba(250, 204, 21, 0.2) !important; border-left: 4px solid #facc15; }
@@ -114,11 +114,11 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none;
         }
-        .winner-notification.visible { 
-            transform: translateX(-50%) translateY(0); 
+        .winner-notification.visible {
+            transform: translateX(-50%) translateY(0);
             opacity: 1; pointer-events: auto;
         }
-        
+
         @media (orientation: landscape) {
             .winner-notification.visible {
                 width: 100vw;
@@ -149,21 +149,29 @@
                 color: white !important;
             }
         }
-        
+
         .text-shadow-lg { text-shadow: 2px 2px 4px rgba(0,0,0,0.7); }
         @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); } }
         .emoji-pop { animation: pop-in 0.5s ease-out forwards; }
-        
+
         @keyframes flash-blue-red { 0%, 100% { background-color: #1e40af; } 50% { background-color: #7f1d1d; } }
         @keyframes flash-green-purple { 0%, 100% { background-color: #065f46; } 50% { background-color: #581c87; } }
         .on-deck-alert { animation: flash-green-purple 1s infinite; }
         .is-up-alert { animation: flash-blue-red 0.5s infinite; }
 
-        /* Estilos para el slider de calificación */
-        .score-slider-container { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; }
-        .score-slider { -webkit-appearance: none; width: 100%; height: 8px; background: #4a5568; border-radius: 5px; outline: none; transition: opacity .2s; }
-        .score-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background: #ff7800; border: 2px solid #fff; border-radius: 50%; cursor: pointer; box-shadow: 0 0 5px rgba(255,120,0,0.7); }
-        .score-slider::-moz-range-thumb { width: 24px; height: 24px; background: #ff7800; border: 2px solid #fff; border-radius: 50%; cursor: pointer; }
+        /* === INICIO: Estilos Slider Calabaza === */
+        .score-slider-wrapper { text-align: center; margin-bottom: 1.5rem; }
+        .score-value-display { font-family: 'Creepster', cursive; font-size: 2.5rem; color: #ff7800; margin-bottom: 0.5rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+        .score-slider-container { position: relative; height: 40px; /* Altura para acomodar la calabaza */ display: flex; align-items: center; }
+        .score-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; background: #4a5568; border-radius: 5px; outline: none; transition: background 0.3s; cursor: pointer; margin: 0; padding: 0; }
+        .score-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 36px; /* Tamaño de la calabaza */ height: 36px; background: none; /* Quitamos fondo */ border: none; /* Quitamos borde */ cursor: pointer; font-size: 30px; /* Tamaño del emoji */ line-height: 36px; /* Centrado vertical */ text-align: center; /* Centrado horizontal */ content: '🎃'; /* La calabaza! */ transform: translateY(-1px); /* Ajuste fino vertical si es necesario */ }
+        .score-slider::-moz-range-thumb { width: 36px; height: 36px; background: none; border: none; border-radius: 0; cursor: pointer; font-size: 30px; line-height: 36px; text-align: center; /* Para Firefox, usamos un pseudo-elemento o directamente texto si lo soporta */ /* Considerar alternativa si emoji directo no funciona bien en FF */ }
+         /* Estilo para que el thumb de Firefox se vea como calabaza (fallback con color si emoji no funciona) */
+        .score-slider::-moz-range-thumb { background-color: #ff7800; border-radius: 50%; } /* Fallback naranja */
+        /* Podrías necesitar prefijos específicos o hacks para poner el emoji en FF thumb */
+
+        .criterion-label { margin-top: 0.75rem; font-weight: bold; color: #cbd5e1; font-size: 1rem; }
+        /* === FIN: Estilos Slider Calabaza === */
 
         /* Estilos para el menú de ayuda de notificaciones */
         details > summary { cursor: pointer; list-style: none; }
@@ -194,7 +202,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="register-screen" class="hidden w-full">
              <div class="card rounded-xl p-8 text-center shadow-lg max-w-2xl mx-auto">
                 <h2 class="font-creepster text-4xl text-orange-500 mb-6">Registro</h2>
@@ -222,7 +230,7 @@
                     </div>
                     <button id="copy-code-btn" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-3 rounded-lg text-sm flex-shrink-0">Copiar</button>
                 </div>
-                
+
                 <!-- INICIO: UI DE NOTIFICACIONES -->
                 <div id="notification-setup" class="mb-4 space-y-3">
                     <div id="diagnostic-box">
@@ -254,7 +262,7 @@
 
                 <h3 class="font-bold text-xl mb-3 text-gray-200">Usuarios Conectados</h3>
                 <div id="users-list" class="space-y-2 max-h-64 overflow-y-auto no-scrollbar pr-2"></div>
-                
+
                 <div id="admin-controls" class="hidden mt-6 pt-6 border-t border-gray-600">
                     <!-- INICIO: SECCIÓN DE CRITERIOS DE VOTACIÓN -->
                     <div id="criteria-settings" class="mb-6 bg-gray-900 p-4 rounded-lg">
@@ -281,7 +289,7 @@
                             <button id="add-participants-from-photo-btn" class="btn-secondary w-1/2 bg-teal-600 hover:bg-teal-700">📸 Cargar desde Foto</button>
                             <button id="add-participants-from-list-btn" class="btn-secondary w-1/2 bg-purple-700 hover:bg-purple-800">Cargar Lista</button>
                         </div>
-                        
+
                         <div class="mt-4 border-t border-gray-700 pt-4">
                             <h3 class="font-bold text-lg mb-3 text-center text-gray-300">Añadir Jurado Manualmente</h3>
                             <div class="grid grid-cols-2 gap-2 mb-3">
@@ -321,9 +329,9 @@
                             Eres Jurado y participante, no tienes permitido votar por ti mismo. Espera al siguiente participante para votar.
                          </div>
                          <h3 class="font-bold text-xl mb-4 text-center text-orange-400">¡Emite tu puntaje!</h3>
-                         <!-- El contenedor de calificación ahora usará sliders -->
-                         <div id="scoring-inputs" class="space-y-6"></div>
-                         <button id="submit-vote-btn" class="btn-primary w-full mt-6">Enviar Voto</button>
+                         <!-- Contenedor con nuevo estilo de sliders -->
+                         <div id="scoring-inputs" class="space-y-8"></div>
+                         <button id="submit-vote-btn" class="btn-primary w-full mt-8">Enviar Voto</button>
                     </div>
                     <div id="pending-jurors-list-container" class="hidden mb-6 pt-4 border-t border-gray-600">
                         <h4 class="font-bold text-lg text-cyan-400 mb-2">Jurado pendiente de votar:</h4>
@@ -352,7 +360,7 @@
                  <div id="results-controls" class="mt-8 pt-4 border-t border-gray-700"></div>
             </div>
         </div>
-        
+
         <div id="debug-panel" class="hidden w-full">
              <div class="card rounded-xl p-8 shadow-lg max-w-2xl mx-auto">
                 <h2 class="font-creepster text-4xl text-orange-500 mb-6 text-center">Panel de Desarrollador</h2>
@@ -361,7 +369,7 @@
                     <button data-debug="lobby-admin" class="btn-secondary">Lobby (Admin)</button>
                     <button data-debug="lobby-user" class="btn-secondary">Lobby (User)</button>
                     <button data-debug="voting-admin" class="btn-secondary">Votación (Admin)</button>
-                    <button data-debug="voting-juror-criteria" class="btn-secondary bg-blue-600">Votación (Jurado Múltiple)</button>
+                    <button data-debug="voting-juror-criteria" class="btn-secondary bg-blue-600">Votación (Jurado)</button>
                     <button data-debug="voting-participant" class="btn-secondary">Votación (Participante)</button>
                     <button data-debug="results-admin" class="btn-secondary">Resultados (Admin)</button>
                     <button data-debug="results-user" class="btn-secondary">Resultados (User)</button>
@@ -371,12 +379,10 @@
                     <button data-debug="winner-1" class="btn-primary">Ganador 1º</button>
                     <button data-debug="winner-2" class="btn-primary">Ganador 2º</button>
                     <button data-debug="winner-3" class="btn-primary">Ganador 3º</button>
-                    <!-- INICIO: Botones de prueba de notificaciones -->
                     <button data-debug="notif-perm" class="btn-secondary bg-purple-600">Pedir Permiso Notif.</button>
                     <button data-debug="notif-deck" class="btn-secondary bg-purple-600">Test Notif. (Deck)</button>
                     <button data-debug="notif-up" class="btn-secondary bg-purple-600">Test Notif. (Up)</button>
                     <button data-debug="notif-win" class="btn-secondary bg-purple-600">Test Notif. (Win)</button>
-                    <!-- FIN: Botones de prueba de notificaciones -->
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-700 text-center">
                     <p class="text-gray-400 text-sm">Créditos: <span class="text-orange-400 font-bold">Daichi PC</span></p>
@@ -390,11 +396,11 @@
     <div id="debug-back-button-container" class="hidden fixed bottom-4 right-4 z-[200]">
         <button id="debug-back-button" class="btn-secondary bg-purple-700 hover:bg-purple-800 shadow-lg">Volver al Panel</button>
     </div>
-    
+
     <div id="easter-egg-overlay" class="hidden fixed inset-0 z-[200] cursor-pointer">
         <p class="absolute bottom-4 right-4 font-creepster text-2xl text-orange-500 text-shadow-lg">Daichi PC</p>
     </div>
-    
+
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
         <div class="modal-content !bg-transparent border-none text-center">
             <h2 id="on-deck-title" class="font-creepster text-6xl text-yellow-300 drop-shadow-lg">¡Prepárate!</h2>
@@ -422,7 +428,8 @@
         <div class="modal-content">
             <h2 class="font-creepster text-3xl text-orange-500 mb-4">Voto Pendiente</h2>
             <div id="catchup-participant-info" class="mb-6"></div>
-            <div id="catchup-scoring-inputs"></div>
+             <!-- Usará el nuevo estilo de slider aquí también -->
+            <div id="catchup-scoring-inputs" class="space-y-8"></div>
             <div class="flex gap-4 mt-6">
                 <button id="catchup-vote-cancel" class="btn-secondary flex-1">Cancelar</button>
                 <button id="catchup-vote-save" class="btn-primary flex-1">Enviar Voto</button>
@@ -488,7 +495,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-        
+
         const firebaseConfig = {
             apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
             authDomain: "concurso-halloween.firebaseapp.com",
@@ -509,18 +516,18 @@
         const getUsersCollectionRef = (cId) => collection(db, `artifacts/${appId}/public/data/contests/${cId}/users`);
         const getVotesCollectionRef = (cId, participantId) => collection(db, `artifacts/${appId}/public/data/contests/${cId}/users/${participantId}/votes`);
         const getFeedbackCollectionRef = () => collection(db, `artifacts/${appId}/public/data/feedback`);
-        
+
         const screens = { home: document.getElementById('home-screen'), register: document.getElementById('register-screen'), lobby: document.getElementById('lobby-screen'), voting: document.getElementById('voting-screen'), results: document.getElementById('results-screen'), debug: document.getElementById('debug-panel') };
         const loadingOverlay = document.getElementById('loading-overlay');
         const debugBackButtonContainer = document.getElementById('debug-back-button-container');
         const easterEggOverlay = document.getElementById('easter-egg-overlay');
-        let diagnosticBox = document.getElementById('diagnostic-box'); // Para notificaciones
-        let ayudaContainer = document.getElementById('ayuda-container'); // Para notificaciones
+        let diagnosticBox = document.getElementById('diagnostic-box');
+        let ayudaContainer = document.getElementById('ayuda-container');
         let currentUserId = null, contestId = null, localContestData = {};
         let contestUnsubscribe = null, usersUnsubscribe = null;
         let currentJurorScores = {};
         const MAX_SCORE = 10;
-        
+
         const imageChoiceModal = document.getElementById('image-choice-modal');
         const imageGenerationModal = document.getElementById('image-generation-modal');
         const confirmModal = document.getElementById('confirm-modal');
@@ -592,7 +599,7 @@
             newCloseBtn.addEventListener('click', () => alertModal.classList.remove('visible'));
             alertModal.classList.add('visible');
         }
-        
+
         function showConfirmation(title, message, onConfirm) {
             document.getElementById('confirm-modal-title').textContent = title;
             document.getElementById('confirm-modal-message').textContent = message;
@@ -624,7 +631,7 @@
         const namePrompt = setupModal(document.getElementById('name-modal'), 'name-modal-input', 'name-modal-save', 'name-modal-cancel');
         const costumePrompt = setupModal(document.getElementById('costume-modal'), 'costume-modal-input', 'costume-modal-save', 'costume-modal-cancel');
         const descriptionPrompt = setupModal(document.getElementById('description-modal'), 'description-modal-input', 'description-modal-save', 'description-modal-cancel');
-        
+
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
 
         document.getElementById('copy-code-btn')?.addEventListener('click', () => {
@@ -654,14 +661,15 @@
         async function leaveContest() {
             const contestIdToLeave = contestId;
             const isOrganizer = localContestData.creatorId === currentUserId;
-            const shouldDeleteContest = (isOrganizer && localContestData.status === 'lobby') || (isOrganizer && localContestData.status === 'finalized');
+            // Solo elimina si es el creador Y el concurso está en lobby o ya finalizado (feedback mostrado)
+            const shouldDeleteContest = isOrganizer && (localContestData.status === 'lobby' || localContestData.status === 'finalized');
+
 
             if (contestUnsubscribe) contestUnsubscribe();
             if (usersUnsubscribe) usersUnsubscribe();
             contestUnsubscribe = null;
             usersUnsubscribe = null;
 
-            const oldLocalData = { ...localContestData };
             contestId = null;
             localContestData = {};
             window.location.hash = '';
@@ -671,11 +679,17 @@
                 if (shouldDeleteContest) {
                     await deleteContest(contestIdToLeave);
                 } else if (!isOrganizer) {
-                    await deleteDoc(getUserRef(contestIdToLeave, currentUserId));
+                    // Solo elimina el documento del usuario si no es el organizador.
+                     try {
+                        await deleteDoc(getUserRef(contestIdToLeave, currentUserId));
+                     } catch (error) {
+                         console.warn("Error deleting user doc on leave (might already be deleted):", error);
+                     }
                 }
+                 // Si es el organizador y el concurso está en progreso/pausado, no se borra la sala ni el usuario.
             }
         }
-        
+
         function processImage(base64Image) {
              return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -690,7 +704,7 @@
                 img.src = base64Image;
             });
         }
-        
+
         document.getElementById('image-choice-upload').addEventListener('click', () => {
             imageChoiceModal.classList.remove('visible');
             document.getElementById('image-file-input').click();
@@ -745,6 +759,7 @@
 
         const getImageTag = (b64, cls, alt) => b64 ? `<img src="${b64}" class="${cls}" alt="${alt}">` : `<div class="${cls} bg-gray-700 flex items-center justify-center rounded-sm"><span class="text-gray-400 text-xs">IMG</span></div>`;
 
+        // CAMBIO: HTML del slider rediseñado
         function renderScoringInputs(containerSelector = '#scoring-inputs') {
             const container = document.querySelector(containerSelector);
             if (!container) return;
@@ -758,29 +773,44 @@
 
             let html = '';
             criteria.forEach(crit => {
-                const currentScore = currentJurorScores[crit.id] || 5; 
+                const currentScore = currentJurorScores[crit.id] || 5;
                 html += `
-                    <div>
-                        <label class="block mb-2 text-lg font-bold text-gray-200">${crit.name}</label>
-                        <div class="score-slider-container">
-                            <input type="range" min="1" max="${MAX_SCORE}" value="${currentScore}" class="score-slider" data-criterion-id="${crit.id}">
-                            <span class="font-creepster text-3xl text-orange-400 score-value">${currentScore}</span>
-                        </div>
-                    </div>`;
+                    <div class="score-slider-wrapper">
+                         <div class="score-value-display">${currentScore}</div>
+                         <div class="score-slider-container">
+                             <input type="range" min="1" max="${MAX_SCORE}" value="${currentScore}" class="score-slider" data-criterion-id="${crit.id}">
+                         </div>
+                         <label class="criterion-label block">${crit.name}</label>
+                     </div>`;
             });
             container.innerHTML = html;
+             // Asegurarse de que el botón de enviar esté habilitado si hay criterios
+             const submitBtn = document.getElementById('submit-vote-btn');
+             if (submitBtn && submitBtn.disabled && criteria.length > 0) {
+                 // Solo re-habilita si NO se ha enviado ya un voto para este participante
+                 // La lógica de `setInitialJurorScores` maneja si ya votó
+             } else if (submitBtn && criteria.length === 0) {
+                 submitBtn.disabled = true;
+             }
         }
+
 
         async function setInitialJurorScores(participantId) {
             if (!participantId || !currentUserId) return;
             const q = query(getVotesCollectionRef(contestId, participantId), where("jurorId", "==", currentUserId));
             const snap = await getDocs(q);
             let hasVoted = false;
-            
+
             const criteria = localContestData.criteria || [];
             if (criteria.length > 0) {
                 if (!snap.empty) {
                     currentJurorScores = snap.docs[0].data().scores || {};
+                     // Asegurar que todos los criterios actuales tengan un score, incluso si se añadieron después
+                     criteria.forEach(crit => {
+                         if (currentJurorScores[crit.id] === undefined) {
+                             currentJurorScores[crit.id] = 5; // Default para nuevos criterios
+                         }
+                     });
                     hasVoted = true;
                 } else {
                     currentJurorScores = criteria.reduce((acc, crit) => {
@@ -791,40 +821,45 @@
             } else {
                 currentJurorScores = {};
             }
-            
+
             const btn = document.getElementById('submit-vote-btn');
             if (btn) {
-                btn.disabled = hasVoted;
+                btn.disabled = hasVoted || criteria.length === 0; // Deshabilitar si ya votó O si no hay criterios
                 btn.textContent = hasVoted ? 'Voto Enviado' : 'Enviar Voto';
-                btn.classList.toggle('ready-to-send', !hasVoted);
+                btn.classList.toggle('ready-to-send', !hasVoted && criteria.length > 0);
             }
         }
-        
+
+        // CAMBIO: Actualizar el nuevo display del score
         function attachScoringListeners() {
             document.querySelector('#voter-voting-view').addEventListener('input', (e) => {
                 const target = e.target.closest('.score-slider');
                 if (!target) return;
-                
+
                 const criterionId = target.dataset.criterionId;
                 const score = parseInt(target.value);
                 currentJurorScores[criterionId] = score;
 
-                const scoreDisplay = target.nextElementSibling;
-                if (scoreDisplay && scoreDisplay.classList.contains('score-value')) {
+                // Actualizar el display del número ENCIMA del slider
+                const wrapper = target.closest('.score-slider-wrapper');
+                const scoreDisplay = wrapper ? wrapper.querySelector('.score-value-display') : null;
+                if (scoreDisplay) {
                     scoreDisplay.textContent = score;
                 }
 
                 const btn = document.getElementById('submit-vote-btn');
-                if (btn.disabled) {
-                    btn.disabled = false;
-                    btn.textContent = 'Enviar Voto';
-                    btn.classList.add('ready-to-send');
-                }
+                 // Solo habilitar si no estaba ya deshabilitado por haber votado
+                 if (!btn.textContent.includes('Enviado')) {
+                     btn.disabled = false;
+                     btn.textContent = 'Enviar Voto';
+                     btn.classList.add('ready-to-send');
+                 }
             });
         }
-        
+
+
         document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
-        
+
         document.getElementById('join-contest-btn').addEventListener('click', async () => {
             const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
 
@@ -871,8 +906,8 @@
                     return customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
                 }
 
-                contestId = id; 
-                window.location.hash = id; 
+                contestId = id;
+                window.location.hash = id;
                 showScreen('register');
             } catch(e) {
                 console.error("Error al unirse a la sala:", e);
@@ -891,8 +926,8 @@
             const contestDoc = await getDoc(getContestRef(contestId));
 
             if (!contestDoc.exists()) {
-                await setDoc(getContestRef(contestId), { 
-                    status: "lobby", 
+                await setDoc(getContestRef(contestId), {
+                    status: "lobby",
                     creatorId: currentUserId,
                     isLocked: false,
                     scoringMethod: "weighted_average",
@@ -915,50 +950,67 @@
             await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
             subscribeToContest(contestId);
         });
-        
-        const showScreen = name => { 
-            Object.values(screens).forEach(s => s.classList.add('hidden')); 
-            screens[name]?.classList.remove('hidden'); 
-            
+
+        const showScreen = name => {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[name]?.classList.remove('hidden');
+
             if (isInDebugMode) {
                 debugBackButtonContainer.classList.toggle('hidden', name === 'debug' || name === 'home');
             }
 
             loadingOverlay.classList.add('hidden');
 
-            // Re-asignar elementos del DOM que pueden cambiar de pantalla
             if (name === 'lobby') {
                 diagnosticBox = document.getElementById('diagnostic-box');
                 ayudaContainer = document.getElementById('ayuda-container');
+                 // Al mostrar el lobby, verificar permisos
+                 checkNotificationPermission();
             }
         };
 
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
+             let lastOnDeckStatus = null; // Variable para rastrear el último estado visto
+             let lastIsUpUserId = null;   // Variable para rastrear el último usuario llamado
+
             contestUnsubscribe = onSnapshot(getContestRef(id), async (doc) => {
                 if (!doc.exists()) { leaveContest(); customAlert("Error", "La sala ha sido eliminada."); return; }
                 const oldStatus = localContestData.status;
+                const previousData = { ...localContestData }; // Guardar estado anterior
                 localContestData = { id: doc.id, ...doc.data() };
-                
+
                 const newStatus = localContestData.status;
                 const isAdmin = localContestData.creatorId === currentUserId;
 
                 if (newStatus === 'finalized') {
-                    showFeedbackModal(localContestData.finalMessage);
-                    return;
+                    // Solo muestra el feedback si NO venimos de 'finalized' (evita bucles si se recarga)
+                    if (oldStatus !== 'finalized') {
+                        showFeedbackModal(localContestData.finalMessage);
+                    } else {
+                         // Si ya estaba finalizado y se recarga, simplemente muestra la pantalla de resultados (o home si ya no hay datos)
+                         if (localContestData.topResults) {
+                              showScreen('results');
+                             subscribeToUsers(id, renderResults); // Re-renderizar resultados si existen
+                         } else {
+                              leaveContest(); // Si no hay resultados, ir a home
+                         }
+                    }
+                    return; // Detener flujo aquí para finalizado
                 }
+
 
                 document.getElementById('paused-modal').classList.toggle('visible', newStatus === 'paused' && !isAdmin);
 
                 if (newStatus === 'voting' && oldStatus === 'lobby') {
-                    previousRevealStep = 0; 
+                    previousRevealStep = 0;
                     const meSnapshot = await getDoc(getUserRef(contestId, currentUserId));
                     if(meSnapshot.exists()) {
                         const me = meSnapshot.data();
                          if (!me.isManualEntry) {
                              let alertTitle = ''; let alertMessage = '';
-                             if (me.isJuror && me.isParticipant) { alertTitle = "¡Atención! Tienes Doble Rol"; alertMessage = "Eres Jurado y Participante. No podrás votar por ti mismo."; } 
-                             else if (me.isJuror) { alertTitle = "¡Atención, Jurado!"; alertMessage = "Tu voto es crucial. Mantente atento durante todo el evento."; } 
+                             if (me.isJuror && me.isParticipant) { alertTitle = "¡Atención! Tienes Doble Rol"; alertMessage = "Eres Jurado y Participante. No podrás votar por ti mismo."; }
+                             else if (me.isJuror) { alertTitle = "¡Atención, Jurado!"; alertMessage = "Tu voto es crucial. Mantente atento durante todo el evento."; }
                              else if (me.isParticipant) { alertTitle = "¡El Concurso ha Empezado!"; alertMessage = "Mantente atento a los llamados del organizador. ¡Mucha suerte!"; }
                              if(alertTitle) customAlert(alertTitle, alertMessage);
                         }
@@ -968,7 +1020,9 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-                if (onDeckData.userId === currentUserId && onDeckData.status === 'called') {
+                // --- INICIO: Lógica Anti-Loop de Notificación ---
+                if (onDeckData.userId === currentUserId && onDeckData.status === 'called' && lastOnDeckStatus !== 'called') {
+                     lastOnDeckStatus = 'called'; // Marcar que ya vimos 'called'
                     const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
                     if(isFirstCall) {
                         document.getElementById('on-deck-title').textContent = "¡Rompe el Hielo!";
@@ -978,23 +1032,29 @@
                         document.getElementById('on-deck-message').textContent = "Eres el siguiente en pasar. ¿Estás listo?";
                     }
 
-                    onDeckModal.classList.add('visible'); 
+                    onDeckModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
 
-                    // INICIO: Trigger de Notificación
                     const title = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
                     const body = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!";
                     showNotification(title, body, 'on-deck-alert');
-                    // FIN: Trigger de Notificación
+                } else if (onDeckData.userId !== currentUserId || onDeckData.status !== 'called') {
+                     // Si ya no somos nosotros o el estado cambió, reseteamos el tracker
+                     lastOnDeckStatus = onDeckData.status; // Actualizar con el estado actual (puede ser acknowledged, not_ready, o null)
                 }
-                if (isUpData.userId === currentUserId) {
-                    isUpModal.classList.add('visible'); 
+
+
+                if (isUpData.userId === currentUserId && lastIsUpUserId !== currentUserId) {
+                     lastIsUpUserId = currentUserId; // Marcar que ya vimos este llamado
+                    isUpModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                    
-                    // INICIO: Trigger de Notificación
                     showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
-                    // FIN: Trigger de Notificación
+                } else if (isUpData.userId !== currentUserId) {
+                    // Si ya no somos nosotros, reseteamos el tracker
+                    lastIsUpUserId = null;
                 }
+                // --- FIN: Lógica Anti-Loop de Notificación ---
+
 
                 if (newStatus === 'paused' && isAdmin) {
                     showScreen('lobby');
@@ -1007,17 +1067,21 @@
                 }
             });
         }
-        
+
+
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
             onDeckModal.classList.remove('visible');
+            lastOnDeckStatus = 'acknowledged'; // Marcar como reconocido
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
             onDeckModal.classList.remove('visible');
+             lastOnDeckStatus = 'not_ready'; // Marcar como no listo
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
         });
         document.getElementById('is-up-close').addEventListener('click', async () => {
             isUpModal.classList.remove('visible');
+             lastIsUpUserId = null; // Resetear al cerrar
             if (localContestData.isUp && localContestData.isUp.userId) {
                 await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
             }
@@ -1027,7 +1091,7 @@
             if (usersUnsubscribe) usersUnsubscribe();
             usersUnsubscribe = onSnapshot(getUsersCollectionRef(id), (snap) => renderer(localContestData, snap.docs.map(d => ({ id: d.id, ...d.data() }))));
         }
-        
+
         function renderCriteriaSettings(contestData) {
             const criteria = contestData.criteria || [];
             const scoringMethod = contestData.scoringMethod || 'weighted_average';
@@ -1060,7 +1124,7 @@
                 warningEl.classList.add('hidden');
             }
         }
-        
+
         document.getElementById('admin-controls').addEventListener('change', async (e) => {
             if (localContestData.creatorId !== currentUserId) return;
 
@@ -1084,7 +1148,7 @@
 
         document.getElementById('admin-controls').addEventListener('click', async (e) => {
             if (localContestData.creatorId !== currentUserId) return;
-            
+
             const target = e.target.closest('button');
             if (!target) return;
 
@@ -1105,7 +1169,7 @@
             document.getElementById('admin-controls').classList.toggle('hidden', !isAdmin);
             document.getElementById('wait-for-admin').classList.toggle('hidden', isAdmin);
             document.getElementById('open-settings-btn').classList.toggle('hidden', !isAdmin);
-            
+
             if (isAdmin) {
                 renderCriteriaSettings(contestData);
                 const lockToggle = document.getElementById('lock-contest-toggle');
@@ -1117,7 +1181,7 @@
 
             const list = document.getElementById('users-list'); list.innerHTML = '';
             const sortedUsers = [...users].sort((a, b) => a.name.localeCompare(b.name)).sort((a,b) => (a.id === currentUserId) ? -1 : (b.id === currentUserId) ? 1 : 0);
-            
+
             sortedUsers.forEach(user => {
                 const isMe = user.id === currentUserId;
                 const canEdit = isAdmin || isMe;
@@ -1134,13 +1198,13 @@
                     ${adminCanEditParticipant ? `<button data-action="edit-description" data-userid="${user.id}" data-costume="${user.costume}" class="p-1 rounded bg-gray-700 hover:bg-gray-600" title="Editar/Generar descripción">✨</button>` : ''}
                 `;
 
-                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manually"></span>`;
+                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manualmente"></span>`;
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
                 const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}" data-description="${user.costumeDescription}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
-                
+
                 const rolesHTML = isAdmin ? `<div class="flex items-center gap-4 pt-2 border-t border-gray-700 mt-2"><label class="toggle-label flex-1"><span>Participa</span><input type="checkbox" class="toggle-checkbox" data-role="isParticipant" data-userid="${user.id}" ${user.isParticipant?'checked':''}><div class="toggle-switch"></div></label><label class="toggle-label flex-1"><span>Jurado</span><input type="checkbox" class="toggle-checkbox" data-role="isJuror" data-userid="${user.id}" ${user.isJuror?'checked':''}><div class="toggle-switch"></div></label></div>` : `<div class="text-sm text-orange-400 mt-1">${user.isParticipant?'Participante':''} ${user.isJuror?(user.isParticipant?'/ Jurado':'Jurado'):''}</div>`;
-                
-                const item = document.createElement('div'); 
+
+                const item = document.createElement('div');
                 item.className = `bg-gray-800 p-3 rounded-lg ${isMe ? 'border-2 border-orange-500' : ''}`;
                 item.innerHTML = `
                     <div class="flex items-center">
@@ -1166,7 +1230,7 @@
                 const userId = target.dataset.userid;
                 const user = users.find(u => u.id === userId);
                 const action = target.dataset.action;
-                
+
                 targetUserIdForImage = userId;
 
                 if (action === 'delete-user') {
@@ -1235,7 +1299,7 @@
             };
             document.getElementById('link-user-modal-cancel').onclick = () => linkUserModal.classList.remove('visible');
         }
-        
+
         async function calculateFullRanking(contestId) {
             const contestDoc = await getDoc(getContestRef(contestId));
             const contestData = contestDoc.data();
@@ -1250,12 +1314,12 @@
             for (const p of participants) {
                 const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, p.id));
                 const votes = votesSnapshot.docs.map(d => d.data());
-                
+
                 if (votes.length === 0) {
                     results.push({ ...p, voteCount: 0, overallScore: 0 });
                     continue;
                 }
-                
+
                 const jurorScores = votes.map(vote => {
                     const scores = vote.scores || {};
                     let finalJurorScore = 0;
@@ -1278,13 +1342,13 @@
                     }
                     return finalJurorScore;
                 });
-                
+
                 const overallScore = jurorScores.reduce((sum, s) => sum + s, 0) / jurorScores.length;
                 results.push({ ...p, voteCount: votes.length, overallScore });
             }
             return results.sort((a, b) => b.overallScore - a.overallScore);
         }
-        
+
         async function renderVotingScreen(contestData, users) {
             const isAdmin = contestData.creatorId === currentUserId;
             const me = users.find(u => u.id === currentUserId);
@@ -1292,20 +1356,20 @@
             const isTiebreaker = contestData.status === 'tiebreaker';
 
             document.getElementById('voting-screen-title').textContent = isTiebreaker ? `Desempate por el ${contestData.tiebreakerInfo.rank}º Lugar` : 'Votación en Progreso';
-            document.getElementById('admin-voting-view').classList.toggle('hidden', !isAdmin); 
+            document.getElementById('admin-voting-view').classList.toggle('hidden', !isAdmin);
             document.getElementById('voter-voting-view').classList.remove('hidden');
-            
+
             let participants = users.filter(u => u.isParticipant);
             if (isTiebreaker) participants = participants.filter(p => contestData.tiebreakerInfo.participantIds.includes(p.id));
-            
+
             const jurors = users.filter(u => u.isJuror);
             const currentPId = contestData.currentlyVotingFor;
             const currentP = users.find(u => u.id === currentPId);
-            
+
             if (isAdmin) {
                 const view = document.getElementById('admin-voting-view');
                 let html = `<div class="mb-4 pb-4 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">Panel de Votación</h3><button id="pause-contest-btn" class="btn-secondary bg-yellow-600 hover:bg-yellow-700 text-sm py-2 px-3">Pausar</button></div>`;
-                
+
                 const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
                 if (allVoted && !isTiebreaker) {
                     html += `<button id="calculate-results-btn" class="btn-primary w-full bg-green-600 hover:bg-green-700 mt-4">Calcular y Ver Resultados</button>`;
@@ -1314,9 +1378,11 @@
                 } else {
                     html += `<div class="space-y-2 mb-4 mt-4">`;
                     const votingJurorsForCurrentP = currentP ? jurors.filter(j => j.id !== currentP.id) : [];
-                    const allVotesIn = currentP ? (await getDocs(getVotesCollectionRef(contestId, currentP.id))).size >= votingJurorsForCurrentP.length : false;
+                    const votesSnapshot = currentP ? await getDocs(getVotesCollectionRef(contestId, currentP.id)) : { size: 0 };
+                    const allVotesIn = currentP ? votesSnapshot.size >= votingJurorsForCurrentP.length : false;
 
-                    participants.forEach(p => { 
+
+                    participants.forEach(p => {
                         const isSelected = p.id === selectedForActionId;
                         const evaluated = contestData.votedOnParticipants?.includes(p.id);
                         const voting = p.id === currentPId;
@@ -1327,7 +1393,7 @@
 
                         const onDeck = contestData.onDeck?.userId === p.id, onDeckStatus = onDeck ? contestData.onDeck.status : null;
                         const isUp = contestData.isUp?.userId === p.id, acknowledgedUp = contestData.acknowledgedUp === p.id;
-                        
+
                         let statusIcon = !p.isManualEntry ? '🟢' : '';
                         if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
                             if (onDeckStatus === 'acknowledged') statusIcon = '✅'; else if (onDeckStatus === 'not_ready') statusIcon = '⏳'; else statusIcon = '📣';
@@ -1336,10 +1402,10 @@
                         let statusText = 'Pendiente', statusColor = 'text-yellow-400';
                         if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
                         if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
-                        
-                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`; 
+
+                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`;
                     });
-                    html += `</div>`; 
+                    html += `</div>`;
 
                     if(selectedForActionId) {
                         const selectedUser = users.find(u=> u.id === selectedForActionId), canCall = selectedUser && !selectedUser.isManualEntry;
@@ -1354,15 +1420,15 @@
                 }
 
                 view.innerHTML = html;
-                view.onclick = async e => { 
-                    const target = e.target.closest('button, [data-userid]'); if (!target) return; 
+                view.onclick = async e => {
+                    const target = e.target.closest('button, [data-userid]'); if (!target) return;
                     if (target.dataset.userid) { selectedForActionId = target.dataset.userid === selectedForActionId ? null : target.dataset.userid; return renderVotingScreen(contestData, users); }
-                    
+
                     if (localContestData.creatorId !== currentUserId) return;
-                    
+
                     if (target.id === 'pause-contest-btn') return await updateDoc(getContestRef(contestId), { status: 'paused' });
                     if (target.id === 'calculate-results-btn') return await calculateAndFinalizeResults(users);
-                    
+
                     if (selectedForActionId) {
                         const actionMap = {
                             'admin-call-btn': async () => {
@@ -1373,17 +1439,17 @@
                                 await updateDoc(getContestRef(contestId), update);
                             },
                             'admin-eval-btn': async () => {
-                                const batch = writeBatch(db); 
-                                jurors.forEach(j => batch.update(getUserRef(contestId, j.id), { hasVoted: false })); 
-                                batch.update(getContestRef(contestId), { currentlyVotingFor: selectedForActionId, onDeck: null, isUp: null, acknowledgedUp: null }); 
+                                const batch = writeBatch(db);
+                                jurors.forEach(j => batch.update(getUserRef(contestId, j.id), { hasVoted: false }));
+                                batch.update(getContestRef(contestId), { currentlyVotingFor: selectedForActionId, onDeck: null, isUp: null, acknowledgedUp: null });
                                 await batch.commit();
                                 selectedForActionId = null;
                             },
                             'admin-reopen-btn': async () => {
-                                const batch = writeBatch(db); 
-                                const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId)); 
-                                votes.forEach(v => batch.delete(v.ref)); 
-                                batch.update(getContestRef(contestId), { votedOnParticipants: contestData.votedOnParticipants.filter(id => id !== selectedForActionId) });
+                                const batch = writeBatch(db);
+                                const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId));
+                                votes.forEach(v => batch.delete(v.ref));
+                                batch.update(getContestRef(contestId), { votedOnParticipants: (contestData.votedOnParticipants || []).filter(id => id !== selectedForActionId) });
                                 if (isTiebreaker) {
                                      batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
                                 }
@@ -1414,9 +1480,9 @@
                 renderCatchupList(catchupParticipants);
             }
 
-            if(currentP) { 
+            if(currentP) {
                 pendingJurorsContainer.classList.remove('hidden');
-                votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume}"</p>${currentP.costumeDescription ? `<p class="text-lg text-gray-300 mt-2 italic">"${currentP.costumeDescription}"</p>` : ''}`; 
+                votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume}"</p>${currentP.costumeDescription ? `<p class="text-lg text-gray-300 mt-2 italic">"${currentP.costumeDescription}"</p>` : ''}`;
                 const selfVote = me?.isParticipant && me.id === currentP.id;
                 jurorControls.classList.toggle('hidden', !isJuror);
                 if (isJuror) {
@@ -1424,28 +1490,30 @@
                     ['#scoring-inputs', '#submit-vote-btn', 'h3'].forEach(sel => jurorControls.querySelector(sel).classList.toggle('hidden', selfVote));
                     if (!selfVote) { await setInitialJurorScores(currentPId); renderScoringInputs(); }
                 }
-                const votes = (await getDocs(getVotesCollectionRef(contestId,currentP.id))).docs.map(d=>d.data().jurorId); 
+                 const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, currentP.id));
+                 const votes = votesSnapshot.docs.map(d => d.data().jurorId);
                 const pending = jurors.filter(j => !votes.includes(j.id) && j.id !== currentP.id);
                 pendingJurorsList.innerHTML=pending.length?pending.map(j=>`<li>${j.name}</li>`).join(''):`<li class="text-green-400">¡Todos votaron!</li>`;
                 const votingJurors = jurors.filter(j => j.id !== currentP.id);
-                if(isAdmin && votes.length >= votingJurors.length && !contestData.votedOnParticipants?.includes(currentPId)) {
+                if(isAdmin && votesSnapshot.size >= votingJurors.length && !(contestData.votedOnParticipants || []).includes(currentPId)) {
                     await updateDoc(getContestRef(contestId), { currentlyVotingFor: null, votedOnParticipants: [...(contestData.votedOnParticipants || []), currentPId] });
                 }
-            } else { 
+            } else {
                 pendingJurorsContainer.classList.add('hidden');
                 const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
-                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allVoted ? '¡Votación Finalizada!' :'Esperando concursante...'}</h3>`; 
-                jurorControls.classList.add('hidden'); 
+                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allVoted ? '¡Votación Finalizada!' :'Esperando concursante...'}</h3>`;
+                jurorControls.classList.add('hidden');
             }
-            
+
             const votedIds = contestData.votedOnParticipants || [];
             const sortedVoted = participants.filter(p=>votedIds.includes(p.id)).sort((a,b) => (a.id === currentUserId && a.isParticipant) ? -1 : (b.id === currentUserId && b.isParticipant) ? 1 : 0);
             const sortedPending = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).sort((a,b) => (a.id === currentUserId && a.isParticipant) ? -1 : (b.id === currentUserId && b.isParticipant) ? 1 : 0);
 
-            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join(''); 
+            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
             document.getElementById('pending-list').innerHTML = sortedPending.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
         }
-        
+
+
         async function calculateAndFinalizeResults(allUsers) {
             if (localContestData.creatorId !== currentUserId) return;
             loadingOverlay.classList.remove('hidden');
@@ -1468,7 +1536,7 @@
             let rank = 1;
             let finalResults = [];
             const sortedScores = Object.keys(groupedByScore).sort((a,b) => b-a);
-            
+
             for(const score of sortedScores){
                 const group = groupedByScore[score];
                 if(rank <= 3 && group.length > 1){
@@ -1500,7 +1568,7 @@
         function renderCatchupList(participants) {
             const container = document.getElementById('catchup-list-container');
             if (participants.length === 0) return container.classList.add('hidden');
-            
+
             container.classList.remove('hidden');
             let html = `<h3 class="font-bold text-xl mb-3 text-center text-blue-300">Votos Pendientes (Ponte al día)</h3><div class="space-y-2">`;
             participants.forEach(p => {
@@ -1521,7 +1589,7 @@
         function showCatchupVoteModal(participant) {
             const modal = document.getElementById('catchup-vote-modal');
             modal.querySelector('#catchup-participant-info').innerHTML = `<p class="text-xl font-bold">${participant.name}</p><p class="text-gray-400">"${participant.costume}"</p>`;
-            
+
             const criteria = localContestData.criteria || [];
             catchupScores = criteria.reduce((acc, crit) => ({...acc, [crit.id]: 5}), {});
 
@@ -1529,26 +1597,35 @@
             scoringContainer.innerHTML = '';
              let html = '';
             criteria.forEach(crit => {
+                const currentScore = catchupScores[crit.id] || 5;
                 html += `
-                    <div>
-                        <label class="block mb-2 text-md font-bold">${crit.name}</label>
-                        <div class="score-slider-container">
-                            <input type="range" min="1" max="${MAX_SCORE}" value="5" class="score-slider" data-criterion-id="${crit.id}">
-                            <span class="font-creepster text-2xl text-orange-400 score-value">5</span>
-                        </div>
+                    <div class="score-slider-wrapper">
+                         <div class="score-value-display">${currentScore}</div>
+                         <div class="score-slider-container">
+                             <input type="range" min="1" max="${MAX_SCORE}" value="${currentScore}" class="score-slider" data-criterion-id="${crit.id}">
+                         </div>
+                         <label class="criterion-label block text-sm">${crit.name}</label>
                     </div>`;
             });
             scoringContainer.innerHTML = html;
+
+             // Clonar para evitar listeners duplicados
+             const newScoringContainer = scoringContainer.cloneNode(true);
+             scoringContainer.parentNode.replaceChild(newScoringContainer, scoringContainer);
+
 
             const scoreHandler = e => {
                 const target = e.target.closest('.score-slider');
                 if (!target) return;
                 const score = parseInt(target.value);
-                catchupScores[target.dataset.criterionId] = score;
-                target.nextElementSibling.textContent = score;
+                const criterionId = target.dataset.criterionId;
+                catchupScores[criterionId] = score;
+                 const wrapper = target.closest('.score-slider-wrapper');
+                 const scoreDisplay = wrapper ? wrapper.querySelector('.score-value-display') : null;
+                 if(scoreDisplay) scoreDisplay.textContent = score;
             };
-            scoringContainer.oninput = scoreHandler;
-            
+             newScoringContainer.oninput = scoreHandler; // Asignar al nuevo contenedor
+
             const saveBtn = document.getElementById('catchup-vote-save');
             const newSaveBtn = saveBtn.cloneNode(true);
             saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
@@ -1557,6 +1634,9 @@
                 const voteRef = doc(getVotesCollectionRef(contestId, participant.id), currentUserId);
                 await setDoc(voteRef, { jurorId: currentUserId, scores: catchupScores });
                 modal.classList.remove('visible');
+                 // Re-renderizar la pantalla de votación para actualizar la lista de catchup
+                 const usersSnapshot = await getDocs(getUsersCollectionRef(contestId));
+                 renderVotingScreen(localContestData, usersSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
             });
             modal.classList.add('visible');
         }
@@ -1569,7 +1649,7 @@
             controlsContainer.innerHTML = '';
 
             const finalResults = contestData.topResults ? JSON.parse(contestData.topResults) : [];
-            const newRevealStep = contestData.revealStep || 0; 
+            const newRevealStep = contestData.revealStep || 0;
             let resultsHTML = '';
             const ranks = [3, 2, 1];
 
@@ -1581,31 +1661,31 @@
                 } else {
                     ranks.forEach(rank => {
                         const result = finalResults.find(r => r.rank === rank);
-                        const requiredStep = 4 - rank; 
+                        const requiredStep = 4 - rank;
                         const isRevealed = newRevealStep >= requiredStep;
 
-                        if (newRevealStep >= requiredStep && previousRevealStep < requiredStep) {
+                        // Solo enviar notificación si *este* paso de revelación es el que lo activa
+                        if (newRevealStep === requiredStep && previousRevealStep < requiredStep) {
                             if (result && result.id === currentUserId) {
                                 showWinnerNotification(rank);
-                                // INICIO: Trigger de Notificación
                                 const rankText = rank === 1 ? '1er' : (rank === 2 ? '2do' : '3er');
                                 showNotification(`🥇 ¡FELICIDADES! 🥇`, `¡Ganaste el ${rankText} Lugar! Pasa a recoger tu premio.`, `winner-rank-${rank}`);
-                                // FIN: Trigger de Notificación
                             }
                         }
+
 
                         if (!result) {
                             resultsHTML += `<div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center opacity-50"><p class="text-xl font-bold text-gray-600">${rank}º Lugar:</p><p class="text-gray-500">N/A</p></div>`;
                             return;
                         }
-                        
+
                         const reopenBtn = (result.id === currentUserId) ? `<button data-action="reopen-winner-modal" data-rank="${rank}" class="text-2xl ml-2 p-1 rounded-full hover:bg-purple-700">🏆</button>` : '';
 
                         const imageTag = getImageTag(result.costumeImageBase64, 'image-preview-sm mr-3 flex-shrink-0', result.costume);
                         if (isRevealed) {
                             const colorClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : 'rank-3';
                             const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
-                            
+
                             resultsHTML += `
                                 <div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center border-l-4 border-orange-500 transform transition-transform hover:scale-[1.02]">
                                     <div class="flex items-center text-left">
@@ -1641,10 +1721,11 @@
             if (isAdmin) {
                 ranks.forEach(rank => {
                     const result = finalResults.find(r => r.rank === rank);
-                    const stepToTriggerReveal = 3 - rank;
-                    const nextStepValue = 4 - rank;
+                    const stepToTriggerReveal = 3 - rank; // 0, 1, 2
+                    const nextStepValue = 4 - rank; // 1, 2, 3
                     const isRevealed = newRevealStep >= nextStepValue;
-                    const canReveal = newRevealStep === stepToTriggerReveal;
+                    const canReveal = newRevealStep === stepToTriggerReveal; // Solo se puede revelar si estamos en el paso anterior
+
 
                     if (!result) controlsHTML += `<button class="btn-primary w-full mt-2 bg-gray-700" disabled>${rank}º Lugar (N/A)</button>`;
                     else if (isRevealed) controlsHTML += `<button class="btn-primary w-full mt-2 bg-green-600" disabled>✔️ ${rank}º Lugar Revelado</button>`;
@@ -1653,15 +1734,16 @@
                 });
             }
 
+            // CAMBIO: Se quita el botón "Volver al Inicio" de aquí
             if (newRevealStep >= 3) {
                 if (isAdmin) {
                     controlsHTML += `<button data-action="finalize" class="btn-danger mt-6 w-full">Finalizar y Eliminar Sala</button>`;
                     controlsHTML += `<button data-action="restart" class="btn-secondary mt-2 w-full">Reiniciar Concurso</button>`;
                 }
-                controlsHTML += `<button data-action="leave" class="btn-secondary mt-2 w-full">Volver al Inicio</button>`;
+                // El botón leave ahora solo está en el modal de feedback
             }
             controlsContainer.innerHTML = controlsHTML;
-            
+
             controlsContainer.onclick = async (e) => {
                 const target = e.target.closest('button[data-action]');
                 if (!target) return;
@@ -1673,8 +1755,9 @@
                     await updateDoc(getContestRef(contestId), { revealStep: parseInt(target.dataset.nextStep) });
                 } else if (action === 'finalize') {
                     showConfirmation('Finalizar Concurso', '¿Estás seguro? Esto eliminará permanentemente la sala para todos los usuarios.', async () => {
-                        await updateDoc(getContestRef(contestId), { 
-                            status: 'finalized', 
+                        // Al finalizar, se cambia el estado y se envía mensaje. El listener principal mostrará el feedback.
+                        await updateDoc(getContestRef(contestId), {
+                            status: 'finalized',
                             finalMessage: "¡Un aplauso grande para los ganadores y para cada uno de los participantes que llenaron esta noche de creatividad y espanto! El jurado ha deliberado y el concurso de disfraces ha concluido oficialmente.\n\nGracias a todos por hacer de este un evento inolvidable. ¡Ahora, que la fiesta continúe, y que esta noche se convierta en un recuerdo inolvidable para todos!"
                         });
                     });
@@ -1688,12 +1771,13 @@
                         votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
                     }
                     await batch.commit();
-                } else if(action === 'leave') {
-                    leaveContest();
+                    // No hace falta salir, el listener principal cambiará a lobby
                 }
+                // La acción 'leave' se eliminó de aquí
             };
-            previousRevealStep = newRevealStep;
+            previousRevealStep = newRevealStep; // Actualizar el paso anterior *después* de renderizar
         }
+
 
         async function generateDescriptionWithGemini(costumeName) {
             const apiKey = getApiKey();
@@ -1718,10 +1802,10 @@
                 if (text) return text.trim(); else throw new Error("La IA no devolvió una respuesta válida. Revisa la respuesta de la API en la consola del navegador.");
             } catch (error) {
                 console.error("Error en generateDescriptionWithGemini:", error);
-                throw error; 
+                throw error;
             }
         }
-        
+
         async function generateImageWithImagen(prompt) {
             const apiKey = getApiKey();
             if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
@@ -1745,7 +1829,7 @@
                 throw error;
             }
         }
-        
+
         async function extractTextWithGemini(base64Image) {
             const apiKey = getApiKey();
             if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
@@ -1794,7 +1878,7 @@
             reader.onerror = () => { customAlert("Error de Archivo", "No se pudo leer el archivo."); loadingOverlay.classList.add('hidden'); uploadBtn.disabled = false; e.target.value = ''; };
             reader.readAsDataURL(file);
         });
-        
+
         document.getElementById('image-generation-cancel').addEventListener('click', () => imageGenerationModal.classList.remove('visible'));
         document.getElementById('image-generation-generate').addEventListener('click', async (e) => {
             if (!checkAndPromptForKey()) return;
@@ -1835,18 +1919,18 @@
         });
 
         document.getElementById('add-juror-btn')?.addEventListener('click', async () => { if (localContestData.creatorId !== currentUserId) return; const name=document.getElementById('new-juror-name').value.trim(); if(name){await addDoc(getUsersCollectionRef(contestId),{name,costume:'',isParticipant:false,isJuror:true,isManualEntry:true,costumeDescription:''}); document.getElementById('new-juror-name').value='';} });
-        
+
         document.getElementById('lock-contest-toggle')?.addEventListener('change', async (e) => {
              if (localContestData.creatorId !== currentUserId) return;
              const isChecked = e.target.checked;
              const isLocked = !isChecked;
              await updateDoc(getContestRef(contestId), { isLocked: isLocked });
         });
-        
-        document.getElementById('start-contest-btn')?.addEventListener('click', async () => { 
+
+        document.getElementById('start-contest-btn')?.addEventListener('click', async () => {
             if (localContestData.creatorId !== currentUserId) return;
             if (localContestData.status === 'paused') return await updateDoc(getContestRef(contestId), { status: 'voting' });
-            
+
             if (localContestData.scoringMethod === 'weighted_average') {
                 const totalWeight = (localContestData.criteria || []).reduce((sum, c) => sum + (c.weight || 0), 0);
                 if (totalWeight !== 100) {
@@ -1855,23 +1939,23 @@
             }
 
             const users = (await getDocs(getUsersCollectionRef(contestId))).docs.map(d => d.data());
-            if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante."); 
-            if(users.filter(u=>u.isJuror).length<3) return customAlert("Regla del Concurso","Debe haber al menos 3 jurados para iniciar."); 
-            await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: [], onDeck: null, isUp: null, acknowledgedUp: null }); 
+            if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante.");
+            if(users.filter(u=>u.isJuror).length<3) return customAlert("Regla del Concurso","Debe haber al menos 3 jurados para iniciar.");
+            await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: [], onDeck: null, isUp: null, acknowledgedUp: null });
         });
 
-        document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => { 
-            if (e.target.disabled) return; 
-            e.target.disabled = true; 
-            e.target.textContent = 'Enviado'; 
-            const voteRef = doc(getVotesCollectionRef(contestId, localContestData.currentlyVotingFor), currentUserId); 
-            const batch = writeBatch(db); 
+        document.getElementById('submit-vote-btn')?.addEventListener('click', async (e) => {
+            if (e.target.disabled) return;
+            e.target.disabled = true;
+            e.target.textContent = 'Enviado';
+            const voteRef = doc(getVotesCollectionRef(contestId, localContestData.currentlyVotingFor), currentUserId);
+            const batch = writeBatch(db);
             batch.set(voteRef, { jurorId: currentUserId, scores: currentJurorScores });
-            batch.update(getUserRef(contestId, currentUserId), { hasVoted: true }); 
-            await batch.commit(); 
+            batch.update(getUserRef(contestId, currentUserId), { hasVoted: true });
+            await batch.commit();
         });
-        
-        // INICIO: Funciones de Notificación
+
+        // --- INICIO: Funciones de Notificación ---
         async function registerServiceWorker() {
             console.log('Iniciando registro de Service Worker (SW)...');
             if ('serviceWorker' in navigator) {
@@ -1880,64 +1964,83 @@
                     console.log('Service Worker registrado.');
                     await navigator.serviceWorker.ready;
                     console.log('Service Worker listo y controlando.');
-                    checkNotificationPermission();
+                    checkNotificationPermission(); // Verificar permisos al estar listo
                 } catch (error) {
                     console.error(`Error en registro de SW: ${error.message}`);
                     if(diagnosticBox) diagnosticBox.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded"><p><b>Error Crítico:</b> No se pudo registrar el SW.</p></div>`;
                 }
             } else {
+                 console.warn('Service Workers no soportados.');
                 if(diagnosticBox) diagnosticBox.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded"><p><b>Error:</b> Service Workers no soportados.</p></div>`;
             }
         }
 
-        function checkNotificationPermission(forceRequest = false) {
+         function checkNotificationPermission(forceRequest = false) {
              if (!diagnosticBox || !ayudaContainer) {
-                 console.log("Elementos de UI para notificación no encontrados, reintentando...");
+                 console.log("Elementos UI notificación no listos, reintentando...");
+                 // Intentar reasignar y verificar de nuevo tras un breve delay
                  setTimeout(() => {
                     diagnosticBox = document.getElementById('diagnostic-box');
                     ayudaContainer = document.getElementById('ayuda-container');
                     if (diagnosticBox) checkNotificationPermission(forceRequest);
-                 }, 500);
+                    else console.error("No se encontró #diagnostic-box incluso después del delay.");
+                 }, 300); // Delay corto
                  return;
              }
+             console.log("Elementos UI notificación encontrados.");
+
 
              if ('Notification' in window) {
                 const permission = Notification.permission;
+                 console.log("Permiso actual:", permission);
                 if (permission === 'granted') {
-                     diagnosticBox.innerHTML = `<div class="bg-green-100 text-green-800 p-3 rounded"><p><b>Notificaciones:</b> ✅ Activadas</p></div>`;
+                     diagnosticBox.innerHTML = `<div class="bg-green-800/30 text-green-300 p-3 rounded border border-green-600"><p><b>Notificaciones:</b> ✅ Activadas</p></div>`;
                      ayudaContainer.classList.remove('hidden');
                 } else if (permission === 'denied') {
-                     diagnosticBox.innerHTML = `<div class="bg-red-100 text-red-700 p-3 rounded"><p><b>Notificaciones:</b> ❌ Denegadas. Habilita en los ajustes del navegador.</p></div>`;
+                     diagnosticBox.innerHTML = `<div class="bg-red-800/30 text-red-300 p-3 rounded border border-red-600"><p><b>Notificaciones:</b> ❌ Denegadas. Habilita en los ajustes del sitio.</p></div>`;
                      ayudaContainer.classList.add('hidden');
-                } else {
-                    diagnosticBox.innerHTML = `<div class="bg-yellow-100 text-yellow-800 p-3 rounded"><p><b>Notificaciones:</b> ⏳ <button id="request-perm-btn" class="font-bold underline">Activar notificaciones</button></p></div>`;
+                } else { // 'default'
+                    diagnosticBox.innerHTML = `<div class="bg-yellow-800/30 text-yellow-300 p-3 rounded border border-yellow-600"><p><b>Notificaciones:</b> ⏳ <button id="request-perm-btn" class="font-bold underline hover:text-yellow-100">Activar notificaciones</button> para alertas importantes.</p></div>`;
                     ayudaContainer.classList.add('hidden');
-                    
-                    const newDiagBox = diagnosticBox.cloneNode(true);
-                    diagnosticBox.parentNode.replaceChild(newDiagBox, diagnosticBox);
-                    diagnosticBox = newDiagBox;
 
-                    diagnosticBox.onclick = (e) => {
-                        if (e.target.id === 'request-perm-btn') {
-                            Notification.requestPermission().then(permission => checkNotificationPermission(false));
-                        }
-                    };
-                    
+                    // Importante: Re-adjuntar listener al botón si se regenera el HTML
+                    const requestBtn = diagnosticBox.querySelector('#request-perm-btn');
+                    if (requestBtn) {
+                        requestBtn.onclick = () => { // Usar onclick para simplificar
+                            console.log("Solicitando permiso...");
+                            Notification.requestPermission().then(permission => {
+                                console.log("Permiso después de solicitar:", permission);
+                                checkNotificationPermission(false); // Volver a verificar estado
+                            });
+                        };
+                    } else {
+                         console.error("No se encontró el botón #request-perm-btn");
+                    }
+
+                     // Si se fuerza la solicitud (desde debug, por ejemplo)
                     if (forceRequest) {
-                         Notification.requestPermission().then(permission => checkNotificationPermission(false));
+                         console.log("Forzando solicitud de permiso...");
+                         Notification.requestPermission().then(permission => {
+                              console.log("Permiso después de forzar:", permission);
+                             checkNotificationPermission(false);
+                         });
                     }
                 }
             } else {
+                 console.warn("Notificaciones no soportadas.");
                 diagnosticBox.innerHTML = `<div class="bg-gray-700 text-gray-300 p-3 rounded"><p><b>Notificaciones:</b> No soportadas en este navegador.</p></div>`;
+                 ayudaContainer.classList.add('hidden');
             }
         }
-        
+
+
         function showNotification(title, body, tag = 'halloween-alert') {
-            if (Notification.permission !== 'granted') {
-                console.log('Permiso para notificaciones no concedido.');
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                console.log('Permiso para notificaciones no concedido o no soportado.');
                 return;
             }
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                 console.log(`Enviando notificación al SW: T:${title}, B:${body}, T:${tag}`);
                 navigator.serviceWorker.controller.postMessage({
                     type: 'show_notification',
                     title: title,
@@ -1945,40 +2048,50 @@
                     tag: tag
                 });
             } else {
-                console.log('Service Worker no está listo para enviar notificación.');
+                console.warn('Service Worker no está listo para enviar notificación.');
+                 // Opcional: Intentar registrar de nuevo si no está listo?
+                 // registerServiceWorker();
             }
         }
-        // FIN: Funciones de Notificación
+        // --- FIN: Funciones de Notificación ---
+
 
         onAuthStateChanged(auth, async (user) => {
-            if (user) { 
-                currentUserId = user.uid; 
-                
-                // Registrar Service Worker al autenticar
-                registerServiceWorker();
+            if (user) {
+                currentUserId = user.uid;
 
-                const hashId = window.location.hash.substring(1).toUpperCase(); 
+                // Registrar Service Worker AHORA, antes de cargar datos
+                await registerServiceWorker(); // Esperar a que intente registrarse
+
+                const hashId = window.location.hash.substring(1).toUpperCase();
                 if (hashId) {
                     contestId = hashId;
-                    const contestDoc = await getDoc(getContestRef(hashId));
-                    if(contestDoc.exists()){
-                        const userDoc = await getDoc(getUserRef(hashId, currentUserId));
-                        if(userDoc.exists()){
-                            subscribeToContest(contestId);
+                    try {
+                        const contestDoc = await getDoc(getContestRef(hashId));
+                        if(contestDoc.exists()){
+                            const userDoc = await getDoc(getUserRef(hashId, currentUserId));
+                            if(userDoc.exists()){
+                                subscribeToContest(contestId); // Suscribirse a datos del concurso
+                            } else {
+                                 if(contestDoc.data().isLocked) {
+                                    customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
+                                    window.location.hash = '';
+                                    showScreen('home');
+                                 } else {
+                                    showScreen('register');
+                                 }
+                            }
                         } else {
-                             if(contestDoc.data().isLocked) {
-                                customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
-                                window.location.hash = '';
-                                showScreen('home');
-                             } else {
-                                showScreen('register');
-                             }
+                             showScreen('register'); // Permitir crear la sala
                         }
-                    } else {
-                         showScreen('register');
+                    } catch (error) {
+                        console.error("Error al verificar sala/usuario:", error);
+                        customAlert("Error de Conexión", "No se pudo verificar la sala. Intenta de nuevo.");
+                        window.location.hash = '';
+                        showScreen('home');
                     }
                 } else {
-                    showScreen('home'); 
+                    showScreen('home');
                 }
             } else {
                 loadingOverlay.classList.remove('hidden');
@@ -1986,7 +2099,7 @@
                 await signInAnonymously(auth);
             }
         });
-        
+
         let currentRating = 0;
         const stars = document.querySelectorAll('#feedback-stars span');
         const emojiDisplay = document.getElementById('feedback-emoji-display');
@@ -2008,28 +2121,41 @@
             e.target.disabled = true;
             e.target.textContent = 'Enviando...';
             const comment = document.getElementById('feedback-comment').value;
-            await addDoc(getFeedbackCollectionRef(), {
-                rating: currentRating,
-                comment: comment,
-                contestId: contestId,
-                timestamp: serverTimestamp()
-            });
-            document.getElementById('feedback-modal').classList.remove('visible');
-            leaveContest();
+            try {
+                await addDoc(getFeedbackCollectionRef(), {
+                    rating: currentRating,
+                    comment: comment,
+                    contestId: contestId || 'desconocido', // Añadir ID si existe
+                    timestamp: serverTimestamp()
+                });
+            } catch (error) {
+                console.error("Error saving feedback:", error);
+            } finally {
+                document.getElementById('feedback-modal').classList.remove('visible');
+                leaveContest(); // Salir después de enviar o fallar
+            }
         });
 
         document.getElementById('skip-feedback-btn').addEventListener('click', () => {
              document.getElementById('feedback-modal').classList.remove('visible');
-             leaveContest();
+             leaveContest(); // Salir también al omitir
         });
 
         function showFeedbackModal(message) {
             const modal = document.getElementById('feedback-modal');
             modal.querySelector('#feedback-modal-title').textContent = "¡Halloween una Noche Mágica!";
             modal.querySelector('#feedback-modal-message').textContent = message;
+            // Resetear estado del modal de feedback
+            currentRating = 0;
+            stars.forEach(s => s.classList.remove('selected'));
+            emojiDisplay.textContent = '';
+            document.getElementById('feedback-comment').value = '';
+            submitFeedbackBtn.disabled = true;
+             submitFeedbackBtn.textContent = 'Enviar Valoración'; // Resetear texto botón
+
             modal.classList.add('visible');
         }
-        
+
         // --- DEBUG MODE ---
         function initializeDebugMode() {
             isInDebugMode = true;
@@ -2058,13 +2184,13 @@
                     { id: 'participant3', rank: 3, name: 'Momia', costume: 'Momia Egipsia', overallScore: 8.20 }
                 ])
             };
-            
+
             showScreen('debug');
-            
+
             document.querySelector('#debug-panel').addEventListener('click', (e) => {
                 const action = e.target.dataset.debug;
                 if (!action) return;
-                
+
                 document.querySelectorAll('.modal-backdrop, .winner-notification').forEach(el => el.classList.remove('visible'));
 
                 switch(action) {
@@ -2072,26 +2198,24 @@
                     case 'lobby-admin': currentUserId = 'admin1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
                     case 'lobby-user': currentUserId = 'participant1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
                     case 'voting-admin': currentUserId = 'admin1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
-                    case 'voting-juror-criteria': currentUserId = 'juror1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'voting-juror-criteria': currentUserId = 'juror1'; localContestData=mockContest; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break; // Asegurar datos locales
                     case 'voting-participant': currentUserId = 'participant2'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
-                    case 'results-admin': currentUserId = 'admin1'; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
-                    case 'results-user': currentUserId = 'participant1'; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
+                    case 'results-admin': currentUserId = 'admin1'; localContestData=mockContest; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break; // Asegurar datos locales
+                    case 'results-user': currentUserId = 'participant1'; localContestData=mockContest; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break; // Asegurar datos locales
                     case 'on-deck': onDeckModal.classList.add('visible'); break;
                     case 'is-up': isUpModal.classList.add('visible'); break;
                     case 'feedback': showFeedbackModal("Mensaje de prueba para la ventana de feedback. Gracias por jugar."); break;
                     case 'winner-1': showWinnerNotification(1); break;
                     case 'winner-2': showWinnerNotification(2); break;
                     case 'winner-3': showWinnerNotification(3); break;
-                    // INICIO: Casos de prueba de notificaciones
                     case 'notif-perm': checkNotificationPermission(true); break;
                     case 'notif-deck': showNotification("¡Prepárate! (Prueba)", "Eres el siguiente en pasar.", 'test-deck'); break;
                     case 'notif-up': showNotification("¡AHORA! (Prueba)", "Es tu turno de brillar.", 'test-up'); break;
                     case 'notif-win': showNotification("🥇 ¡FELICIDADES! (Prueba) 🥇", "Ganaste el 1er Lugar.", 'test-win'); break;
-                    // FIN: Casos de prueba de notificaciones
-                    case 'exit': 
+                    case 'exit':
                         isInDebugMode = false;
                         debugBackButtonContainer.classList.add('hidden');
-                        window.location.reload(); 
+                        window.location.reload();
                         break;
                 }
             });
