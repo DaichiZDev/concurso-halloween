@@ -200,37 +200,36 @@
             padding: 0;
             z-index: 1;
 
-            /* --- CORRECCIÓN: INICIO (Puntos Guía) --- */
+            /* --- CORRECCIÓN: INICIO (Puntos Guía Naranja) --- */
             /* 1. Fondo base de la barra */
             background-color: #4a5568; 
             
             /* 2. Apilamos 10 puntos (radial-gradient) + la barra de fondo (linear-gradient) */
             background-image:
-                /* Puntos 1-10 (Círculos de 4px de diámetro) */
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
-                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                /* Puntos 1-10 (Círculos de 6px de diámetro, naranja) */
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
+                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
                 /* Barra de fondo */
                 linear-gradient(to right, #4a5568, #718096);
 
-            /* 3. No repetir ningún punto; solo la barra de fondo (aunque es 100%) */
+            /* 3. No repetir ningún punto */
             background-repeat: no-repeat;
             
-            /* 4. Definimos el tamaño de cada fondo (4px para cada punto, 100% para la barra) */
+            /* 4. Definimos el tamaño de cada fondo (6px para cada punto, 100% para la barra) */
             background-size:
-                4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 4px,
-                4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 4px,
+                6px 6px, 6px 6px, 6px 6px, 6px 6px, 6px 6px,
+                6px 6px, 6px 6px, 6px 6px, 6px 6px, 6px 6px,
                 100% 100%;
             
             /* 5. Posicionamos los 10 puntos en los 10 saltos (0% a 100% en 9 pasos) */
-            /* El slider de 1-10 tiene 9 "espacios" entre valores */
             background-position:
                 0% center,               /* Punto 1 (Valor 1) */
                 calc(100% / 9 * 1) center, /* Punto 2 (Valor 2) */
@@ -243,7 +242,7 @@
                 calc(100% / 9 * 8) center, /* Punto 9 (Valor 9) */
                 100% center,             /* Punto 10 (Valor 10) */
                 0% center;               /* Posición de la barra de fondo */
-            /* --- CORRECCIÓN: FIN (Puntos Guía) --- */
+            /* --- CORRECCIÓN: FIN (Puntos Guía Naranja) --- */
         }
         /* --- FIN DE LA SECCIÓN CORREGIDA --- */
 
@@ -680,8 +679,10 @@
         let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
-        // **FIX:** Declare notificationState globally ONCE.
-        var notificationState = { // Use 'var' or declare it outside any function if preferred
+        
+        // **CORRECCIÓN DE BUG:** El estado de la notificación DEBE ser global y NO reiniciarse
+        // al suscribirse al concurso.
+        var notificationState = { 
              lastOnDeckStatus: null,
              lastIsUpUserId: null
          };
@@ -1116,8 +1117,10 @@
 
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
-            // Resetear estado de notificación al suscribirse
-            notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
+            
+            // **CORRECCIÓN DE BUG:** Esta línea reiniciaba el estado en cada suscripción,
+            // causando el bucle de notificaciones. Se ha movido a la declaración global.
+            // notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
 
             contestUnsubscribe = onSnapshot(getContestRef(id), async (doc) => {
                 if (!doc.exists()) { leaveContest(); customAlert("Error", "La sala ha sido eliminada."); return; }
@@ -2312,7 +2315,7 @@
                 topResults: JSON.stringify([
                     { id: 'participant1', rank: 1, name: 'Drácula', costume: 'Conde Drácula', overallScore: 9.50 },
                     { id: 'juror2', rank: 2, name: 'Jurado 2 (y participa)', costume: 'Vampiro', overallScore: 8.75 },
-                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Momia Egipsia', overallScore: 8.20 }
+                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Egipsia', overallScore: 8.20 }
                 ])
             };
 
@@ -2357,4 +2360,4 @@
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
     </script>
 </body>
-                         </html>
+    </html>
