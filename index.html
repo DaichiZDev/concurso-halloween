@@ -589,7 +589,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "httpsD://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
@@ -1292,7 +1292,7 @@
                     ${adminCanEditParticipant ? `<button data-action="edit-description" data-userid="${user.id}" data-costume="${user.costume}" class="p-1 rounded bg-gray-700 hover:bg-gray-600" title="Editar/Generar descripción">✨</button>` : ''}
                 `;
 
-                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manually"></span>`;
+                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manualmente"></span>`;
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
                 const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}" data-description="${user.costumeDescription}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
 
@@ -1867,27 +1867,7 @@
                             votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref)); // Borrar votos
                         }
                         await batch.commit();
-                        
-                        // --- INICIO DE LA CORRECCIÓN ---
-                        // Se fuerza el cambio de pantalla para el admin que hizo clic,
-                        // para evitar condiciones de carrera con los listeners.
-                        
-                        // 1. Actualizar el estado local inmediatamente
-                        localContestData.status = 'lobby';
-                        localContestData.topResults = null;
-                        localContestData.revealStep = 0;
-                        localContestData.currentlyVotingFor = null;
-                        localContestData.votedOnParticipants = [];
-                        localContestData.tiebreakerInfo = null;
-        
-                        // 2. Cambiar la pantalla
-                        showScreen('lobby');
-                        
-                        // 3. Re-suscribir a los usuarios con el renderizador del lobby
-                        // Esto cancelará el listener de 'renderResults' y activará el de 'renderLobby'
-                        subscribeToUsers(contestId, renderLobby);
-                        // --- FIN DE LA CORRECCIÓN ---
-
+                         // El listener principal detectará 'lobby' y cambiará la pantalla
                      });
                 }
             };
@@ -2334,4 +2314,7 @@
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
     </script>
 </body>
-                        </html>
+</html>
+
+
+
