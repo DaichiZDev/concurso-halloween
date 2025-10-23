@@ -184,71 +184,23 @@
             height: 40px;
             display: flex;
             align-items: center;
-            padding: 0 10px; /* Mantener padding por si acaso */
+            padding: 0 10px;
         }
-        
-        /* --- ESTA ES LA SECCIÓN CORREGIDA --- */
         .score-slider {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
             height: 10px;
+            background: linear-gradient(to right, #4a5568, #718096);
             border-radius: 5px;
             outline: none;
             cursor: pointer;
             margin: 0;
             padding: 0;
             z-index: 1;
-
-            /* --- CORRECCIÓN: INICIO (Puntos Guía Naranja Alineados) --- */
-            /* 1. Fondo base de la barra */
-            background-color: #4a5568;
-
-            /* 2. Apilamos 10 puntos (radial-gradient) + la barra de fondo (linear-gradient) */
-            background-image:
-                /* Puntos 1-10 (Círculos de 6px de diámetro, naranja) */
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px), /* Naranja, 6px */
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                radial-gradient(circle, rgba(255, 120, 0, 0.8) 3px, transparent 3px),
-                /* Barra de fondo */
-                linear-gradient(to right, #4a5568, #718096);
-
-            /* 3. No repetir ningún punto */
-            background-repeat: no-repeat;
-
-            /* 4. Definimos el tamaño de cada fondo (6px para cada punto, 100% para la barra) */
-            background-size:
-                6px 6px, 6px 6px, 6px 6px, 6px 6px, 6px 6px,
-                6px 6px, 6px 6px, 6px 6px, 6px 6px, 6px 6px,
-                100% 100%;
-
-            /* 5. Posicionamos los 10 puntos usando calc() para alinearlos con los valores 1-10 */
-            /* Usamos un rango efectivo del 5% al 95% para mejor alineación visual */
-            /* El rango es 90%, dividido en 9 intervalos da 10% por intervalo */
-            background-position:
-                calc(5% + 10% * 0) center, /* Punto 1 (Valor 1) a 5% */
-                calc(5% + 10% * 1) center, /* Punto 2 (Valor 2) a 15% */
-                calc(5% + 10% * 2) center, /* Punto 3 (Valor 3) a 25% */
-                calc(5% + 10% * 3) center, /* Punto 4 (Valor 4) a 35% */
-                calc(5% + 10% * 4) center, /* Punto 5 (Valor 5) a 45% */
-                calc(5% + 10% * 5) center, /* Punto 6 (Valor 6) a 55% */
-                calc(5% + 10% * 6) center, /* Punto 7 (Valor 7) a 65% */
-                calc(5% + 10% * 7) center, /* Punto 8 (Valor 8) a 75% */
-                calc(5% + 10% * 8) center, /* Punto 9 (Valor 9) a 85% */
-                calc(5% + 10% * 9) center, /* Punto 10 (Valor 10) a 95% */
-                0% center;                 /* Posición de la barra de fondo */
-            /* --- CORRECCIÓN: FIN (Puntos Guía Naranja Alineados) --- */
         }
-        /* --- FIN DE LA SECCIÓN CORREGIDA --- */
 
-
+        /* --- CORRECCIÓN: INICIO --- */
         /* Estilo para Webkit (Chrome, Safari, Edge) */
         .score-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -259,6 +211,9 @@
             cursor: pointer;
             background-color: transparent; /* El fondo es el SVG */
             
+            /* Aquí está la corrección: 
+              Usamos un SVG en línea como fondo en lugar de un pseudo-elemento ::before.
+            */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='50' dy='.35em' font-size='80' text-anchor='middle'%3E🎃%3C/text%3E%3C/svg%3E");
             background-size: 90%; /* 90% del tamaño del thumb */
             background-repeat: no-repeat;
@@ -292,6 +247,7 @@
             position: relative;
             z-index: 2;
         }
+        /* --- CORRECCIÓN: FIN --- */
 
 
         /* Separador entre criterios */
@@ -681,10 +637,8 @@
         let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
-        
-        // **CORRECCIÓN DE BUG:** El estado de la notificación DEBE ser global y NO reiniciarse
-        // al suscribirse al concurso.
-        var notificationState = { 
+        // **FIX:** Declare notificationState globally ONCE.
+        var notificationState = { // Use 'var' or declare it outside any function if preferred
              lastOnDeckStatus: null,
              lastIsUpUserId: null
          };
@@ -1117,10 +1071,13 @@
         };
 
 
+        // ======================================================
+        // === INICIO: FUNCIÓN subscribeToContest CORREGIDA ===
+        // ======================================================
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
-            
-            // El estado de notificación es global y persiste
+            // Resetear estado de notificación al suscribirse
+            notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
 
             contestUnsubscribe = onSnapshot(getContestRef(id), async (doc) => {
                 if (!doc.exists()) { leaveContest(); customAlert("Error", "La sala ha sido eliminada."); return; }
@@ -1130,6 +1087,9 @@
                 const newStatus = localContestData.status;
                 const isAdmin = localContestData.creatorId === currentUserId;
 
+                // --- INICIO: LÓGICA DE ESTADO CORREGIDA ---
+
+                // 1. Manejar estado FINALIZADO (Feedback y salida)
                 if (newStatus === 'finalized') {
                     if (oldStatus !== 'finalized') {
                         showFeedbackModal(localContestData.finalMessage);
@@ -1141,12 +1101,14 @@
                               leaveContest();
                          }
                     }
-                    return;
+                    return; // Importante: Salir aquí
                 }
 
+                // 2. Manejar estado PAUSADO
                 document.getElementById('paused-modal').classList.toggle('visible', newStatus === 'paused' && !isAdmin);
 
                 if (newStatus === 'voting' && oldStatus === 'lobby') {
+                    // ... (lógica de alerta de doble rol, etc. - sin cambios)
                     previousRevealStep = 0;
                     const meSnapshot = await getDoc(getUserRef(contestId, currentUserId));
                     if(meSnapshot.exists()) {
@@ -1164,114 +1126,69 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-                // --- INICIO: Lógica Anti-Loop de Notificación (Verificada) ---
+                // ... (Lógica de notificación OnDeck/IsUp - sin cambios)
                 const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
-                // Muestra el modal SOLO si el estado es 'called' Y el último estado registrado NO era 'called'
                 if (currentOnDeckStatus === 'called' && notificationState.lastOnDeckStatus !== 'called') {
-                    console.log("Showing onDeck modal. Current DB status:", currentOnDeckStatus, "Last known status:", notificationState.lastOnDeckStatus);
-                    notificationState.lastOnDeckStatus = 'called'; // MARCAR que ya vimos 'called'
-
+                    notificationState.lastOnDeckStatus = 'called';
                     const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
                     document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
                     document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
-
                     onDeckModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
                     const title = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
                     const body = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!";
                     showNotification(title, body, 'on-deck-alert');
-                } else if (currentOnDeckStatus !== 'called' && notificationState.lastOnDeckStatus === 'called') {
-                    // Si el estado ya NO es 'called', pero el último que vimos SÍ lo era,
-                    // reseteamos nuestro estado local para permitir futuras llamadas.
-                     console.log("Resetting onDeck status locally. Current DB status:", currentOnDeckStatus, "Last known status:", notificationState.lastOnDeckStatus);
-                    notificationState.lastOnDeckStatus = currentOnDeckStatus; // Guardamos el estado actual ('acknowledged', 'not_ready', or null)
-                } else if (currentOnDeckStatus !== notificationState.lastOnDeckStatus) {
-                     // Si simplemente cambia entre acknowledged/not_ready/null, solo actualizamos el estado local sin mostrar modal
-                     console.log("Updating local onDeck status without modal. Current DB status:", currentOnDeckStatus, "Last known status:", notificationState.lastOnDeckStatus);
-                     notificationState.lastOnDeckStatus = currentOnDeckStatus;
+                } else if (currentOnDeckStatus !== 'called') {
+                    notificationState.lastOnDeckStatus = currentOnDeckStatus;
                 }
-
-                // Lógica similar para 'isUp'
                 const currentIsUpUserId = isUpData.userId;
                 if (currentIsUpUserId === currentUserId && notificationState.lastIsUpUserId !== currentUserId) {
-                    console.log("Showing isUp modal. Current DB user:", currentIsUpUserId, "Last known user:", notificationState.lastIsUpUserId);
-                    notificationState.lastIsUpUserId = currentUserId; // MARCAR que ya vimos a este usuario
-
+                    notificationState.lastIsUpUserId = currentUserId;
                     isUpModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
                     showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
-                } else if (currentIsUpUserId !== currentUserId && notificationState.lastIsUpUserId === currentUserId) {
-                    // Si el usuario actual ya NO es el que está 'up', pero fue el último que vimos,
-                    // reseteamos nuestro estado local para permitir futuras llamadas a este usuario.
-                    console.log("Resetting isUp user locally. Current DB user:", currentIsUpUserId, "Last known user:", notificationState.lastIsUpUserId);
+                } else if (currentIsUpUserId !== currentUserId) {
                     notificationState.lastIsUpUserId = null;
                 }
-                // --- FIN: Lógica Anti-Loop de Notificación (Verificada) ---
 
-
-                if (newStatus === 'paused' && isAdmin) {
+                // 3. Manejar pantallas principales (Lobby, Votación, Resultados)
+                if (newStatus === 'lobby' || (newStatus === 'paused' && isAdmin)) {
                     showScreen('lobby');
                     subscribeToUsers(id, renderLobby);
+                
+                // CORRECCIÓN: Separar 'results' en su propio 'else if'
+                } else if (newStatus === 'results') {
+                    showScreen('results');
+                    subscribeToUsers(id, renderResults);
+                
+                // 4. 'voting' y 'tiebreaker' caen aquí
                 } else {
-                    const screenMap = { lobby: 'lobby', voting: 'voting', paused: 'voting', tiebreaker: 'voting', results: 'results' };
-                    const rendererMap = { lobby: renderLobby, voting: renderVotingScreen, paused: renderVotingScreen, tiebreaker: renderVotingScreen, results: renderResults };
-                    showScreen(screenMap[newStatus]);
-                    if (rendererMap[newStatus]) subscribeToUsers(id, rendererMap[newStatus]);
+                    showScreen('voting');
+                    subscribeToUsers(id, renderVotingScreen);
                 }
+                // --- FIN: LÓGICA DE ESTADO CORREGIDA ---
             });
         }
+        // ======================================================
+        // === FIN: FUNCIÓN subscribeToContest CORREGIDA ===
+        // ======================================================
 
-        // --- INICIO: CORRECCIÓN BUG BUCLE ---
+
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
-            console.log("on-deck-ready clicked. Current localContestData.onDeck:", localContestData.onDeck);
-            onDeckModal.classList.remove('visible'); // Cierra el modal inmediatamente
-            notificationState.lastOnDeckStatus = 'acknowledged'; // Actualiza el estado local inmediatamente
-
-            // Solo actualiza la BD si el estado *actual* en la BD sigue siendo 'called' para este usuario
-            if (localContestData.onDeck?.userId === currentUserId && localContestData.onDeck?.status === 'called') {
-                 try {
-                     console.log("Updating DB onDeck status to 'acknowledged'");
-                     await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
-                 } catch (error) {
-                     console.error("Error updating onDeck status to acknowledged:", error);
-                     // Opcional: Mostrar error al usuario
-                 }
-            } else {
-                 console.warn("on-deck-ready clicked, but DB state wasn't 'called' for current user. No DB update performed.");
-            }
+            onDeckModal.classList.remove('visible');
+            notificationState.lastOnDeckStatus = 'acknowledged';
+            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
-
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
-            console.log("on-deck-not-ready clicked. Current localContestData.onDeck:", localContestData.onDeck);
-            onDeckModal.classList.remove('visible'); // Cierra el modal inmediatamente
-            notificationState.lastOnDeckStatus = 'not_ready'; // Actualiza el estado local inmediatamente
-
-            // Solo actualiza la BD si el estado *actual* en la BD sigue siendo 'called' para este usuario
-             if (localContestData.onDeck?.userId === currentUserId && localContestData.onDeck?.status === 'called') {
-                 try {
-                     console.log("Updating DB onDeck status to 'not_ready'");
-                    await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
-                 } catch (error) {
-                     console.error("Error updating onDeck status to not_ready:", error);
-                     // Opcional: Mostrar error al usuario
-                 }
-             } else {
-                 console.warn("on-deck-not-ready clicked, but DB state wasn't 'called' for current user. No DB update performed.");
-             }
+            onDeckModal.classList.remove('visible');
+            notificationState.lastOnDeckStatus = 'not_ready';
+            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
         });
-        // --- FIN: CORRECCIÓN BUG BUCLE ---
-
         document.getElementById('is-up-close').addEventListener('click', async () => {
             isUpModal.classList.remove('visible');
-            notificationState.lastIsUpUserId = null; // Resetea estado local para 'isUp'
-            // Solo actualiza si este usuario es el que está actualmente en 'isUp'
-            if (localContestData.isUp?.userId === currentUserId) {
-                try {
-                    await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: currentUserId });
-                } catch (error) {
-                     console.error("Error updating isUp status:", error);
-                }
+            notificationState.lastIsUpUserId = null;
+            if (localContestData.isUp && localContestData.isUp.userId) {
+                await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
             }
         });
 
@@ -1582,30 +1499,16 @@
                         const onDeck = contestData.onDeck?.userId === p.id, onDeckStatus = onDeck ? contestData.onDeck.status : null;
                         const isUp = contestData.isUp?.userId === p.id, acknowledgedUp = contestData.acknowledgedUp === p.id;
 
-                        // Ícono de estado para el admin
-                        let statusIcon = ''; 
-                        if (isUp) statusIcon = '🚨';          // Está en escenario
-                        else if (acknowledgedUp) statusIcon = '✅'; // Confirmó 'isUp'
-                        else if (onDeck) {
-                            if (onDeckStatus === 'acknowledged') statusIcon = '✅'; // Listo
-                            else if (onDeckStatus === 'not_ready') statusIcon = '⏳'; // Necesita tiempo
-                            else if (onDeckStatus === 'called') statusIcon = '📣';    // Llamado, sin respuesta
-                        } else if (!p.isManualEntry) {
-                           statusIcon = '🟢'; // Online, no llamado
+                        let statusIcon = !p.isManualEntry ? '🟢' : '';
+                        if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
+                            if (onDeckStatus === 'acknowledged') statusIcon = '✅'; else if (onDeckStatus === 'not_ready') statusIcon = '⏳'; else statusIcon = '📣';
                         }
-                        // Añadir tooltip si hay icono
-                        const iconTitle = statusIcon === '🚨' ? '¡En escenario!' : 
-                                         statusIcon === '✅' ? 'Listo/Confirmado' :
-                                         statusIcon === '⏳' ? 'Necesita tiempo' :
-                                         statusIcon === '📣' ? 'Llamado, esperando respuesta' :
-                                         statusIcon === '🟢' ? 'Conectado' : '';
-
 
                         let statusText = 'Pendiente', statusColor = 'text-yellow-400';
                         if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
                         if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
 
-                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" ${iconTitle ? `title="${iconTitle}"` : ''}>${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume || 'N/A'}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`;
+                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`;
                     });
                     html += `</div>`;
 
@@ -1616,7 +1519,7 @@
 
                         html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
                         if(isEvaluated) html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
-                        else html += `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall ? 'disabled title="Usuario no conectado"' : 'title="Llamar al participante"'}>📣 Llamar</button><button id="admin-eval-btn" class="btn-primary w-1/2" title="Marcar para evaluación">Evaluar</button>`;
+                        else html += `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall ? 'disabled' : ''}>📣 Llamar</button><button id="admin-eval-btn" class="btn-primary w-1/2">Evaluar</button>`;
                         html +=`</div></div>`;
                     }
                 }
@@ -1634,37 +1537,18 @@
                     if (selectedForActionId) {
                         const actionMap = {
                             'admin-call-btn': async () => {
-                                const userToCall = users.find(u => u.id === selectedForActionId);
-                                if (!userToCall || userToCall.isManualEntry) return; // No llamar si no está conectado
-
-                                const currentOnDeck = contestData.onDeck;
-                                const isAlreadyCalledOrReady = (currentOnDeck?.userId === selectedForActionId && ['called', 'acknowledged', 'not_ready'].includes(currentOnDeck.status));
-                                const hasAcknowledgedUp = contestData.acknowledgedUp === selectedForActionId;
-
-                                let update = {};
-                                if (isAlreadyCalledOrReady || hasAcknowledgedUp) {
-                                    // Si ya fue llamado (onDeck) o confirmó 'isUp', pasarlo a 'isUp'
-                                    update = { isUp: { userId: selectedForActionId }, onDeck: null, acknowledgedUp: null };
-                                } else {
-                                    // Si es la primera llamada, ponerlo en 'onDeck'
-                                    update = { onDeck: { userId: selectedForActionId, status: 'called' }, isUp: null, acknowledgedUp: null };
-                                }
+                                const onDeck = contestData.onDeck;
+                                const update = (onDeck && onDeck.userId === selectedForActionId) || contestData.acknowledgedUp === selectedForActionId
+                                    ? { isUp: { userId: selectedForActionId }, onDeck: null, acknowledgedUp: null }
+                                    : { onDeck: { userId: selectedForActionId, status: 'called' }, isUp: null, acknowledgedUp: null };
                                 await updateDoc(getContestRef(contestId), update);
                             },
                             'admin-eval-btn': async () => {
-                                // Antes de evaluar, limpiar estados de llamada del usuario actual
                                 const batch = writeBatch(db);
                                 jurors.forEach(j => batch.update(getUserRef(contestId, j.id), { hasVoted: false }));
-                                
-                                let updateData = { currentlyVotingFor: selectedForActionId };
-                                // Limpiar onDeck, isUp, acknowledgedUp si pertenecen al usuario que se va a evaluar
-                                if (contestData.onDeck?.userId === selectedForActionId) updateData.onDeck = null;
-                                if (contestData.isUp?.userId === selectedForActionId) updateData.isUp = null;
-                                if (contestData.acknowledgedUp === selectedForActionId) updateData.acknowledgedUp = null;
-
-                                batch.update(getContestRef(contestId), updateData);
+                                batch.update(getContestRef(contestId), { currentlyVotingFor: selectedForActionId, onDeck: null, isUp: null, acknowledgedUp: null });
                                 await batch.commit();
-                                selectedForActionId = null; // Deseleccionar después de la acción
+                                selectedForActionId = null;
                             },
                             'admin-reopen-btn': async () => {
                                 const batch = writeBatch(db);
@@ -1675,7 +1559,7 @@
                                      batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
                                 }
                                 await batch.commit();
-                                selectedForActionId = null; // Deseleccionar después de la acción
+                                selectedForActionId = null;
                             }
                         };
                         if (actionMap[target.id]) await actionMap[target.id]();
@@ -1691,7 +1575,7 @@
                 const votedOnIds = contestData.votedOnParticipants || [];
                 const catchupParticipants = [];
                 for (const participantId of votedOnIds) {
-                    if (participantId === currentUserId) continue; // No puede votar por sí mismo en catchup tampoco
+                    if (participantId === currentUserId) continue;
                     const voteSnap = await getDoc(doc(getVotesCollectionRef(contestId, participantId), currentUserId));
                     if (!voteSnap.exists()) {
                         const p = users.find(u => u.id === participantId);
@@ -1699,56 +1583,39 @@
                     }
                 }
                 renderCatchupList(catchupParticipants);
-            } else {
-                 // Si no es jurado, ocultar la lista de catchup
-                 document.getElementById('catchup-list-container').classList.add('hidden');
             }
 
             if(currentP) {
                 pendingJurorsContainer.classList.remove('hidden');
-                votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume || 'N/A'}"</p>${currentP.costumeDescription ? `<p class="text-lg text-gray-300 mt-2 italic">"${currentP.costumeDescription}"</p>` : ''}`;
+                votingDiv.innerHTML = `${getImageTag(currentP.costumeImageBase64,'image-preview-lg mx-auto',currentP.costume)}<h3 class="font-creepster text-5xl text-orange-400 mt-4">${currentP.name}</h3><p class="text-2xl">"${currentP.costume}"</p>${currentP.costumeDescription ? `<p class="text-lg text-gray-300 mt-2 italic">"${currentP.costumeDescription}"</p>` : ''}`;
                 const selfVote = me?.isParticipant && me.id === currentP.id;
                 jurorControls.classList.toggle('hidden', !isJuror);
                 if (isJuror) {
                     selfVoteMessage.classList.toggle('hidden', !selfVote);
-                    ['#scoring-inputs', '#submit-vote-btn', 'h3'].forEach(sel => jurorControls.querySelector(sel)?.classList.toggle('hidden', selfVote));
+                    ['#scoring-inputs', '#submit-vote-btn', 'h3'].forEach(sel => jurorControls.querySelector(sel).classList.toggle('hidden', selfVote));
                     if (!selfVote) { await setInitialJurorScores(currentPId); renderScoringInputs(); }
                 }
                  const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, currentP.id));
                  const votes = votesSnapshot.docs.map(d => d.data().jurorId);
-                const pending = jurors.filter(j => !votes.includes(j.id) && j.id !== currentP.id); // Excluir al participante si es jurado
+                const pending = jurors.filter(j => !votes.includes(j.id) && j.id !== currentP.id);
                 pendingJurorsList.innerHTML=pending.length?pending.map(j=>`<li>${j.name}</li>`).join(''):`<li class="text-green-400">¡Todos votaron!</li>`;
-                
-                // Finalizar votación para este participante automáticamente si todos los jurados elegibles votaron
-                const votingJurors = jurors.filter(j => j.id !== currentP.id); // Jurados que pueden votar por este participante
+                const votingJurors = jurors.filter(j => j.id !== currentP.id);
                 if(isAdmin && votesSnapshot.size >= votingJurors.length && !(contestData.votedOnParticipants || []).includes(currentPId)) {
-                    await updateDoc(getContestRef(contestId), { 
-                        currentlyVotingFor: null, 
-                        votedOnParticipants: [...(contestData.votedOnParticipants || []), currentPId] 
-                    });
+                    await updateDoc(getContestRef(contestId), { currentlyVotingFor: null, votedOnParticipants: [...(contestData.votedOnParticipants || []), currentPId] });
                 }
             } else {
                 pendingJurorsContainer.classList.add('hidden');
                 const allVoted = participants.length > 0 && participants.every(p => contestData.votedOnParticipants?.includes(p.id));
-                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allVoted ? (isAdmin ? '¡Votación Finalizada! Calcula resultados.' : '¡Votación Finalizada! Esperando resultados...') :'Esperando concursante...'}</h3>`;
+                votingDiv.innerHTML = `<h3 class="text-2xl text-gray-400">${allVoted ? '¡Votación Finalizada!' :'Esperando concursante...'}</h3>`;
                 jurorControls.classList.add('hidden');
             }
 
             const votedIds = contestData.votedOnParticipants || [];
-            // Filtrar participantes (o solo los del tiebreaker si aplica)
-            const relevantParticipants = isTiebreaker 
-                ? participants.filter(p => contestData.tiebreakerInfo.participantIds.includes(p.id)) 
-                : participants;
+            const sortedVoted = participants.filter(p=>votedIds.includes(p.id)).sort((a,b) => (a.id === currentUserId && a.isParticipant) ? -1 : (b.id === currentUserId && b.isParticipant) ? 1 : 0);
+            const sortedPending = participants.filter(p=>!votedIds.includes(p.id)&&p.id!==currentPId).sort((a,b) => (a.id === currentUserId && a.isParticipant) ? -1 : (b.id === currentUserId && b.isParticipant) ? 1 : 0);
 
-            const sortedVoted = relevantParticipants
-                .filter(p => votedIds.includes(p.id))
-                .sort((a,b) => (a.id === currentUserId && a.isParticipant) ? -1 : (b.id === currentUserId && b.isParticipant) ? 1 : 0);
-            const sortedPending = relevantParticipants
-                .filter(p => !votedIds.includes(p.id) && p.id !== currentPId)
-                .sort((a,b) => (a.id === currentUserId && a.isParticipant) ? -1 : (b.id === currentUserId && b.isParticipant) ? 1 : 0);
-
-            document.getElementById('voted-list').innerHTML = sortedVoted.length ? sortedVoted.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('') : '<li>-</li>';
-            document.getElementById('pending-list').innerHTML = sortedPending.length ? sortedPending.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('') : '<li>-</li>';
+            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
+            document.getElementById('pending-list').innerHTML = sortedPending.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
         }
 
 
@@ -1765,7 +1632,7 @@
             }
 
             const groupedByScore = results.reduce((acc, p) => {
-                const score = p.overallScore.toFixed(3); // Usar más decimales para desempate
+                const score = p.overallScore.toFixed(3);
                 if (!acc[score]) acc[score] = [];
                 acc[score].push(p);
                 return acc;
@@ -1773,54 +1640,33 @@
 
             let rank = 1;
             let finalResults = [];
-            const sortedScores = Object.keys(groupedByScore).sort((a,b) => parseFloat(b) - parseFloat(a)); // Ordenar numéricamente
+            const sortedScores = Object.keys(groupedByScore).sort((a,b) => b-a);
 
             for(const score of sortedScores){
                 const group = groupedByScore[score];
-                // Comprobar empate para los 3 primeros puestos
                 if(rank <= 3 && group.length > 1){
-                    const isTiebreakerRound = localContestData.status === 'tiebreaker';
-                    const tieIsForCurrentRank = isTiebreakerRound && localContestData.tiebreakerInfo.rank === rank;
+                    const isTiebreaker = localContestData.status === 'tiebreaker';
+                    const tieIsForCurrentRank = isTiebreaker && localContestData.tiebreakerInfo.rank === rank;
 
-                    // Si NO estamos en una ronda de desempate O si el empate es para un puesto DIFERENTE al del desempate actual
-                    if (!isTiebreakerRound || !tieIsForCurrentRank) {
-                        customAlert("¡Empate Detectado!", `Hay un empate por el ${rank}º lugar entre ${group.map(p=>p.name).join(', ')}. Se iniciará una ronda de desempate solo para ellos.`);
-                        
-                        // Preparar desempate
+                    if (!isTiebreaker || !tieIsForCurrentRank) {
+                        customAlert("¡Empate Detectado!", `Hay un empate por el ${rank}º lugar. Se iniciará una ronda de desempate.`);
                         const batch = writeBatch(db);
-                        batch.update(getContestRef(contestId), { 
-                            status: 'tiebreaker', 
-                            votedOnParticipants: [], // Limpiar lista de votados para el desempate
-                            currentlyVotingFor: null, 
-                            tiebreakerInfo: { rank, participantIds: group.map(p => p.id) },
-                            // Limpiar estados de llamada
-                            onDeck: null,
-                            isUp: null,
-                            acknowledgedUp: null 
-                        });
-                        // Borrar los votos ANTERIORES SOLO de los participantes empatados
+                        batch.update(getContestRef(contestId), { status: 'tiebreaker', votedOnParticipants: [], currentlyVotingFor: null, tiebreakerInfo: { rank, participantIds: group.map(p => p.id) } });
                          for (const p of group) {
                             const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, p.id));
                             votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref));
                         }
                         await batch.commit();
                         loadingOverlay.classList.add('hidden');
-                        return; // Detener cálculo, se reinicia la votación para el desempate
+                        return;
                     }
-                    // Si SÍ estamos en la ronda de desempate correcta, continuamos asignando el mismo rank
                 }
-                // Asignar rank a todos en el grupo (si no hubo que desempatar o si ya se desempató)
                 group.forEach(p => finalResults.push({ ...p, rank }));
-                rank += group.length; // Incrementar rank por el número de personas en el grupo
+                rank += group.length;
             }
 
-            // Si llegamos aquí, no hubo necesidad de desempate o ya se resolvió
-            const topResults = finalResults.filter(r => r.rank <= 3); // Puede haber más de 3 si hubo empates en 3er lugar, etc.
-            await updateDoc(getContestRef(contestId), { 
-                status: 'results', 
-                topResults: JSON.stringify(topResults), 
-                tiebreakerInfo: null // Limpiar info de desempate
-            });
+            const top3 = finalResults.filter(r => r.rank <= 3);
+            await updateDoc(getContestRef(contestId), { status: 'results', topResults: JSON.stringify(top3), tiebreakerInfo: null });
             loadingOverlay.classList.add('hidden');
         }
 
@@ -1831,7 +1677,7 @@
             container.classList.remove('hidden');
             let html = `<h3 class="font-bold text-xl mb-3 text-center text-blue-300">Votos Pendientes (Ponte al día)</h3><div class="space-y-2">`;
             participants.forEach(p => {
-                html += `<button data-catchup-userid="${p.id}" class="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700">${p.name} - <i>${p.costume || 'N/A'}</i></button>`;
+                html += `<button data-catchup-userid="${p.id}" class="w-full text-left p-3 rounded-lg bg-gray-800 hover:bg-gray-700">${p.name} - <i>${p.costume}</i></button>`;
             });
             html += `</div>`;
             container.innerHTML = html;
@@ -1847,10 +1693,10 @@
         let catchupScores = {};
         function showCatchupVoteModal(participant) {
             const modal = document.getElementById('catchup-vote-modal');
-            modal.querySelector('#catchup-participant-info').innerHTML = `<p class="text-xl font-bold">${participant.name}</p><p class="text-gray-400">"${participant.costume || 'N/A'}"</p>`;
+            modal.querySelector('#catchup-participant-info').innerHTML = `<p class="text-xl font-bold">${participant.name}</p><p class="text-gray-400">"${participant.costume}"</p>`;
 
             const criteria = localContestData.criteria || [];
-            catchupScores = criteria.reduce((acc, crit) => ({...acc, [crit.id]: 5}), {}); // Resetear scores para el modal
+            catchupScores = criteria.reduce((acc, crit) => ({...acc, [crit.id]: 5}), {});
 
             const scoringContainer = modal.querySelector('#catchup-scoring-inputs');
              // Limpiar antes de renderizar
@@ -1864,9 +1710,12 @@
                 const currentScore = catchupScores[crit.id] || 5;
                 html += `
                      <div class="score-slider-wrapper !pb-0"> 
-                          <label class="criterion-label block !text-lg">${crit.name}</label> 
-                          <div class="score-value-display !text-3xl">${currentScore}</div> 
-                          <div class="score-slider-container">
+
+<label class="criterion-label block !text-lg">${crit.name}</label> 
+
+<div class="score-value-display !text-3xl">${currentScore}</div> 
+
+<div class="score-slider-container">
                               <input type="range" min="1" max="${MAX_SCORE}" value="${currentScore}" class="score-slider" data-criterion-id="${crit.id}">
                           </div>
                       </div>`;
@@ -1875,7 +1724,8 @@
 
             scoringContainer.innerHTML = html;
 
-             // El listener global en `body` se encargará de actualizar catchupScores en 'input'
+             // Usar delegación en el contenedor del modal es más seguro que clonar
+             // El listener global en `body` ya debería funcionar si el HTML tiene la estructura correcta
 
             const saveBtn = document.getElementById('catchup-vote-save');
             // Re-adjuntar listener para asegurar que usa los `catchupScores` correctos
@@ -1886,7 +1736,6 @@
                 const voteRef = doc(getVotesCollectionRef(contestId, participant.id), currentUserId);
                 await setDoc(voteRef, { jurorId: currentUserId, scores: catchupScores });
                 modal.classList.remove('visible');
-                 // Refrescar la pantalla de votación para actualizar la lista de catchup
                  try {
                      const usersSnapshot = await getDocs(getUsersCollectionRef(contestId));
                      renderVotingScreen(localContestData, usersSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -1898,6 +1747,9 @@
         }
         document.getElementById('catchup-vote-cancel').addEventListener('click', () => document.getElementById('catchup-vote-modal').classList.remove('visible'));
 
+        // ======================================================
+        // === INICIO: FUNCIÓN renderResults CORREGIDA ===
+        // ======================================================
         async function renderResults(contestData, users) {
             const isAdmin = contestData.creatorId === currentUserId;
             const resultsContainer = document.getElementById('results-container');
@@ -1908,7 +1760,7 @@
             const finalResults = contestData.topResults ? JSON.parse(contestData.topResults) : [];
             const newRevealStep = contestData.revealStep || 0;
             let resultsHTML = '';
-            const ranks = [3, 2, 1]; // Orden de revelación (3ro -> 1ro)
+            const ranks = [3, 2, 1];
 
             if (finalResults.length === 0 && contestData.status === 'results') {
                 resultsHTML = '<p class="text-xl text-yellow-400">No hubo participantes con votos para mostrar.</p>';
@@ -1916,66 +1768,56 @@
                  if (newRevealStep === 0) {
                     resultsHTML = '<p class="text-2xl text-gray-400 animate-pulse">🥁 Redoble de tambores... Esperando la revelación de los ganadores... 🥁</p>';
                 } else {
-                    // Mostrar resultados en orden 1ro, 2do, 3ro
-                    const displayOrderRanks = [1, 2, 3]; 
-                    displayOrderRanks.forEach(rank => {
-                        // Buscar todos los resultados para este rank (puede haber empates)
-                        const resultsForRank = finalResults.filter(r => r.rank === rank);
-                        const requiredStep = 4 - rank; // Paso necesario para revelar este rank (3ro->1, 2do->2, 1ro->3)
+                    ranks.forEach(rank => {
+                        const result = finalResults.find(r => r.rank === rank);
+                        const requiredStep = 4 - rank;
                         const isRevealed = newRevealStep >= requiredStep;
 
                         // Solo enviar notificación si *este* paso de revelación es el que lo activa
                         if (newRevealStep === requiredStep && previousRevealStep < requiredStep) {
-                            resultsForRank.forEach(result => {
-                                if (result.id === currentUserId) {
-                                    showWinnerNotification(rank);
-                                    const rankText = rank === 1 ? '1er' : (rank === 2 ? '2do' : '3er');
-                                    showNotification(`🥇 ¡FELICIDADES! 🥇`, `¡Ganaste el ${rankText} Lugar! Pasa a recoger tu premio.`, `winner-rank-${rank}`);
-                                }
-                            });
-                        }
-
-                        if (resultsForRank.length === 0) {
-                             // No mostrar nada si no hay ganador para este puesto (e.g., solo 2 participantes)
-                            // Opcional: mostrar Platzhalter
-                             // resultsHTML += `<div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center opacity-50"><p class="text-xl font-bold text-gray-600">${rank}º Lugar:</p><p class="text-gray-500">N/A</p></div>`;
-                             return;
-                        }
-
-                        // Generar HTML para cada ganador en este rank
-                        resultsForRank.forEach(result => {
-                            const reopenBtn = (result.id === currentUserId) ? `<button data-action="reopen-winner-modal" data-rank="${rank}" class="text-2xl ml-2 p-1 rounded-full hover:bg-purple-700">🏆</button>` : '';
-                            const imageTag = getImageTag(result.costumeImageBase64, 'image-preview-sm mr-3 flex-shrink-0', result.costume);
-
-                            if (isRevealed) {
-                                const colorClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : 'rank-3';
-                                const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
-
-                                resultsHTML += `
-                                    <div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center border-l-4 border-orange-500 transform transition-transform hover:scale-[1.02]">
-                                        <div class="flex items-center text-left">
-                                            <span class="font-creepster text-3xl md:text-4xl mr-4 ${colorClass}">${icon}</span>
-                                            ${imageTag}
-                                            <div>
-                                                <p class="text-xl font-bold text-white flex items-center">${result.name} ${reopenBtn}</p>
-                                                <p class="text-sm text-gray-400">${result.costume || 'N/A'}</p>
-                                            </div>
-                                        </div>
-                                        <div class="text-right flex items-center gap-2">
-                                            <p class="font-creepster text-5xl ${colorClass}">${result.overallScore.toFixed(2)}</p>
-                                            <span class="font-creepster text-3xl text-orange-500">🎃</span>
-                                        </div>
-                                    </div>`;
-                            } else {
-                                // Mostrar Platzhalter si no está revelado aún
-                                resultsHTML += `
-                                    <div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center opacity-40">
-                                        <p class="text-xl font-bold text-gray-500">${rank}º Lugar</p>
-                                        <p class="font-creepster text-4xl text-gray-700">???</p>
-                                    </div>`;
+                            if (result && result.id === currentUserId) {
+                                showWinnerNotification(rank);
+                                const rankText = rank === 1 ? '1er' : (rank === 2 ? '2do' : '3er');
+                                showNotification(`🥇 ¡FELICIDADES! 🥇`, `¡Ganaste el ${rankText} Lugar! Pasa a recoger tu premio.`, `winner-rank-${rank}`);
                             }
-                        }); // Fin forEach result in rank
-                    }); // Fin forEach rank
+                        }
+
+
+                        if (!result) {
+                            resultsHTML += `<div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center opacity-50"><p class="text-xl font-bold text-gray-600">${rank}º Lugar:</p><p class="text-gray-500">N/A</p></div>`;
+                            return;
+                        }
+
+                        const reopenBtn = (result.id === currentUserId) ? `<button data-action="reopen-winner-modal" data-rank="${rank}" class="text-2xl ml-2 p-1 rounded-full hover:bg-purple-700">🏆</button>` : '';
+
+                        const imageTag = getImageTag(result.costumeImageBase64, 'image-preview-sm mr-3 flex-shrink-0', result.costume);
+                        if (isRevealed) {
+                            const colorClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : 'rank-3';
+                            const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+
+                            resultsHTML += `
+                                <div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center border-l-4 border-orange-500 transform transition-transform hover:scale-[1.02]">
+                                    <div class="flex items-center text-left">
+                                        <span class="font-creepster text-3xl md:text-4xl mr-4 ${colorClass}">${icon}</span>
+                                        ${imageTag}
+                                        <div>
+                                            <p class="text-xl font-bold text-white flex items-center">${result.name} ${reopenBtn}</p>
+                                            <p class="text-sm text-gray-400">${result.costume}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right flex items-center gap-2">
+                                        <p class="font-creepster text-5xl ${colorClass}">${result.overallScore.toFixed(2)}</p>
+                                        <span class="font-creepster text-3xl text-orange-500">🎃</span>
+                                    </div>
+                                </div>`;
+                        } else {
+                            resultsHTML += `
+                                <div class="bg-gray-900 p-4 rounded-xl flex justify-between items-center opacity-40">
+                                    <p class="text-xl font-bold text-gray-500">${rank}º Lugar</p>
+                                    <p class="font-creepster text-4xl text-gray-700">???</p>
+                                </div>`;
+                        }
+                    });
                 }
             }
             resultsContainer.innerHTML = resultsHTML;
@@ -1984,37 +1826,35 @@
                 if (target) showWinnerNotification(parseInt(target.dataset.rank));
             };
 
-            // Controles del Admin para Revelar/Finalizar
             let controlsHTML = '';
             if (isAdmin) {
-                ranks.forEach(rank => { // Iterar en orden de revelación 3, 2, 1
-                    const resultsForRank = finalResults.filter(r => r.rank === rank);
-                    const stepToTriggerReveal = 4 - rank - 1; // Paso *anterior* necesario (3ro->0, 2do->1, 1ro->2)
-                    const nextStepValue = 4 - rank;           // Paso al que avanza (3ro->1, 2do->2, 1ro->3)
+                ranks.forEach(rank => {
+                    const result = finalResults.find(r => r.rank === rank);
+                    const stepToTriggerReveal = 3 - rank;
+                    const nextStepValue = 4 - rank;
                     const isRevealed = newRevealStep >= nextStepValue;
                     const canReveal = newRevealStep === stepToTriggerReveal;
 
-                    if (resultsForRank.length === 0) {
-                         // No mostrar botón si no hay nadie en ese puesto
-                         // controlsHTML += `<button class="btn-primary w-full mt-2 bg-gray-700" disabled>${rank}º Lugar (N/A)</button>`;
-                    } else if (isRevealed) {
-                        controlsHTML += `<button class="btn-primary w-full mt-2 bg-green-600" disabled>✔️ ${rank}º Lugar Revelado</button>`;
-                    } else if (canReveal) {
-                        controlsHTML += `<button data-action="reveal" data-next-step="${nextStepValue}" class="btn-primary w-full mt-2 animate-pulse bg-purple-600 hover:bg-purple-700">✨ Revelar ${rank}º Lugar</button>`;
-                    } else {
-                        controlsHTML += `<button class="btn-primary w-full mt-2" disabled>Revelar ${rank}º Lugar</button>`;
-                    }
+
+                    if (!result) controlsHTML += `<button class="btn-primary w-full mt-2 bg-gray-700" disabled>${rank}º Lugar (N/A)</button>`;
+                    else if (isRevealed) controlsHTML += `<button class="btn-primary w-full mt-2 bg-green-600" disabled>✔️ ${rank}º Lugar Revelado</button>`;
+                    else if (canReveal) controlsHTML += `<button data-action="reveal" data-next-step="${nextStepValue}" class="btn-primary w-full mt-2 animate-pulse bg-purple-600 hover:bg-purple-700">✨ Revelar ${rank}º Lugar</button>`;
+                    else controlsHTML += `<button class="btn-primary w-full mt-2" disabled>Revelar ${rank}º Lugar</button>`;
                 });
             }
 
-            // Botones de Finalizar/Reiniciar
-            if (newRevealStep >= 3) { // Mostrar solo después de revelar el 1er lugar
+            // --- INICIO: CORRECCIÓN (Botón de salida para no-admins) ---
+            if (newRevealStep >= 3) {
                 if (isAdmin) {
                     controlsHTML += `<button data-action="finalize" class="btn-danger mt-6 w-full">Finalizar y Eliminar Sala</button>`;
                     controlsHTML += `<button data-action="restart" class="btn-secondary mt-2 w-full">Reiniciar Concurso</button>`;
+                } else {
+                    // Este botón permite salir a los usuarios normales
+                    controlsHTML += `<button data-action="leave" class="btn-secondary mt-6 w-full">Volver al Inicio</button>`;
                 }
-                 // Botón salir para usuarios normales ahora se maneja en showFeedbackModal/leaveContest
             }
+            // --- FIN: CORRECCIÓN ---
+            
             controlsContainer.innerHTML = controlsHTML;
 
             controlsContainer.onclick = async (e) => {
@@ -2024,7 +1864,12 @@
 
                 if (['reveal', 'finalize', 'restart'].includes(action) && localContestData.creatorId !== currentUserId) return;
 
-                if(action === 'reveal') {
+                // --- INICIO: CORRECCIÓN (Handler para 'leave') ---
+                if (action === 'leave') {
+                    leaveContest();
+                }
+                // --- FIN: CORRECCIÓN ---
+                 else if(action === 'reveal') {
                     await updateDoc(getContestRef(contestId), { revealStep: parseInt(target.dataset.nextStep) });
                 } else if (action === 'finalize') {
                     showConfirmation('Finalizar Concurso', '¿Estás seguro? Esto eliminará permanentemente la sala para todos los usuarios.', async () => {
@@ -2036,7 +1881,6 @@
                     });
                 } else if (action === 'restart') {
                      showConfirmation('Reiniciar Concurso', '¿Seguro? Se borrarán todos los votos y se volverá a la sala de espera.', async () => {
-                        loadingOverlay.classList.remove('hidden'); document.getElementById('loading-text').textContent = 'Reiniciando...';
                         const batch = writeBatch(db);
                         batch.update(getContestRef(contestId), { status: "lobby", currentlyVotingFor: null, votedOnParticipants: [], revealStep: 0, topResults: null, tiebreakerInfo: null, acknowledgedUp: null, onDeck: null, isUp: null }); // Resetear todo
                         users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0 })); // Resetear estado de voto y score
@@ -2046,20 +1890,26 @@
                             votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref)); // Borrar votos
                         }
                         await batch.commit();
-                        loadingOverlay.classList.add('hidden');
                          // El listener principal detectará 'lobby' y cambiará la pantalla
                      });
                 }
             };
-            previousRevealStep = newRevealStep; // Actualizar el paso anterior *después* de renderizar
+            previousRevealStep = newRevealStep;
         }
+        // ======================================================
+        // === FIN: FUNCIÓN renderResults CORREGIDA ===
+        // ======================================================
 
 
+        // ======================================================
+        // === INICIO: FUNCIONES DE IA CORREGIDAS ===
+        // ======================================================
         async function generateDescriptionWithGemini(costumeName) {
             const apiKey = getApiKey();
             if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
             try {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                // CORRECCIÓN: Modelo de IA actualizado
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
                 const systemPrompt = "Actúa como un narrador entusiasta con gran conocimiento de la cultura popular, mitología y cuentos clásicos. Tu tarea es generar una descripción corta para un disfraz en un concurso. Debe capturar la esencia del personaje, explicando brevemente quién es o qué representa. Usa un tono accesible y directo, pero apropiado para la atmósfera del personaje. Incluye siempre una línea de cierre que interactúe con el personaje o el público. La respuesta debe ser en español, de dos a tres frases vibrantes.";
                 const userQuery = `Describe el disfraz de "${costumeName}" para un concurso.`;
                 const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] }, };
@@ -2093,7 +1943,8 @@
                     const errorData = await response.json().catch(() => ({}));
                     const errorMsg = errorData?.error?.message || `Error HTTP ${response.status}`;
                     if (response.status === 400) throw new Error(`Solicitud inválida (400): ${errorMsg}. Intenta con un prompt diferente o revisa si infringe las políticas de seguridad.`);
-                    if (response.status === 403) throw new Error("Permiso denegado (403). Tu clave de API podría ser inválida. Asegúrate de que la API 'Vertex AI' esté habilitada en tu proyecto de Google Cloud y que la facturación esté activa.");
+                    // CORRECCIÓN: Mensaje de error ajustado
+                    if (response.status === 403) throw new Error("Permiso denegado (403). Tu clave de API podría ser inválida o no tener acceso a este modelo (Imagen 3.0). Asegúrate de que la API 'Generative Language' esté habilitada y que tu cuenta tenga los permisos necesarios para este modelo.");
                     if (response.status === 429) throw new Error("Demasiadas solicitudes de imágenes. Por favor, espera un momento.");
                     throw new Error(errorMsg);
                 }
@@ -2110,7 +1961,8 @@
             const apiKey = getApiKey();
             if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
             try {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                // CORRECCIÓN: Modelo de IA actualizado
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
                 const prompt = "Extrae el texto de esta imagen. Es una lista para un concurso con 3 campos separados por comas: 'Nombre, Disfraz, EsJurado'. El campo 'EsJurado' es opcional ('si', 'y', 'no', 'n', o vacío). Estandariza la salida a CSV, con cada persona en una nueva línea. Para 'EsJurado', usa 'si' para respuestas afirmativas ('si', 'y') y 'no' para todo lo demás (vacío, 'no', 'n'). Ejemplo: 'Pepito, Pez gordo, si' -> 'Pepito,Pez gordo,si'. 'Pac, payaso' -> 'Pac,payaso,no'.";
                 const payload = { contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } } ] } ], };
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -2130,6 +1982,9 @@
                 throw error;
             }
         }
+        // ======================================================
+        // === FIN: FUNCIONES DE IA CORREGIDAS ===
+        // ======================================================
 
         document.getElementById('add-participants-from-photo-btn').addEventListener('click', () => {
             if (!checkAndPromptForKey()) return;
@@ -2233,13 +2088,13 @@
 
         // --- INICIO: Funciones de Notificación ---
         async function registerServiceWorker() {
-            // console.log('Iniciando registro de Service Worker (SW)...'); // Comentado para reducir logs
+            console.log('Iniciando registro de Service Worker (SW)...');
             if ('serviceWorker' in navigator) {
                 try {
                     const registration = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
-                    // console.log('Service Worker registrado.');
+                    console.log('Service Worker registrado.');
                     await navigator.serviceWorker.ready;
-                    // console.log('Service Worker listo y controlando.');
+                    console.log('Service Worker listo y controlando.');
                     checkNotificationPermission(); // Verificar permisos al estar listo
                 } catch (error) {
                     console.error(`Error en registro de SW: ${error.message}`);
@@ -2252,12 +2107,20 @@
         }
 
          function checkNotificationPermission(forceRequest = false) {
+             // Asegurarse de que los elementos existan en el DOM actual
              diagnosticBox = document.getElementById('diagnostic-box');
              ayudaContainer = document.getElementById('ayuda-container');
-             if (!diagnosticBox || !ayudaContainer) return;
+
+             if (!diagnosticBox || !ayudaContainer) {
+                 console.warn("Elementos UI notificación no encontrados en checkNotificationPermission.");
+                 return; // Salir si no se encuentran
+             }
+             // console.log("Elementos UI notificación encontrados.");
+
 
              if ('Notification' in window) {
                 const permission = Notification.permission;
+                 // console.log("Permiso actual:", permission);
                 if (permission === 'granted') {
                      diagnosticBox.innerHTML = `<div class="bg-green-800/30 text-green-300 p-3 rounded border border-green-600"><p><b>Notificaciones:</b> ✅ Activadas</p></div>`;
                      ayudaContainer.classList.remove('hidden');
@@ -2267,26 +2130,54 @@
                 } else { // 'default'
                     diagnosticBox.innerHTML = `<div class="bg-yellow-800/30 text-yellow-300 p-3 rounded border border-yellow-600"><p><b>Notificaciones:</b> ⏳ <button id="request-perm-btn" class="font-bold underline hover:text-yellow-100">Activar notificaciones</button> para alertas importantes.</p></div>`;
                     ayudaContainer.classList.add('hidden');
+
                     const requestBtn = diagnosticBox.querySelector('#request-perm-btn');
                     if (requestBtn) {
-                        requestBtn.onclick = null; // Limpiar listener anterior
-                        requestBtn.onclick = () => Notification.requestPermission().then(() => checkNotificationPermission(false));
+                        // Limpiar listener anterior por si acaso
+                        requestBtn.onclick = null;
+                        requestBtn.onclick = () => {
+                            console.log("Solicitando permiso...");
+                            Notification.requestPermission().then(permission => {
+                                console.log("Permiso después de solicitar:", permission);
+                                checkNotificationPermission(false); // Volver a verificar estado
+                            });
+                        };
+                    } else {
+                         console.error("No se encontró el botón #request-perm-btn");
                     }
-                    if (forceRequest) Notification.requestPermission().then(() => checkNotificationPermission(false));
+
+                    if (forceRequest) {
+                         console.log("Forzando solicitud de permiso...");
+                         Notification.requestPermission().then(permission => {
+                              console.log("Permiso después de forzar:", permission);
+                             checkNotificationPermission(false);
+                         });
+                    }
                 }
             } else {
-                diagnosticBox.innerHTML = `<div class="bg-gray-700 text-gray-300 p-3 rounded"><p><b>Notificaciones:</b> No soportadas.</p></div>`;
-                ayudaContainer.classList.add('hidden');
+                 console.warn("Notificaciones no soportadas.");
+                diagnosticBox.innerHTML = `<div class="bg-gray-700 text-gray-300 p-3 rounded"><p><b>Notificaciones:</b> No soportadas en este navegador.</p></div>`;
+                 ayudaContainer.classList.add('hidden');
             }
         }
 
 
         function showNotification(title, body, tag = 'halloween-alert') {
-            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            if (!('Notification' in window) || Notification.permission !== 'granted') {
+                console.log('Permiso para notificaciones no concedido o no soportado.');
+                return;
+            }
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                // console.log(`Enviando notificación al SW: T:${title}, B:${body}, T:${tag}`); // Comentado
-                navigator.serviceWorker.controller.postMessage({ type: 'show_notification', title, body, tag });
-            } else console.warn('Service Worker no listo para enviar notificación.');
+                 console.log(`Enviando notificación al SW: T:${title}, B:${body}, T:${tag}`);
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'show_notification',
+                    title: title,
+                    body: body,
+                    tag: tag
+                });
+            } else {
+                console.warn('Service Worker no está listo para enviar notificación.');
+            }
         }
         // --- FIN: Funciones de Notificación ---
 
@@ -2304,24 +2195,18 @@
                         if(contestDoc.exists()){
                             const userDoc = await getDoc(getUserRef(hashId, currentUserId));
                             if(userDoc.exists()){
-                                subscribeToContest(contestId); // Suscribirse si ya existe usuario
+                                subscribeToContest(contestId);
                             } else {
-                                 // Si el usuario no existe en la sala
-                                 if(contestDoc.data().isLocked) { // Y la sala está bloqueada
+                                 if(contestDoc.data().isLocked) {
                                     customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
-                                    window.location.hash = ''; // Limpiar hash
+                                    window.location.hash = '';
                                     showScreen('home');
-                                 } else { // Si la sala no está bloqueada
-                                    showScreen('register'); // Mostrar pantalla de registro
+                                 } else {
+                                    showScreen('register');
                                  }
                             }
                         } else {
-                            // Si la sala no existe (código inválido en URL)
-                             customAlert("Error", "La sala indicada en la URL no existe.");
-                             window.location.hash = ''; // Limpiar hash
-                             showScreen('home'); // Volver a inicio
-                             // Opcional: Podrías permitirle registrarse y crear la sala con ese ID si quisieras
-                             // showScreen('register');
+                             showScreen('register');
                         }
                     } catch (error) {
                         console.error("Error al verificar sala/usuario:", error);
@@ -2330,25 +2215,15 @@
                         showScreen('home');
                     }
                 } else {
-                    // Si no hay hash en la URL
                     showScreen('home');
                 }
             } else {
-                // Si no hay usuario autenticado, iniciar sesión anónima
                 loadingOverlay.classList.remove('hidden');
                 document.getElementById('loading-text').textContent = 'Autenticando...';
-                try {
-                    await signInAnonymously(auth);
-                    // El listener onAuthStateChanged se disparará de nuevo con el usuario
-                } catch (error) {
-                    console.error("Error en signInAnonymously:", error);
-                    document.getElementById('loading-text').textContent = 'Error de autenticación';
-                    // Aquí podrías mostrar un mensaje permanente o un botón para reintentar
-                }
+                await signInAnonymously(auth);
             }
         });
 
-        // --- Lógica Feedback ---
         let currentRating = 0;
         const stars = document.querySelectorAll('#feedback-stars span');
         const emojiDisplay = document.getElementById('feedback-emoji-display');
@@ -2374,15 +2249,12 @@
                 await addDoc(getFeedbackCollectionRef(), {
                     rating: currentRating,
                     comment: comment,
-                    contestId: contestId || 'desconocido', // Guardar ID si aún existe
-                    userId: currentUserId, // Guardar ID de usuario para referencia
+                    contestId: contestId || 'desconocido',
                     timestamp: serverTimestamp()
                 });
             } catch (error) {
                 console.error("Error saving feedback:", error);
-                // Informar al usuario si falla?
             } finally {
-                // Siempre cerrar modal y salir del concurso después del intento
                 document.getElementById('feedback-modal').classList.remove('visible');
                 leaveContest();
             }
@@ -2390,26 +2262,22 @@
 
         document.getElementById('skip-feedback-btn').addEventListener('click', () => {
              document.getElementById('feedback-modal').classList.remove('visible');
-             leaveContest(); // Salir también si omite
+             leaveContest();
         });
 
         function showFeedbackModal(message) {
             const modal = document.getElementById('feedback-modal');
             modal.querySelector('#feedback-modal-title').textContent = "¡Halloween una Noche Mágica!";
-            modal.querySelector('#feedback-modal-message').textContent = message || "¡Gracias por participar!"; // Mensaje por defecto
-            
-            // Resetear estado del modal de feedback
+            modal.querySelector('#feedback-modal-message').textContent = message;
             currentRating = 0;
             stars.forEach(s => s.classList.remove('selected'));
             emojiDisplay.textContent = '';
             document.getElementById('feedback-comment').value = '';
             submitFeedbackBtn.disabled = true;
-            submitFeedbackBtn.textContent = 'Enviar Valoración'; // Restaurar texto del botón
+             submitFeedbackBtn.textContent = 'Enviar Valoración';
 
             modal.classList.add('visible');
         }
-        // --- Fin Lógica Feedback ---
-
 
         // --- DEBUG MODE ---
         function initializeDebugMode() {
@@ -2423,7 +2291,6 @@
                 { id: 'participant3', name: 'Momia', costume: 'Momia Egipsia', isParticipant: true, isJuror: false }
             ];
             const mockContest = {
-                id: 'DEBUG1', // Añadir ID para simulación
                 creatorId: 'admin1',
                 status: 'lobby',
                 isLocked: false,
@@ -2434,20 +2301,12 @@
                     { id: 'crit1', name: 'Creatividad', weight: 60 },
                     { id: 'crit2', name: 'Ejecución', weight: 40 }
                 ],
-                 onDeck: { userId: 'participant3', status: 'called' }, // Para probar
-                 isUp: null,
-                 acknowledgedUp: null,
                 topResults: JSON.stringify([
                     { id: 'participant1', rank: 1, name: 'Drácula', costume: 'Conde Drácula', overallScore: 9.50 },
                     { id: 'juror2', rank: 2, name: 'Jurado 2 (y participa)', costume: 'Vampiro', overallScore: 8.75 },
-                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Egipsia', overallScore: 8.20 }
-                ]),
-                revealStep: 0 // Empezar sin revelar
+                    { id: 'participant3', rank: 3, name: 'Momia', costume: 'Momia Egipsia', overallScore: 8.20 }
+                ])
             };
-            // Sobrescribir datos globales para modo debug
-            contestId = mockContest.id; 
-            localContestData = mockContest; 
-
 
             showScreen('debug');
 
@@ -2457,68 +2316,28 @@
 
                 document.querySelectorAll('.modal-backdrop, .winner-notification').forEach(el => el.classList.remove('visible'));
 
-                // Simular cambios de estado que normalmente vendrían de Firebase
-                const updateMockContest = (newData) => {
-                     localContestData = { ...localContestData, ...newData };
-                     // Volver a renderizar la pantalla actual con los datos actualizados
-                     const currentScreen = Object.keys(screens).find(key => !screens[key].classList.contains('hidden'));
-                     switch(currentScreen) {
-                        case 'lobby': renderLobby(localContestData, mockUsers); break;
-                        case 'voting': renderVotingScreen(localContestData, mockUsers); break;
-                        case 'results': renderResults(localContestData, mockUsers); break;
-                     }
-                };
-
                 switch(action) {
-                    case 'home': showScreen('home'); break; // No necesita mock data
-                    case 'lobby-admin': currentUserId = 'admin1'; updateMockContest({ status: 'lobby' }); renderLobby(localContestData, mockUsers); showScreen('lobby'); break;
-                    case 'lobby-user': currentUserId = 'participant1'; updateMockContest({ status: 'lobby' }); renderLobby(localContestData, mockUsers); showScreen('lobby'); break;
-                    case 'voting-admin': currentUserId = 'admin1'; updateMockContest({ status: 'voting' }); renderVotingScreen(localContestData, mockUsers); showScreen('voting'); break;
-                    case 'voting-juror-criteria': currentUserId = 'juror1'; updateMockContest({ status: 'voting' }); setInitialJurorScores('participant1'); renderVotingScreen(localContestData, mockUsers); showScreen('voting'); break; // Asume participant1 está siendo votado
-                    case 'voting-participant': currentUserId = 'participant2'; updateMockContest({ status: 'voting' }); renderVotingScreen(localContestData, mockUsers); showScreen('voting'); break;
-                    case 'results-admin': currentUserId = 'admin1'; updateMockContest({ status: 'results', revealStep: 3 }); renderResults(localContestData, mockUsers); showScreen('results'); break;
-                    case 'results-user': currentUserId = 'participant1'; updateMockContest({ status: 'results', revealStep: 3 }); renderResults(localContestData, mockUsers); showScreen('results'); break;
-                    
-                    // Simulaciones de Modales / Notificaciones
-                    case 'on-deck': 
-                        currentUserId = 'participant3'; // Simular ser el usuario llamado
-                        notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null }; // Reset state for test
-                        updateMockContest({ onDeck: { userId: 'participant3', status: 'called' } }); // Simular llamada
-                        // Forzar re-evaluación de la lógica de notificación (normalmente lo haría el listener)
-                        const onDeckDataTest = localContestData.onDeck || {};
-                        const currentOnDeckStatusTest = onDeckDataTest.userId === currentUserId ? onDeckDataTest.status : null;
-                        if (currentOnDeckStatusTest === 'called' && notificationState.lastOnDeckStatus !== 'called') {
-                             notificationState.lastOnDeckStatus = 'called';
-                             onDeckModal.classList.add('visible'); 
-                        }
-                        break;
-                    case 'is-up': 
-                        currentUserId = 'participant1'; // Simular ser el usuario llamado
-                        notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null }; // Reset state for test
-                        updateMockContest({ isUp: { userId: 'participant1' }, onDeck: null, acknowledgedUp: null }); // Simular llamada a escenario
-                        // Forzar re-evaluación
-                        const isUpDataTest = localContestData.isUp || {};
-                        const currentIsUpUserIdTest = isUpDataTest.userId;
-                         if (currentIsUpUserIdTest === currentUserId && notificationState.lastIsUpUserId !== currentUserId) {
-                             notificationState.lastIsUpUserId = currentUserId;
-                             isUpModal.classList.add('visible');
-                         }
-                        break;
+                    case 'home': showScreen('home'); break;
+                    case 'lobby-admin': currentUserId = 'admin1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
+                    case 'lobby-user': currentUserId = 'participant1'; renderLobby(mockContest, mockUsers); showScreen('lobby'); break;
+                    case 'voting-admin': currentUserId = 'admin1'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'voting-juror-criteria': currentUserId = 'juror1'; localContestData=mockContest; setInitialJurorScores('participant1'); renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'voting-participant': currentUserId = 'participant2'; renderVotingScreen(mockContest, mockUsers); showScreen('voting'); break;
+                    case 'results-admin': currentUserId = 'admin1'; localContestData=mockContest; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
+                    case 'results-user': currentUserId = 'participant1'; localContestData=mockContest; renderResults({...mockContest, revealStep: 3}, mockUsers); showScreen('results'); break;
+                    case 'on-deck': onDeckModal.classList.add('visible'); break;
+                    case 'is-up': isUpModal.classList.add('visible'); break;
                     case 'feedback': showFeedbackModal("Mensaje de prueba para la ventana de feedback. Gracias por jugar."); break;
                     case 'winner-1': showWinnerNotification(1); break;
                     case 'winner-2': showWinnerNotification(2); break;
                     case 'winner-3': showWinnerNotification(3); break;
-                    
-                    // Tests de Notificación Pura (Requiere Service Worker)
                     case 'notif-perm': checkNotificationPermission(true); break;
                     case 'notif-deck': showNotification("¡Prepárate! (Prueba)", "Eres el siguiente en pasar.", 'test-deck'); break;
                     case 'notif-up': showNotification("¡AHORA! (Prueba)", "Es tu turno de brillar.", 'test-up'); break;
                     case 'notif-win': showNotification("🥇 ¡FELICIDADES! (Prueba) 🥇", "Ganaste el 1er Lugar.", 'test-win'); break;
-                    
                     case 'exit':
                         isInDebugMode = false;
                         debugBackButtonContainer.classList.add('hidden');
-                        window.location.hash = ''; // Limpiar hash para evitar re-entrar a sala debug
                         window.location.reload();
                         break;
                 }
@@ -2530,4 +2349,4 @@
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
     </script>
 </body>
-                        </html>
+    </html>
