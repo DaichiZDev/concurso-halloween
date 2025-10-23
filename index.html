@@ -589,7 +589,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "httpsD://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
@@ -1856,20 +1856,64 @@
                         });
                         // El listener principal detectará 'finalized' y mostrará el feedback
                     });
+                
+                // #############################################################
+                // ### INICIO DE LA CORRECCIÓN ###
+                // #############################################################
                 } else if (action === 'restart') {
                      showConfirmation('Reiniciar Concurso', '¿Seguro? Se borrarán todos los votos y se volverá a la sala de espera.', async () => {
-                        const batch = writeBatch(db);
-                        batch.update(getContestRef(contestId), { status: "lobby", currentlyVotingFor: null, votedOnParticipants: [], revealStep: 0, topResults: null, tiebreakerInfo: null, acknowledgedUp: null, onDeck: null, isUp: null }); // Resetear todo
-                        users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0 })); // Resetear estado de voto y score
-                        const allUsers = (await getDocs(getUsersCollectionRef(contestId))).docs;
-                        for (const userDoc of allUsers) {
-                            const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, userDoc.id));
-                            votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref)); // Borrar votos
+                        
+                        // 1. Mostrar overlay de carga para prevenir clics
+                        // y ocultar la transición de pantalla mientras se procesa.
+                        loadingOverlay.classList.remove('hidden');
+                        document.getElementById('loading-text').textContent = 'Reiniciando Sala...';
+
+                        try {
+                            const batch = writeBatch(db);
+                            // 2. Resetear el estado del concurso a 'lobby' y limpiar todos los datos de la partida
+                            batch.update(getContestRef(contestId), { 
+                                status: "lobby", 
+                                currentlyVotingFor: null, 
+                                votedOnParticipants: [], 
+                                revealStep: 0, 
+                                topResults: null, 
+                                tiebreakerInfo: null, 
+                                acknowledgedUp: null, 
+                                onDeck: null, 
+                                isUp: null 
+                            });
+                            
+                            // 3. Resetear el estado de voto de los usuarios
+                            users.forEach(u => batch.update(getUserRef(contestId, u.id), { hasVoted: false, totalScore: 0 }));
+                            
+                            // 4. Borrar todos los votos anteriores
+                            const allUsers = (await getDocs(getUsersCollectionRef(contestId))).docs;
+                            for (const userDoc of allUsers) {
+                                const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, userDoc.id));
+                                votesSnapshot.forEach(voteDoc => batch.delete(voteDoc.ref)); // Borrar votos
+                            }
+                            
+                            // 5. Ejecutar todos los cambios
+                            await batch.commit();
+                            
+                            // 6. No hacer nada más aquí.
+                            // El listener principal (contestUnsubscribe) en todos los clientes
+                            // detectará el cambio a status: "lobby".
+                            // Ese listener llamará a showScreen('lobby'), que a su vez
+                            // ocultará automáticamente el 'loadingOverlay'.
+                        
+                        } catch (error) {
+                            console.error("Error al reiniciar el concurso:", error);
+                            customAlert("Error", "Ocurrió un problema al reiniciar la sala.");
+                            // Ocultar el overlay solo si hay un error, 
+                            // de lo contrario, el listener se encarga.
+                            loadingOverlay.classList.add('hidden');
                         }
-                        await batch.commit();
-                         // El listener principal detectará 'lobby' y cambiará la pantalla
                      });
                 }
+                // #############################################################
+                // ### FIN DE LA CORRECCIÓN ###
+                // #############################################################
             };
             previousRevealStep = newRevealStep;
         }
@@ -2314,7 +2358,4 @@
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
     </script>
 </body>
-</html>
-
-
-
+                                                                                                                                   </html>AIzaSyDyLteyFcI2_jnEQCGLMXQnVGUwJRybdV8
