@@ -589,7 +589,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "httpsD://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
@@ -1071,9 +1071,6 @@
         };
 
 
-        // ======================================================
-        // === INICIO: FUNCIÓN subscribeToContest CORREGIDA ===
-        // ======================================================
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
             // Resetear estado de notificación al suscribirse
@@ -1087,9 +1084,6 @@
                 const newStatus = localContestData.status;
                 const isAdmin = localContestData.creatorId === currentUserId;
 
-                // --- INICIO: LÓGICA DE ESTADO CORREGIDA ---
-
-                // 1. Manejar estado FINALIZADO (Feedback y salida)
                 if (newStatus === 'finalized') {
                     if (oldStatus !== 'finalized') {
                         showFeedbackModal(localContestData.finalMessage);
@@ -1101,14 +1095,12 @@
                               leaveContest();
                          }
                     }
-                    return; // Importante: Salir aquí
+                    return;
                 }
 
-                // 2. Manejar estado PAUSADO
                 document.getElementById('paused-modal').classList.toggle('visible', newStatus === 'paused' && !isAdmin);
 
                 if (newStatus === 'voting' && oldStatus === 'lobby') {
-                    // ... (lógica de alerta de doble rol, etc. - sin cambios)
                     previousRevealStep = 0;
                     const meSnapshot = await getDoc(getUserRef(contestId, currentUserId));
                     if(meSnapshot.exists()) {
@@ -1126,52 +1118,49 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-                // ... (Lógica de notificación OnDeck/IsUp - sin cambios)
+                // --- INICIO: Lógica Anti-Loop de Notificación CORREGIDA ---
                 const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
                 if (currentOnDeckStatus === 'called' && notificationState.lastOnDeckStatus !== 'called') {
                     notificationState.lastOnDeckStatus = 'called';
+
                     const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
                     document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
                     document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
+
                     onDeckModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
                     const title = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
                     const body = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!";
                     showNotification(title, body, 'on-deck-alert');
                 } else if (currentOnDeckStatus !== 'called') {
                     notificationState.lastOnDeckStatus = currentOnDeckStatus;
                 }
+
                 const currentIsUpUserId = isUpData.userId;
                 if (currentIsUpUserId === currentUserId && notificationState.lastIsUpUserId !== currentUserId) {
                     notificationState.lastIsUpUserId = currentUserId;
+
                     isUpModal.classList.add('visible');
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
                     showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
                 } else if (currentIsUpUserId !== currentUserId) {
                     notificationState.lastIsUpUserId = null;
                 }
+                // --- FIN: Lógica Anti-Loop de Notificación CORREGIDA ---
 
-                // 3. Manejar pantallas principales (Lobby, Votación, Resultados)
-                if (newStatus === 'lobby' || (newStatus === 'paused' && isAdmin)) {
+
+                if (newStatus === 'paused' && isAdmin) {
                     showScreen('lobby');
                     subscribeToUsers(id, renderLobby);
-                
-                // CORRECCIÓN: Separar 'results' en su propio 'else if'
-                } else if (newStatus === 'results') {
-                    showScreen('results');
-                    subscribeToUsers(id, renderResults);
-                
-                // 4. 'voting' y 'tiebreaker' caen aquí
                 } else {
-                    showScreen('voting');
-                    subscribeToUsers(id, renderVotingScreen);
+                    const screenMap = { lobby: 'lobby', voting: 'voting', paused: 'voting', tiebreaker: 'voting', results: 'results' };
+                    const rendererMap = { lobby: renderLobby, voting: renderVotingScreen, paused: renderVotingScreen, tiebreaker: renderVotingScreen, results: renderResults };
+                    showScreen(screenMap[newStatus]);
+                    if (rendererMap[newStatus]) subscribeToUsers(id, rendererMap[newStatus]);
                 }
-                // --- FIN: LÓGICA DE ESTADO CORREGIDA ---
             });
         }
-        // ======================================================
-        // === FIN: FUNCIÓN subscribeToContest CORREGIDA ===
-        // ======================================================
 
 
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
@@ -1303,7 +1292,7 @@
                     ${adminCanEditParticipant ? `<button data-action="edit-description" data-userid="${user.id}" data-costume="${user.costume}" class="p-1 rounded bg-gray-700 hover:bg-gray-600" title="Editar/Generar descripción">✨</button>` : ''}
                 `;
 
-                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manualmente"></span>`;
+                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manually"></span>`;
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
                 const imgContainer = canEdit ? `<div class="editable-image-container mr-3" data-action="edit-image" data-userid="${user.id}" data-costume="${user.costume}" data-description="${user.costumeDescription}">${imgTag}<div class="editable-image-overlay">📸</div></div>` : `<div class="mr-3">${imgTag}</div>`;
 
@@ -1747,10 +1736,24 @@
         }
         document.getElementById('catchup-vote-cancel').addEventListener('click', () => document.getElementById('catchup-vote-modal').classList.remove('visible'));
 
-        // ======================================================
-        // === INICIO: FUNCIÓN renderResults CORREGIDA ===
-        // ======================================================
         async function renderResults(contestData, users) {
+            
+            // =================================================================
+            // === INICIO DE LA CORRECCIÓN DEL BUG "REINICIAR CONCURSO" ===
+            // =================================================================
+            // Esta guardia previene que la función se ejecute si el estado del
+            // concurso ya no es 'results'. Esto soluciona la condición de carrera
+            // donde el escuchador de USUARIOS (aún ligado a renderResults) se
+            // dispara DESPUÉS de que el escuchador de CONCURSO ya haya cambiado
+            // el estado a 'lobby' y haya mostrado la pantalla de 'lobby'.
+            if (contestData.status !== 'results') {
+                console.warn(`renderResults fue llamado, pero el estado actual es '${contestData.status}'. Abortando renderizado para prevenir error de pantalla.`);
+                return; // No hacer nada. El escuchador de concurso se encarga de mostrar la pantalla correcta.
+            }
+            // =================================================================
+            // === FIN DE LA CORRECCIÓN ===
+            // =================================================================
+
             const isAdmin = contestData.creatorId === currentUserId;
             const resultsContainer = document.getElementById('results-container');
             const controlsContainer = document.getElementById('results-controls');
@@ -1843,18 +1846,14 @@
                 });
             }
 
-            // --- INICIO: CORRECCIÓN (Botón de salida para no-admins) ---
+            // CAMBIO: Quitado el botón 'leave' de aquí
             if (newRevealStep >= 3) {
                 if (isAdmin) {
                     controlsHTML += `<button data-action="finalize" class="btn-danger mt-6 w-full">Finalizar y Eliminar Sala</button>`;
                     controlsHTML += `<button data-action="restart" class="btn-secondary mt-2 w-full">Reiniciar Concurso</button>`;
-                } else {
-                    // Este botón permite salir a los usuarios normales
-                    controlsHTML += `<button data-action="leave" class="btn-secondary mt-6 w-full">Volver al Inicio</button>`;
                 }
+                 // Ya no hay botón 'Volver al Inicio' aquí para usuarios normales
             }
-            // --- FIN: CORRECCIÓN ---
-            
             controlsContainer.innerHTML = controlsHTML;
 
             controlsContainer.onclick = async (e) => {
@@ -1864,12 +1863,7 @@
 
                 if (['reveal', 'finalize', 'restart'].includes(action) && localContestData.creatorId !== currentUserId) return;
 
-                // --- INICIO: CORRECCIÓN (Handler para 'leave') ---
-                if (action === 'leave') {
-                    leaveContest();
-                }
-                // --- FIN: CORRECCIÓN ---
-                 else if(action === 'reveal') {
+                if(action === 'reveal') {
                     await updateDoc(getContestRef(contestId), { revealStep: parseInt(target.dataset.nextStep) });
                 } else if (action === 'finalize') {
                     showConfirmation('Finalizar Concurso', '¿Estás seguro? Esto eliminará permanentemente la sala para todos los usuarios.', async () => {
@@ -1896,20 +1890,13 @@
             };
             previousRevealStep = newRevealStep;
         }
-        // ======================================================
-        // === FIN: FUNCIÓN renderResults CORREGIDA ===
-        // ======================================================
 
 
-        // ======================================================
-        // === INICIO: FUNCIONES DE IA CORREGIDAS ===
-        // ======================================================
         async function generateDescriptionWithGemini(costumeName) {
             const apiKey = getApiKey();
             if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
             try {
-                // CORRECCIÓN: Modelo de IA actualizado
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                 const systemPrompt = "Actúa como un narrador entusiasta con gran conocimiento de la cultura popular, mitología y cuentos clásicos. Tu tarea es generar una descripción corta para un disfraz en un concurso. Debe capturar la esencia del personaje, explicando brevemente quién es o qué representa. Usa un tono accesible y directo, pero apropiado para la atmósfera del personaje. Incluye siempre una línea de cierre que interactúe con el personaje o el público. La respuesta debe ser en español, de dos a tres frases vibrantes.";
                 const userQuery = `Describe el disfraz de "${costumeName}" para un concurso.`;
                 const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] }, };
@@ -1943,8 +1930,7 @@
                     const errorData = await response.json().catch(() => ({}));
                     const errorMsg = errorData?.error?.message || `Error HTTP ${response.status}`;
                     if (response.status === 400) throw new Error(`Solicitud inválida (400): ${errorMsg}. Intenta con un prompt diferente o revisa si infringe las políticas de seguridad.`);
-                    // CORRECCIÓN: Mensaje de error ajustado
-                    if (response.status === 403) throw new Error("Permiso denegado (403). Tu clave de API podría ser inválida o no tener acceso a este modelo (Imagen 3.0). Asegúrate de que la API 'Generative Language' esté habilitada y que tu cuenta tenga los permisos necesarios para este modelo.");
+                    if (response.status === 403) throw new Error("Permiso denegado (403). Tu clave de API podría ser inválida. Asegúrate de que la API 'Vertex AI' esté habilitada en tu proyecto de Google Cloud y que la facturación esté activa.");
                     if (response.status === 429) throw new Error("Demasiadas solicitudes de imágenes. Por favor, espera un momento.");
                     throw new Error(errorMsg);
                 }
@@ -1961,8 +1947,7 @@
             const apiKey = getApiKey();
             if (!apiKey) throw new Error("Clave de API no configurada. Por favor, añádela en los ajustes.");
             try {
-                // CORRECCIÓN: Modelo de IA actualizado
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                 const prompt = "Extrae el texto de esta imagen. Es una lista para un concurso con 3 campos separados por comas: 'Nombre, Disfraz, EsJurado'. El campo 'EsJurado' es opcional ('si', 'y', 'no', 'n', o vacío). Estandariza la salida a CSV, con cada persona en una nueva línea. Para 'EsJurado', usa 'si' para respuestas afirmativas ('si', 'y') y 'no' para todo lo demás (vacío, 'no', 'n'). Ejemplo: 'Pepito, Pez gordo, si' -> 'Pepito,Pez gordo,si'. 'Pac, payaso' -> 'Pac,payaso,no'.";
                 const payload = { contents: [ { role: "user", parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64Image.split(',')[1] } } ] } ], };
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -1982,9 +1967,6 @@
                 throw error;
             }
         }
-        // ======================================================
-        // === FIN: FUNCIONES DE IA CORREGIDAS ===
-        // ======================================================
 
         document.getElementById('add-participants-from-photo-btn').addEventListener('click', () => {
             if (!checkAndPromptForKey()) return;
@@ -2349,5 +2331,4 @@
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
     </script>
 </body>
-    </html>
-
+</html>
