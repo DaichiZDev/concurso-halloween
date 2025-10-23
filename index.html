@@ -186,12 +186,13 @@
             align-items: center;
             padding: 0 10px;
         }
+        
+        /* --- ESTA ES LA SECCIÓN CORREGIDA --- */
         .score-slider {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
             height: 10px;
-            /* background: linear-gradient(to right, #4a5568, #718096); */ /* <-- Original */
             border-radius: 5px;
             outline: none;
             cursor: pointer;
@@ -200,42 +201,53 @@
             z-index: 1;
 
             /* --- CORRECCIÓN: INICIO (Puntos Guía) --- */
-            /* Esta técnica apila múltiples fondos */
-            background-color: #4a5568; /* 1. Un color de fondo base */
+            /* 1. Fondo base de la barra */
+            background-color: #4a5568; 
+            
+            /* 2. Apilamos 10 puntos (radial-gradient) + la barra de fondo (linear-gradient) */
             background-image:
-                /* 2. Los 9 puntos iniciales (de 0% a 88.88%) */
-                /* Se define un gradiente que es un punto de 2px y luego transparente */
-                linear-gradient(to right,
-                    rgba(255, 255, 255, 0.7) 2px, /* El punto guía */
-                    transparent 2px              /* El resto del espacio */
-                ),
-                
-                /* 3. El 10mo punto (exactamente en 100%) */
-                /* Se usa un gradiente radial para el último punto */
-                radial-gradient(
-                    circle, 
-                    rgba(255, 255, 255, 0.7) 1px, /* 1px radio = 2px diámetro */
-                    transparent 1px
-                ),
-                
-                /* 4. La barra de fondo original (la más profunda) */
+                /* Puntos 1-10 (Círculos de 4px de diámetro) */
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                radial-gradient(circle, rgba(255,255,255,0.7) 2px, transparent 2px),
+                /* Barra de fondo */
                 linear-gradient(to right, #4a5568, #718096);
 
-            background-repeat: repeat-x, no-repeat, no-repeat;
+            /* 3. No repetir ningún punto; solo la barra de fondo (aunque es 100%) */
+            background-repeat: no-repeat;
             
-            background-size: 
-                calc(100% / 9) 100%,  /* 2. El ancho de cada "baldosa" para los 9 puntos */
-                2px 2px,             /* 3. El tamaño del punto final */
-                100% 100%;           /* 4. El tamaño de la barra de fondo */
-
+            /* 4. Definimos el tamaño de cada fondo (4px para cada punto, 100% para la barra) */
+            background-size:
+                4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 4px,
+                4px 4px, 4px 4px, 4px 4px, 4px 4px, 4px 4px,
+                100% 100%;
+            
+            /* 5. Posicionamos los 10 puntos en los 10 saltos (0% a 100% en 9 pasos) */
+            /* El slider de 1-10 tiene 9 "espacios" entre valores */
             background-position:
-                0% center,           /* 2. Inicia la repetición de baldosas en 0% */
-                100% center,         /* 3. Posiciona el punto final en 100% */
-                0% center;           /* 4. Posiciona la barra de fondo en 0% */
+                0% center,               /* Punto 1 (Valor 1) */
+                calc(100% / 9 * 1) center, /* Punto 2 (Valor 2) */
+                calc(100% / 9 * 2) center, /* Punto 3 (Valor 3) */
+                calc(100% / 9 * 3) center, /* Punto 4 (Valor 4) */
+                calc(100% / 9 * 4) center, /* Punto 5 (Valor 5) */
+                calc(100% / 9 * 5) center, /* Punto 6 (Valor 6) */
+                calc(100% / 9 * 6) center, /* Punto 7 (Valor 7) */
+                calc(100% / 9 * 7) center, /* Punto 8 (Valor 8) */
+                calc(100% / 9 * 8) center, /* Punto 9 (Valor 9) */
+                100% center,             /* Punto 10 (Valor 10) */
+                0% center;               /* Posición de la barra de fondo */
             /* --- CORRECCIÓN: FIN (Puntos Guía) --- */
         }
+        /* --- FIN DE LA SECCIÓN CORREGIDA --- */
 
-        /* --- CORRECCIÓN: INICIO --- */
+
         /* Estilo para Webkit (Chrome, Safari, Edge) */
         .score-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -246,9 +258,6 @@
             cursor: pointer;
             background-color: transparent; /* El fondo es el SVG */
             
-            /* Aquí está la corrección: 
-              Usamos un SVG en línea como fondo en lugar de un pseudo-elemento ::before.
-            */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='50' dy='.35em' font-size='80' text-anchor='middle'%3E🎃%3C/text%3E%3C/svg%3E");
             background-size: 90%; /* 90% del tamaño del thumb */
             background-repeat: no-repeat;
@@ -282,7 +291,6 @@
             position: relative;
             z-index: 2;
         }
-        /* --- CORRECCIÓN: FIN --- */
 
 
         /* Separador entre criterios */
@@ -2349,4 +2357,4 @@
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
     </script>
 </body>
-    </html>
+                         </html>
