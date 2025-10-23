@@ -299,7 +299,7 @@
              <div class="card rounded-xl p-6 md:p-8 shadow-lg max-w-2xl mx-auto">
                 <button id="leave-lobby-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white text-sm py-1 px-2 rounded-md bg-red-800/50 hover:bg-red-700/80">Salir</button>
                 <button id="open-settings-btn" class="absolute top-4 right-16 text-gray-400 hover:text-white p-2 rounded-md bg-gray-700/50 hover:bg-gray-600/80 hidden" title="Configuración de IA">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 </button>
 
                 <h2 class="font-creepster text-4xl text-orange-500 mb-2 text-center">Sala de Espera</h2>
@@ -622,8 +622,9 @@
         let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
-        // **FIX:** Declare notificationState globally ONCE.
-        var notificationState = { // Use 'var' or declare it outside any function if preferred
+        
+        // **FIX:** Declare notificationState globally ONCE and initialize.
+        var notificationState = {
              lastOnDeckStatus: null,
              lastIsUpUserId: null
          };
@@ -1058,8 +1059,10 @@
 
         function subscribeToContest(id) {
             if (contestUnsubscribe) contestUnsubscribe();
-            // Resetear estado de notificación al suscribirse
-            notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
+            
+            // **FIX 2:** La inicialización del estado de notificación se movió a fuera (global)
+            // para que no se reinicie en cada actualización del snapshot.
+            // notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null }; // <--- BUG ESTABA AQUÍ
 
             contestUnsubscribe = onSnapshot(getContestRef(id), async (doc) => {
                 if (!doc.exists()) { leaveContest(); customAlert("Error", "La sala ha sido eliminada."); return; }
@@ -1150,17 +1153,17 @@
 
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
             onDeckModal.classList.remove('visible');
-            notificationState.lastOnDeckStatus = 'acknowledged';
+            // notificationState.lastOnDeckStatus = 'acknowledged'; // Dejar que el listener lo maneje
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
             onDeckModal.classList.remove('visible');
-            notificationState.lastOnDeckStatus = 'not_ready';
+            // notificationState.lastOnDeckStatus = 'not_ready'; // Dejar que el listener lo maneje
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
         });
         document.getElementById('is-up-close').addEventListener('click', async () => {
             isUpModal.classList.remove('visible');
-            notificationState.lastIsUpUserId = null;
+            // notificationState.lastIsUpUserId = null; // Dejar que el listener lo maneje
             if (localContestData.isUp && localContestData.isUp.userId) {
                 await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
             }
@@ -1811,13 +1814,11 @@
                 });
             }
 
-            // CAMBIO: Quitado el botón 'leave' de aquí
             if (newRevealStep >= 3) {
                 if (isAdmin) {
                     controlsHTML += `<button data-action="finalize" class="btn-danger mt-6 w-full">Finalizar y Eliminar Sala</button>`;
                     controlsHTML += `<button data-action="restart" class="btn-secondary mt-2 w-full">Reiniciar Concurso</button>`;
                 }
-                 // Ya no hay botón 'Volver al Inicio' aquí para usuarios normales
             }
             controlsContainer.innerHTML = controlsHTML;
 
@@ -1839,7 +1840,7 @@
                         // El listener principal detectará 'finalized' y mostrará el feedback
                     });
                 
-                // === INICIO DE LA CORRECCIÓN ===
+                // === INICIO DE LA CORRECCIÓN 1 (REINICIO) ===
                 } else if (action === 'restart') {
                      showConfirmation('Reiniciar Concurso', '¿Seguro? Se borrarán todos los votos y se volverá a la sala de espera.', async () => {
                         loadingOverlay.classList.remove('hidden');
@@ -1869,7 +1870,6 @@
                                 batch.update(userDoc.ref, { hasVoted: false, totalScore: 0 });
 
                                 // 3b. Obtener y borrar todos los documentos de la subcolección 'votes'
-                                // (Esto solo aplica a participantes, pero es seguro correrlo para todos)
                                 const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, userDoc.id));
                                 votesSnapshot.forEach(voteDoc => {
                                     batch.delete(voteDoc.ref);
@@ -1888,7 +1888,7 @@
                         }
                      });
                 }
-                // === FIN DE LA CORRECCIÓN ===
+                // === FIN DE LA CORRECCIÓN 1 ===
             };
             previousRevealStep = newRevealStep;
         }
@@ -2334,5 +2334,4 @@
     </script>
 </body>
 </html>
-
 
