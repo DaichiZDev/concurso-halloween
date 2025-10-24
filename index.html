@@ -1175,18 +1175,12 @@
 
 
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
-            onDeckModal.classList.remove('visible');
-            notificationState.lastOnDeckStatus = 'acknowledged';
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
-            onDeckModal.classList.remove('visible');
-            notificationState.lastOnDeckStatus = 'not_ready';
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
         });
         document.getElementById('is-up-close').addEventListener('click', async () => {
-            isUpModal.classList.remove('visible');
-            notificationState.lastIsUpUserId = null;
             if (localContestData.isUp && localContestData.isUp.userId) {
                 await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
             }
