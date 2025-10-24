@@ -612,24 +612,27 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-    // Función para mostrar logs en pantalla
-    const MAX_LOG_LINES = 20; // Limita el número de líneas
+    // Función para mostrar logs en pantalla (versión desplegable)
+    const MAX_LOG_LINES = 30; // Aumentamos un poco el límite
     function screenLog(message) {
-        const logDisplay = document.getElementById('debug-log-display');
+        const logDisplay = document.getElementById('debug-log-display'); // El DIV *dentro* de <details>
         if (logDisplay) {
             const time = new Date().toLocaleTimeString();
             const newLine = document.createElement('div');
             newLine.textContent = `[${time}] ${message}`;
-            // Añadir nueva línea al principio
-            logDisplay.insertBefore(newLine, logDisplay.children[1]); // Insertar después del título
-            // Limitar el número de líneas
-            while (logDisplay.children.length > MAX_LOG_LINES + 1) { // +1 por el título
+            // Añadir nueva línea al principio del DIV
+            logDisplay.insertBefore(newLine, logDisplay.firstChild);
+            // Limitar el número de líneas dentro del DIV
+            while (logDisplay.children.length > MAX_LOG_LINES) {
                 logDisplay.removeChild(logDisplay.lastChild);
             }
+            // Scroll hacia arriba para ver lo más nuevo si está abierto
+            // logDisplay.scrollTop = 0; // Descomentar si quieres auto-scroll
         }
          // También mantenemos el console.log por si acaso
          console.log(message);
     }
+
 
         const appId = 'concurso-halloween-shared-2025';
 
