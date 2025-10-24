@@ -583,11 +583,12 @@
             </div>
         </div>
     </div>
-    <input type="file" id="image-file-input" class="hidden" accept="image/*">
+     <input type="file" id="image-file-input" class="hidden" accept="image/*">
     <input type="file" id="ocr-file-input" class="hidden" accept="image/*">
 
-   <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
@@ -629,6 +630,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // --- Si tienes funciones que no usan el DOM, puedes dejarlas fuera de la función arriba ---
 </script>
+
    
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
@@ -1006,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
 
         document.getElementById('join-contest-btn').addEventListener('click', async () => {
-            const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
+  const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
 
             if (id === 'HALLOWEENDPC') {
                 document.getElementById('home-screen').classList.add('hidden');
@@ -2360,7 +2362,7 @@ if (currentIsUpUserId === currentUserId) {
         }
 
         attachScoringListeners(); // Asegurar que el listener esté activo globalmente
-
+   </script>
 </body>
 </html>
 
