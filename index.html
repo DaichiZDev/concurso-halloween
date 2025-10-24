@@ -612,27 +612,24 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-    // Función para mostrar logs en pantalla (versión desplegable)
-    const MAX_LOG_LINES = 30; // Aumentamos un poco el límite
-    function screenLog(message) {
-        const logDisplay = document.getElementById('debug-log-display'); // El DIV *dentro* de <details>
-        if (logDisplay) {
-            const time = new Date().toLocaleTimeString();
-            const newLine = document.createElement('div');
-            newLine.textContent = `[${time}] ${message}`;
-            // Añadir nueva línea al principio del DIV
-            logDisplay.insertBefore(newLine, logDisplay.firstChild);
-            // Limitar el número de líneas dentro del DIV
-            while (logDisplay.children.length > MAX_LOG_LINES) {
-                logDisplay.removeChild(logDisplay.lastChild);
+        // Función para mostrar logs en pantalla (versión desplegable con UserID)
+        const MAX_LOG_LINES = 30;
+        function screenLog(message) {
+            const logDisplay = document.getElementById('debug-log-display');
+            if (logDisplay) {
+                const time = new Date().toLocaleTimeString();
+                const userIdentifier = currentUserId || 'UNKNOWN_USER'; // Asegura que siempre haya algo
+                const newLine = document.createElement('div');
+                // Añadimos el UserID al principio del mensaje que se muestra
+                newLine.textContent = `[${time}] [User: ${userIdentifier}] ${message}`;
+                logDisplay.insertBefore(newLine, logDisplay.firstChild);
+                while (logDisplay.children.length > MAX_LOG_LINES) {
+                    logDisplay.removeChild(logDisplay.lastChild);
+                }
             }
-            // Scroll hacia arriba para ver lo más nuevo si está abierto
-            // logDisplay.scrollTop = 0; // Descomentar si quieres auto-scroll
+             // Mantenemos el console.log original por si acaso
+             console.log(`[User: ${currentUserId || 'UNKNOWN_USER'}] ${message}`);
         }
-         // También mantenemos el console.log por si acaso
-         console.log(message);
-    }
-
 
         const appId = 'concurso-halloween-shared-2025';
 
