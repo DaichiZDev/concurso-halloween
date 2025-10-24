@@ -485,10 +485,13 @@
             </div>
         </div>
 
-    <div id="debug-log-display" style="position: fixed; bottom: 0; left: 0; width: 100%; max-height: 100px; overflow-y: scroll; background-color: rgba(0,0,0,0.8); color: #0f0; font-family: monospace; font-size: 10px; padding: 5px; z-index: 999; border-top: 1px solid #333;">
-        == Log de Depuración ==<br>
-    </div>
-
+    <details id="debug-log-container" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 999;">
+        <summary style="background-color: #333; color: #fff; padding: 5px 10px; cursor: pointer; border-top: 1px solid #555; font-size: 12px;">
+            Mostrar/Ocultar Log de Depuración 🐛
+        </summary>
+        <div id="debug-log-display" style="max-height: 150px; overflow-y: scroll; background-color: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; padding: 5px; border-top: 1px solid #555;">
+            </div>
+    </details>
 
     </main>
 
