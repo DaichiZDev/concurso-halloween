@@ -1016,15 +1016,14 @@
             }
         });
 
-
         document.getElementById('back-to-home-btn').addEventListener('click', leaveContest);
         document.getElementById('leave-lobby-btn').addEventListener('click', leaveContest);
 
         document.getElementById('register-btn').addEventListener('click', async () => {
             const name = document.getElementById('user-name-input').value.trim(); if (!name) return customAlert("Error", "Nombre requerido.");
-            loadingOverlay.classList.remove('hidden');
+                        loadingOverlay.classList.remove('hidden');
             document.getElementById('loading-text').textContent = 'Registrando...';
-            const costume = document.getElementById('user-name-input').value.trim();
+            const costume = document.getElementById('costume-name-input').value.trim(); // <-- Corregido aquí
             const contestDoc = await getDoc(getContestRef(contestId));
 
             if (!contestDoc.exists()) {
@@ -1117,9 +1116,6 @@
 
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
-
-const onDeckData = localContestData.onDeck || {};
-const isUpData = localContestData.isUp || {};
 
 // --- INICIO: Lógica Anti-Loop de Notificación CORREGIDA ---
 const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
