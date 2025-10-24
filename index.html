@@ -1120,39 +1120,46 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-// --- INICIO: Lógica Anti-Loop de Notificación CORREGIDA ---
-const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
-if (currentOnDeckStatus === 'called') {
-    if (notificationState.lastOnDeckStatus !== 'called') {
-        notificationState.lastOnDeckStatus = 'called';
-        const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
-        document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
-        document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
-        onDeckModal.classList.add('visible');
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
-    }
-} else {
-    // CORREGIDO: Siempre cerramos el modal si el estado ya no es 'called'
-    notificationState.lastOnDeckStatus = currentOnDeckStatus;
-    onDeckModal.classList.remove('visible');
-}
+                // --- INICIO: Lógica Anti-Loop de Notificación (Versión Robusta) ---
+                const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
+                if (currentOnDeckStatus === 'called') {
+                    // Solo muestra si el estado anterior NO era 'called'
+                    if (notificationState.lastOnDeckStatus !== 'called') {
+                        notificationState.lastOnDeckStatus = 'called';
+                        const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
+                        document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
+                        document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
+                        onDeckModal.classList.add('visible');
+                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                        showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
+                    }
+                    // Si ya estaba en 'called', no hacemos nada aquí para evitar reabrirlo
+                } else {
+                    // Si el estado actual NO es 'called' (es null, acknowledged, not_ready, etc.)
+                    // Actualiza el estado local y CIERRA el modal explícitamente.
+                    notificationState.lastOnDeckStatus = currentOnDeckStatus; // Guarda el estado actual (que no es 'called')
+                    onDeckModal.classList.remove('visible');
+                }
 
-const currentIsUpUserId = isUpData.userId;
-if (currentIsUpUserId === currentUserId) {
-    if (notificationState.lastIsUpUserId !== currentUserId) {
-        notificationState.lastIsUpUserId = currentUserId;
-        isUpModal.classList.add('visible');
-        if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-        showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
-    }
-} else {
-    // CORREGIDO: Siempre cerramos el modal si el usuario deja de estar en turno
-    notificationState.lastIsUpUserId = null;
-    isUpModal.classList.remove('visible');
-}
-// --- FIN: Lógica Anti-Loop de Notificación CORREGIDA ---
-
+                const currentIsUpUserId = isUpData.userId;
+                if (currentIsUpUserId === currentUserId) {
+                     // Solo muestra si el usuario anterior NO era el actual
+                    if (notificationState.lastIsUpUserId !== currentUserId) {
+                        notificationState.lastIsUpUserId = currentUserId;
+                        isUpModal.classList.add('visible');
+                        if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                        showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
+                    }
+                    // Si ya estaba 'up', no hacemos nada aquí
+                } else {
+                    // Si el usuario actual NO es el que está 'up'
+                    // Actualiza el estado local y CIERRA el modal explícitamente.
+                    if (notificationState.lastIsUpUserId === currentUserId) {
+                       notificationState.lastIsUpUserId = null; // Resetea solo si el estado anterior era este usuario
+                    }
+                    isUpModal.classList.remove('visible');
+                }
+                // --- FIN: Lógica Anti-Loop de Notificación (Versión Robusta) ---
 
                 if (newStatus === 'paused' && isAdmin) {
                     showScreen('lobby');
