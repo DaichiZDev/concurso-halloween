@@ -959,11 +959,10 @@
             });
         }
 
-
         document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
 
         document.getElementById('join-contest-btn').addEventListener('click', async () => {
-  const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
+            const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
 
             if (id === 'HALLOWEENDPC') {
                 document.getElementById('home-screen').classList.add('hidden');
@@ -1016,6 +1015,7 @@
                 customAlert("Error", "Ocurrió un problema al intentar unirse a la sala.");
             }
         });
+
 
         document.getElementById('back-to-home-btn').addEventListener('click', leaveContest);
         document.getElementById('leave-lobby-btn').addEventListener('click', leaveContest);
