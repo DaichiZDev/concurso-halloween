@@ -585,53 +585,8 @@
     </div>
      <input type="file" id="image-file-input" class="hidden" accept="image/*">
     <input type="file" id="ocr-file-input" class="hidden" accept="image/*">
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-
-// --- aquí tu configuración, variables globales, funciones, etc ---
-const firebaseConfig = {
-    apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
-    authDomain: "concurso-halloween.firebaseapp.com",
-    projectId: "concurso-halloween",
-    storageBucket: "concurso-halloween.appspot.com",
-    messagingSenderId: "911444785839",
-    appId: "1:911444785839:web:03326456c9b2b35d90325a"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// ...TODAS tus variables globales y funciones van aquí...
-
-// --- FIN de la zona antes del DOMContentLoaded ---
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Aquí TODOS tus listeners y lógica que usan elementos del DOM
-
-    // Ejemplo: Los dos principales
-    document.getElementById('create-contest-btn').addEventListener('click', () => {
-        alert("Botón CREAR NUEVA SALA funciona");
-        // ...acá tu lógica real para crear sala...
-    });
-
-    document.getElementById('join-contest-btn').addEventListener('click', () => {
-        alert("Botón UNIRSE funciona");
-        // ...acá tu lógica real para unirse...
-    });
-
-    // El resto de listeners, inicializaciones, setup de modales, etc.
-    // TODO lo que use elementos HTML DEBE ir aquí adentro.
-});
-
-// --- Si tienes funciones que no usan el DOM, puedes dejarlas fuera de la función arriba ---
-</script>
-
    
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
