@@ -959,13 +959,14 @@
             });
         }
 
-        document.getElementById('create-contest-btn').addEventListener('click', () => { contestId = generateId(); window.location.hash = contestId; showScreen('register'); });
-
-        document.getElementById('join-contest-btn').addEventListener('click', async () => {
+                document.getElementById('join-contest-btn').addEventListener('click', async () => {
             const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
+
+            if (!id) return; // <-- AÑADIR ESTA LÍNEA
 
             if (id === 'HALLOWEENDPC') {
                 document.getElementById('home-screen').classList.add('hidden');
+
                 easterEggOverlay.classList.remove('hidden');
                 let tapCount = 0;
                 let tapTimeout = null;
