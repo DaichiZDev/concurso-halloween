@@ -962,7 +962,7 @@
                 document.getElementById('join-contest-btn').addEventListener('click', async () => {
             const id = document.getElementById('contest-id-input').value.trim().toUpperCase();
 
-            if (!id) return; // <-- AÑADIR ESTA LÍNEA
+            if (!id) return customAlert("Error", "Ingresa un código de sala.");
 
             if (id === 'HALLOWEENDPC') {
                 document.getElementById('home-screen').classList.add('hidden');
