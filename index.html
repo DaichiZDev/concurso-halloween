@@ -2040,7 +2040,7 @@ if (currentIsUpUserId === currentUserId) {
 
             const users = (await getDocs(getUsersCollectionRef(contestId))).docs.map(d => d.data());
             if(users.filter(u=>u.isParticipant).length<1) return customAlert("Error","Debe haber al menos un participante.");
-            if(users.filter(u=>u.isJuror).length<3) return customAlert("Regla del Concurso","Debe haber al menos 3 jurados para iniciar.");
+            if(users.filter(u=>u.isJuror).length<2) return customAlert("Regla del Concurso","Debe haber al menos 2 jurados para iniciar.");
             await updateDoc(getContestRef(contestId), {status:'voting', votedOnParticipants: [], onDeck: null, isUp: null, acknowledgedUp: null });
         });
 
