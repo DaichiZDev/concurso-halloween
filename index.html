@@ -2095,71 +2095,51 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
 
 
-        document.getElementById('register-btn').addEventListener('click', async () => {
-
+                document.getElementById('register-btn').addEventListener('click', async () => {
             const name = document.getElementById('user-name-input').value.trim(); if (!name) return customAlert("Error", "Nombre requerido.");
 
-                        loadingOverlay.classList.remove('hidden');
+            try { // <-- INICIA EL SEGURO
+                loadingOverlay.classList.remove('hidden');
+                document.getElementById('loading-text').textContent = 'Registrando...';
+                const costume = document.getElementById('costume-name-input').value.trim();
+                const contestDoc = await getDoc(getContestRef(contestId));
 
-            document.getElementById('loading-text').textContent = 'Registrando...';
+                if (!contestDoc.exists()) {
+                    await setDoc(getContestRef(contestId), {
+                        status: "lobby",
+                        creatorId: currentUserId,
+                        isLocked: false,
+                        scoringMethod: "weighted_average",
+                        criteria: [
+                            { id: 'crit1', name: 'Creatividad y Originalidad', weight: 40 },
+                            { id: 'crit2', name: 'Ejecución y Detalle', weight: 40 },
+                            { id: 'crit3', name: 'Presentación', weight: 20 }
+                        ]
+                    });
+                } else {
+                     if(contestDoc.data().isLocked){
+                        const userDoc = await getDoc(getUserRef(contestId, currentUserId));
+                        if(!userDoc.exists()){
+                            loadingOverlay.classList.add('hidden');
+                            return customAlert("Acceso Denegado", "La sala se cerró mientras te registrabas.");
+                        }
+                     }
+                }
 
-            const costume = document.getElementById('costume-name-input').value.trim(); // <-- Corregido aquí
-
-            const contestDoc = await getDoc(getContestRef(contestId));
-
-
-
-            if (!contestDoc.exists()) {
-
-                await setDoc(getContestRef(contestId), {
-
-                    status: "lobby",
-
-                    creatorId: currentUserId,
-
-                    isLocked: false,
-
-                    scoringMethod: "weighted_average",
-
-                    criteria: [
-
-                        { id: 'crit1', name: 'Creatividad y Originalidad', weight: 40 },
-
-                        { id: 'crit2', name: 'Ejecución y Detalle', weight: 40 },
-
-                        { id: 'crit3', name: 'Presentación', weight: 20 }
-
-                    ]
-
-                });
-
-            } else {
-
-                 if(contestDoc.data().isLocked){
-
-                    const userDoc = await getDoc(getUserRef(contestId, currentUserId));
-
-                    if(!userDoc.exists()){
-
-                        loadingOverlay.classList.add('hidden');
-
-                        return customAlert("Acceso Denegado", "La sala se cerró mientras te registrabas.");
-
-                    }
-
-                 }
-
-            }
-
-
-
-            await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
-
-            currentUserName = name; // Guardamos el nombre ingresado
-
-            subscribeToContest(contestId);
-
+                await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
+                currentUserName = name; // Guardamos el nombre ingresado
+                
+                screenLog('Registro exitoso. Suscribiendo al concurso...', 'INFO'); // Log de éxito
+                
+                subscribeToContest(contestId);
+            
+            } catch (error) { // <-- AQUÍ SE ATRAPA EL ERROR
+                screenLog(`Error al registrar: ${error.message}`, 'ERROR'); // Muestra el error en el log
+                loadingOverlay.classList.add('hidden'); // <-- OCULTA EL CÍRCULO
+                customAlert("Error de Registro", `No se pudo completar el registro. ${error.message}`); // Muestra el error al usuario
+            } 
         });
+
 
 
                 const showScreen = name => {
