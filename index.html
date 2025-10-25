@@ -4350,96 +4350,65 @@ Aqui
 
 
 
-
         onAuthStateChanged(auth, async (user) => {
-
             if (user) {
+                try {
+                    currentUserId = user.uid;
+                    screenLog(`Autenticado con UID: ${user.uid}`, 'INFO'); // Log de éxito
+                    await registerServiceWorker();
 
-                currentUserId = user.uid;
-
-                await registerServiceWorker();
-
-
-
-                const hashId = window.location.hash.substring(1).toUpperCase();
-
-                if (hashId) {
-
-                    contestId = hashId;
-
-                    try {
-
-                        const contestDoc = await getDoc(getContestRef(hashId));
-
-                        if(contestDoc.exists()){
-
-                            const userDoc = await getDoc(getUserRef(hashId, currentUserId));
-
-                            if(userDoc.exists()){
-
-                            	const userData = userDoc.data();
-
-                            currentUserName = userData.name; // Guardamos el nombre desde Firestore
-
-
-
-
-
-                                subscribeToContest(contestId);
-
+                    const hashId = window.location.hash.substring(1).toUpperCase();
+                    if (hashId) {
+                        contestId = hashId;
+                        try {
+                            const contestDoc = await getDoc(getContestRef(hashId));
+                            if(contestDoc.exists()){
+                                const userDoc = await getDoc(getUserRef(hashId, currentUserId));
+                                if(userDoc.exists()){
+                                    const userData = userDoc.data();
+                                currentUserName = userData.name; // Guardamos el nombre desde Firestore
+                                    subscribeToContest(contestId);
+                                } else {
+                                     if(contestDoc.data().isLocked) {
+                                        customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
+                                        window.location.hash = '';
+                                        showScreen('home');
+                                     } else {
+                                        showScreen('register');
+                                     }
+                                }
                             } else {
-
-                                 if(contestDoc.data().isLocked) {
-
-                                    customAlert("Acceso Denegado", "Esta sala está cerrada a nuevos participantes.");
-
-                                    window.location.hash = '';
-
-                                    showScreen('home');
-
-                                 } else {
-
-                                    showScreen('register');
-
-                                 }
-
+                                 showScreen('register');
                             }
-
-                        } else {
-
-                             showScreen('register');
-
+                        } catch (error) {
+                            console.error("Error al verificar sala/usuario:", error);
+                            customAlert("Error de Conexión", "No se pudo verificar la sala. Intenta de nuevo.");
+                            window.location.hash = '';
+                            showScreen('home');
                         }
-
-                    } catch (error) {
-
-                        console.error("Error al verificar sala/usuario:", error);
-
-                        customAlert("Error de Conexión", "No se pudo verificar la sala. Intenta de nuevo.");
-
-                        window.location.hash = '';
-
+                    } else {
                         showScreen('home');
-
                     }
-
-                } else {
-
-                    showScreen('home');
-
+                } catch (e) {
+                    screenLog(`Error fatal en el bloque 'if (user)': ${e.message}`, 'ERROR');
+                    loadingOverlay.classList.add('hidden');
+                    customAlert("Error Inesperado", `Ocurrió un error al procesar tu usuario: ${e.message}`);
                 }
-
             } else {
-
-                loadingOverlay.classList.remove('hidden');
-
-                document.getElementById('loading-text').textContent = 'Autenticando...';
-
-                await signInAnonymously(auth);
-
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    document.getElementById('loading-text').textContent = 'Autenticando...';
+                    screenLog('Usuario no encontrado. Intentando inicio anónimo...', 'INFO');
+                    await signInAnonymously(auth);
+                    // El listener onAuthStateChanged se disparará de nuevo, esta vez entrando al bloque 'if (user)'
+                } catch (e) {
+                    screenLog(`Error fatal al intentar 'signInAnonymously': ${e.message}`, 'ERROR');
+                    loadingOverlay.classList.add('hidden');
+                    customAlert("Error de Autenticación", `No se pudo iniciar sesión anónima. ${e.message}. Revisa la configuración de Authentication en Firebase.`);
+                }
             }
-
         });
+
 
 
 
