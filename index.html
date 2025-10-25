@@ -2386,37 +2386,17 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                     subscribeToUsers(id, renderLobby);
 
                 } else {
-
                     const screenMap = { lobby: 'lobby', voting: 'voting', paused: 'voting', tiebreaker: 'voting', results: 'results' };
-
                     const rendererMap = { lobby: renderLobby, voting: renderVotingScreen, paused: renderVotingScreen, tiebreaker: renderVotingScreen, results: renderResults };
-
                     showScreen(screenMap[newStatus]);
-
                     if (rendererMap[newStatus]) subscribeToUsers(id, rendererMap[newStatus]);
-
                 }
-
             });
-
         }
 
-
-
-Aqui
-
-                        document.getElementById('on-deck-ready').addEventListener('click', async () => {
+        document.getElementById('on-deck-ready').addEventListener('click', async () => {
         	screenLog("Botón 'on-deck-ready' (¡Estoy listo!)", 'CLICK');
-            // --- INICIO CORRECCIÓN OPTIMISTA ---
-            notificationState.lastOnDeckStatus = 'acknowledged'; // 1. Actualiza estado local
-            onDeckModal.classList.remove('visible');           // 2. Cierra UI local
-            screenLog('CIERRE LOCAL: ¡Prepárate! (OnDeck)', 'MODAL'); // 3. Log de cierre
-            // --- FIN CORRECCIÓN OPTIMISTA ---
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' }); // 4. Envía a Firestore
-        });
-        
-        document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
-        	screenLog("Botón 'on-deck-not-ready' (Necesito un momento)", 'CLICK');
+           
             // --- INICIO CORRECCIÓN OPTIMISTA ---
             notificationState.lastOnDeckStatus = 'not_ready'; // 1. Actualiza estado local
             onDeckModal.classList.remove('visible');          // 2. Cierra UI local
@@ -4195,7 +4175,8 @@ Aqui
 
                 try {
 
-                    const registration = await navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' });
+                    const registration = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+
 
                     console.log('Service Worker registrado.');
 
