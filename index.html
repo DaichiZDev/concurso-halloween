@@ -4424,17 +4424,20 @@ Aqui
                     customAlert("Error Inesperado", `Ocurrió un error al procesar tu usuario: ${e.message}`);
                 }
             } else {
-                // Volvemos a la versión simple: solo intentar iniciar sesión.
-                // NO mostramos loading, NO usamos try...catch aquí.
-                screenLog('Usuario no encontrado. Intentando inicio anónimo...', 'INFO'); // Log simple
-                await signInAnonymously(auth); 
-                // Si funciona, onAuthStateChanged se llamará de nuevo y entrará al bloque 'if (user)'.
-                // Si falla, el error aparecerá en la consola del navegador, pero no bloqueará la app aquí.
+                // Intentamos iniciar sesión anónima y capturamos cualquier error.
+                try {
+                    screenLog('Usuario no encontrado. Intentando inicio anónimo...', 'INFO');
+                    await signInAnonymously(auth);
+                    // Si tiene éxito, onAuthStateChanged se disparará de nuevo con un usuario.
+                    // No necesitamos hacer nada más aquí.
+                } catch (error) {
+                    // SI FALLA, AHORA LO VEREMOS EN EL LOG Y EN UNA ALERTA:
+                    screenLog(`¡FALLO signInAnonymously!: ${error.code} - ${error.message}`, 'ERROR');
+                    loadingOverlay.classList.add('hidden'); // Oculta si se quedó pegado "Autenticando..."
+                    customAlert("Error Crítico de Autenticación", `No se pudo iniciar sesión anónima inicial. Código: ${error.code}. Mensaje: ${error.message}. Intenta refrescar.`);
+                }
             }
         });
-
-
-
 
 
         let currentRating = 0;
