@@ -612,24 +612,26 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Función para mostrar logs en pantalla (versión desplegable con UserID)
-        const MAX_LOG_LINES = 30;
-        function screenLog(message) {
-            const logDisplay = document.getElementById('debug-log-display');
-            if (logDisplay) {
-                const time = new Date().toLocaleTimeString();
-                const userIdentifier = currentUserId || 'UNKNOWN_USER'; // Asegura que siempre haya algo
-                const newLine = document.createElement('div');
-                // Añadimos el UserID al principio del mensaje que se muestra
-                newLine.textContent = `[${time}] [User: ${userIdentifier}] ${message}`;
-                logDisplay.insertBefore(newLine, logDisplay.firstChild);
-                while (logDisplay.children.length > MAX_LOG_LINES) {
-                    logDisplay.removeChild(logDisplay.lastChild);
-                }
+    // Función para mostrar logs en pantalla (versión desplegable con Nombre)
+    const MAX_LOG_LINES = 30;
+    function screenLog(message) {
+        const logDisplay = document.getElementById('debug-log-display');
+        if (logDisplay) {
+            const time = new Date().toLocaleTimeString();
+            // Usa el nombre guardado, o el ID si el nombre aún no está disponible
+            const userIdentifier = currentUserName || currentUserId || 'UNKNOWN_USER';
+            const newLine = document.createElement('div');
+            // Muestra el Identificador (Nombre o ID) al principio
+            newLine.textContent = `[${time}] [${userIdentifier}] ${message}`;
+            logDisplay.insertBefore(newLine, logDisplay.firstChild);
+            while (logDisplay.children.length > MAX_LOG_LINES) {
+                logDisplay.removeChild(logDisplay.lastChild);
             }
-             // Mantenemos el console.log original por si acaso
-             console.log(`[User: ${currentUserId || 'UNKNOWN_USER'}] ${message}`);
         }
+         // Log a consola también con el identificador
+         const consoleIdentifier = currentUserName || currentUserId || 'UNKNOWN_USER';
+         console.log(`[${consoleIdentifier}] ${message}`);
+    }
 
         const appId = 'concurso-halloween-shared-2025';
 
@@ -1225,12 +1227,15 @@
 
 
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
+        	screenLog("Button 'on-deck-ready' CLICKED. Sending status: acknowledged");
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
+        	screenLog("Button 'on-deck-not-ready' CLICKED. Sending status: not_ready");
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
         });
         document.getElementById('is-up-close').addEventListener('click', async () => {
+        	screenLog("Button 'is-up-close' CLICKED. Sending isUp: null");
             if (localContestData.isUp && localContestData.isUp.userId) {
                 await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
             }
