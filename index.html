@@ -1226,47 +1226,36 @@
 
 
 
-    // Función para mostrar logs en pantalla (versión desplegable con Nombre)
-
+    // Función para mostrar logs en pantalla (versión "Chismoso" v2)
     const MAX_LOG_LINES = 30;
-
-    function screenLog(message) {
-
+    function screenLog(message, category = 'INFO') {
         const logDisplay = document.getElementById('debug-log-display');
-
         if (logDisplay) {
-
             const time = new Date().toLocaleTimeString();
-
-            // Usa el nombre guardado, o el ID si el nombre aún no está disponible
-
             const userIdentifier = currentUserName || currentUserId || 'UNKNOWN_USER';
+            
+            // Formato: [TIEMPO] [USER] [PANTALLA] [CATEGORÍA] > MENSAJE
+            const logMessage = `[${time}] [${userIdentifier}] [${currentScreenName.toUpperCase()}] [${category}] > ${message}`;
 
             const newLine = document.createElement('div');
-
-            // Muestra el Identificador (Nombre o ID) al principio
-
-            newLine.textContent = `[${time}] [${userIdentifier}] ${message}`;
+            newLine.textContent = logMessage;
+            
+            // Añadir color simple para legibilidad
+            if (category === 'MODAL') newLine.style.color = '#8abeff';      // Azul para Modales
+            else if (category === 'CLICK') newLine.style.color = '#ffff8a'; // Amarillo para Clics
+            else if (category === 'SCREEN') newLine.style.color = '#8aff8a'; // Verde para Pantallas
+            else if (category.includes('ERROR')) newLine.style.color = '#ff8a8a'; // Rojo para Errores
+            else newLine.style.color = '#0f0'; // Verde default
 
             logDisplay.insertBefore(newLine, logDisplay.firstChild);
-
             while (logDisplay.children.length > MAX_LOG_LINES) {
-
                 logDisplay.removeChild(logDisplay.lastChild);
-
             }
-
         }
-
-         // Log a consola también con el identificador
-
+         // Log a consola también con el identificador y categoría
          const consoleIdentifier = currentUserName || currentUserId || 'UNKNOWN_USER';
-
-         console.log(`[${consoleIdentifier}] ${message}`);
-
+         console.log(`[${consoleIdentifier}] [${currentScreenName.toUpperCase()}] [${category}] ${message}`);
     }
-
-
 
         const appId = 'concurso-halloween-shared-2025';
 
@@ -1296,7 +1285,7 @@
 
         let ayudaContainer = document.getElementById('ayuda-container');
 
-        let currentUserId = null, contestId = null, localContestData = {};
+let currentUserId = null, contestId = null, localContestData = {}, currentScreenName = 'home';
 
         let contestUnsubscribe = null, usersUnsubscribe = null;
 
@@ -2173,42 +2162,25 @@
         });
 
 
-
-        const showScreen = name => {
+                const showScreen = name => {
+            currentScreenName = name; // <-- LÍNEA NUEVA
+            screenLog(`Navegando a pantalla: ${name}`, 'SCREEN'); // <-- LÍNEA NUEVA
 
             Object.values(screens).forEach(s => s.classList.add('hidden'));
-
             screens[name]?.classList.remove('hidden');
 
-
-
             if (isInDebugMode) {
-
                 debugBackButtonContainer.classList.toggle('hidden', name === 'debug' || name === 'home');
-
             }
-
-
 
             loadingOverlay.classList.add('hidden');
 
-
-
             if (name === 'lobby') {
-
                 diagnosticBox = document.getElementById('diagnostic-box');
-
                 ayudaContainer = document.getElementById('ayuda-container');
-
                  checkNotificationPermission();
-
             }
-
         };
-
-
-
-
 
         function subscribeToContest(id) {
 
@@ -2335,32 +2307,22 @@
                     const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
 
                     document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
-
                     document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
-
                     onDeckModal.classList.add('visible');
-
+                    screenLog('ABRIR MODAL: ¡Prepárate! (OnDeck)', 'MODAL'); // <-- LÍNEA NUEVA
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
                     showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
-
                 } else {
-
-                    screenLog(`[User: ${currentUserId}]    -> State was already ${notificationState.lastOnDeckStatus}. Ignoring 'called' echo.`);
-
+                    screenLog(`    -> State was already ${notificationState.lastOnDeckStatus}. Ignoring 'called' echo.`, 'INFO'); // <-- Categoría cambiada
                 }
-
             } else {
-
-                screenLog(`[User: ${currentUserId}] OnDeck: Received status is NOT 'called' (${currentOnDeckStatus}). Closing modal.`);
-
-                notificationState.lastOnDeckStatus = currentOnDeckStatus;
-
-                onDeckModal.classList.remove('visible');
-
+                // Solo cerramos si el estado NO es 'called'.
+                if (currentOnDeckStatus !== 'called') {
+                     screenLog(`OnDeck: Received status is NOT 'called' (${currentOnDeckStatus}). Closing modal.`, 'MODAL'); // <-- Log movido y mejorado
+                     notificationState.lastOnDeckStatus = currentOnDeckStatus;
+                     onDeckModal.classList.remove('visible');
+                }
             }
-
-
 
             // Manejo del modal IsUp (Lógica V4)
 
@@ -2374,16 +2336,12 @@
 
                 // Solo mostrar si: 1) Aún no lo habíamos marcado como 'Up' localmente Y 2) El concurso NO dice que ya acusamos recibo.
 
-                if (notificationState.lastIsUpUserId !== currentUserId && localContestData.acknowledgedUp !== currentUserId) {
-
-                    screenLog(`[User: ${currentUserId}]    -> State ok & Not Ack'd yet. SHOWING Is Up modal.`);
-
+                    if (notificationState.lastIsUpUserId !== currentUserId && localContestData.acknowledgedUp !== currentUserId) {
+                    screenLog(`    -> State ok & Not Ack'd yet. SHOWING Is Up modal.`, 'INFO'); // <-- Categoría cambiada
                     notificationState.lastIsUpUserId = currentUserId; // Marcar que ahora sí está 'Up'
-
                     isUpModal.classList.add('visible');
-
+                    screenLog('ABRIR MODAL: ¡AHORA! (IsUp)', 'MODAL'); // <-- LÍNEA NUEVA
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-
                     showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
 
                 } else {
@@ -2399,33 +2357,20 @@
                          screenLog(`[User: ${currentUserId}]    -> User already acknowledged this 'isUp'. Ignoring 'isUp' echo.`);
 
                     }
-
-                }
-
+                                }
             } else { // Si el usuario 'IsUp' NO es el actual
-
-                screenLog(`[User: ${currentUserId}] IsUp: Received user is NOT current user (${currentIsUpUserId}). Closing modal.`);
-
+                screenLog(`IsUp: Received user is NOT current user (${currentIsUpUserId}). Closing modal.`, 'MODAL'); // <-- Log mejorado
                 if (notificationState.lastIsUpUserId === currentUserId) {
-
                    notificationState.lastIsUpUserId = null; // Resetear estado local solo si éramos nosotros
-
                 }
-
                 isUpModal.classList.remove('visible'); // Asegurar cierre
-
             }
-
-
 
             screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
 
             screenLog(`[User: ${currentUserId}] --- End Listener Check ---`);
 
             // --- FIN: Lógica Anti-Loop de Notificación (CORREGIDA v4 - Final) ---
-
-
-
 
 
                 if (newStatus === 'paused' && isAdmin) {
@@ -2452,49 +2397,46 @@
 
 
 
+Aqui
 
-
-                document.getElementById('on-deck-ready').addEventListener('click', async () => {
-        	screenLog("Button 'on-deck-ready' CLICKED. Sending status: acknowledged");
+                        document.getElementById('on-deck-ready').addEventListener('click', async () => {
+        	screenLog("Botón 'on-deck-ready' (¡Estoy listo!)", 'CLICK');
             // --- INICIO CORRECCIÓN OPTIMISTA ---
             notificationState.lastOnDeckStatus = 'acknowledged'; // 1. Actualiza estado local
             onDeckModal.classList.remove('visible');           // 2. Cierra UI local
+            screenLog('CIERRE LOCAL: ¡Prepárate! (OnDeck)', 'MODAL'); // 3. Log de cierre
             // --- FIN CORRECCIÓN OPTIMISTA ---
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' }); // 3. Envía a Firestore
+            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' }); // 4. Envía a Firestore
         });
         
         document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
-        	screenLog("Button 'on-deck-not-ready' CLICKED. Sending status: not_ready");
+        	screenLog("Botón 'on-deck-not-ready' (Necesito un momento)", 'CLICK');
             // --- INICIO CORRECCIÓN OPTIMISTA ---
             notificationState.lastOnDeckStatus = 'not_ready'; // 1. Actualiza estado local
             onDeckModal.classList.remove('visible');          // 2. Cierra UI local
+            screenLog('CIERRE LOCAL: ¡Prepárate! (OnDeck)', 'MODAL'); // 3. Log de cierre
             // --- FIN CORRECCIÓN OPTIMISTA ---
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' }); // 3. Envía a Firestore
+            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' }); // 4. Envía a Firestore
         });
 
-
         document.getElementById('is-up-close').addEventListener('click', async () => {
-        	screenLog("Button 'is-up-close' CLICKED. Sending isUp: null");
+        	screenLog("Botón 'is-up-close' (¡VOY!)", 'CLICK');
             if (localContestData.isUp && localContestData.isUp.userId) {
                 const userIdWhoAcked = localContestData.isUp.userId; // Guardar el ID
 
                 // --- INICIO CORRECCIÓN OPTIMISTA ---
                 // 1. Cierra el modal en la UI inmediatamente.
                 isUpModal.classList.remove('visible');
+                screenLog('CIERRE LOCAL: ¡AHORA! (IsUp)', 'MODAL'); // 2. Log de cierre
                 
-                // 2. Actualiza la *copia local* de los datos.
-                //    Esto es crucial para que el listener 'onSnapshot'
-                //    ignore cualquier "eco" gracias a la condición:
-                //    localContestData.acknowledgedUp !== currentUserId
+                // 3. Actualiza la *copia local* de los datos.
                 localContestData.acknowledgedUp = userIdWhoAcked;
                 // --- FIN CORRECCIÓN OPTIMISTA ---
 
-                // 3. Envía la actualización a Firestore en segundo plano.
+                // 4. Envía la actualización a Firestore en segundo plano.
                 await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: userIdWhoAcked });
             }
         });
-
-
 
 
         function subscribeToUsers(id, renderer) {
