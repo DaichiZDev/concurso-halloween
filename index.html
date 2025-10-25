@@ -2086,19 +2086,48 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
 
 
-                document.getElementById('register-btn').addEventListener('click', async () => {
-            const name = document.getElementById('user-name-input').value.trim(); if (!name) return customAlert("Error", "Nombre requerido.");
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            const name = document.getElementById('user-name-input').value.trim();
+            if (!name) return customAlert("Error", "Nombre requerido.");
 
-            try { // <-- INICIA EL SEGURO
+            // --- NUEVA VERIFICACIÓN DE AUTENTICACIÓN ---
+            // 1. Revisa si ya tenemos el ID de la carga inicial de la página.
+            if (!currentUserId) {
+                screenLog('currentUserId es null al hacer clic. Verificando auth.currentUser...', 'WARN');
+                // 2. Si no, intenta obtener el usuario actual directamente desde Firebase Auth.
+                const user = auth.currentUser;
+                if (user) {
+                    // 3. Si existe, ¡genial! Actualiza nuestra variable global.
+                    screenLog(`auth.currentUser encontrado: ${user.uid}. Actualizando currentUserId global.`, 'INFO');
+                    currentUserId = user.uid; // Actualiza la variable global
+                } else {
+                    // 4. Si SIGUE sin haber usuario, la autenticación inicial falló. Detener todo.
+                    screenLog('auth.currentUser también es null. La autenticación inicial falló.', 'ERROR');
+                    customAlert("Error de Autenticación", "No se pudo autenticar al cargar la página. Por favor, refresca la página e inténtalo de nuevo.");
+                    return; // Detiene el proceso de registro aquí mismo.
+                }
+            }
+            // --- FIN DE LA NUEVA VERIFICACIÓN ---
+
+            // Si llegamos aquí, currentUserId DEBE tener un valor. Procedemos con el registro.
+            try {
+                // Doble chequeo por si acaso (aunque no debería pasar)
+                if (!currentUserId) {
+                     screenLog('¡Error Inesperado! currentUserId sigue siendo null después de la verificación.', 'ERROR');
+                     customAlert("Error Interno", "No se pudo obtener la identificación del usuario para el registro.");
+                     return;
+                }
+
                 loadingOverlay.classList.remove('hidden');
                 document.getElementById('loading-text').textContent = 'Registrando...';
                 const costume = document.getElementById('costume-name-input').value.trim();
                 const contestDoc = await getDoc(getContestRef(contestId));
 
                 if (!contestDoc.exists()) {
+                    // Usamos el currentUserId que acabamos de confirmar que existe
                     await setDoc(getContestRef(contestId), {
                         status: "lobby",
-                        creatorId: currentUserId,
+                        creatorId: currentUserId, // Asegura usar el ID verificado
                         isLocked: false,
                         scoringMethod: "weighted_average",
                         criteria: [
@@ -2108,6 +2137,7 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                         ]
                     });
                 } else {
+                     // Aquí también necesitas currentUserId para verificar si el usuario ya existe
                      if(contestDoc.data().isLocked){
                         const userDoc = await getDoc(getUserRef(contestId, currentUserId));
                         if(!userDoc.exists()){
@@ -2117,19 +2147,25 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                      }
                 }
 
+                // Usamos el currentUserId que acabamos de confirmar que existe
                 await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
-                currentUserName = name; // Guardamos el nombre ingresado
-                
-                screenLog('Registro exitoso. Suscribiendo al concurso...', 'INFO'); // Log de éxito
-                
+                currentUserName = name;
+
+                screenLog('Registro exitoso. Suscribiendo al concurso...', 'INFO');
                 subscribeToContest(contestId);
-            
-            } catch (error) { // <-- AQUÍ SE ATRAPA EL ERROR
-                screenLog(`Error al registrar: ${error.message}`, 'ERROR'); // Muestra el error en el log
-                loadingOverlay.classList.add('hidden'); // <-- OCULTA EL CÍRCULO
-                customAlert("Error de Registro", `No se pudo completar el registro. ${error.message}`); // Muestra el error al usuario
-            } 
+
+            } catch (error) {
+                // El bloque 'catch' que ya teníamos, para otros errores.
+                screenLog(`Error al registrar: ${error.message}`, 'ERROR');
+                loadingOverlay.classList.add('hidden');
+                if (error.message.includes("permission") || error.message.includes("PERMISSION_DENIED")) {
+                     customAlert("Error de Registro (Permisos)", `No se pudo completar el registro. Verifica tu conexión y los permisos de Firestore. (${error.message})`);
+                } else {
+                     customAlert("Error de Registro", `No se pudo completar el registro. ${error.message}`);
+                }
+            }
         });
+
 
 
 
