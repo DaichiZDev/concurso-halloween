@@ -4343,21 +4343,23 @@ Aqui
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                try {
+                // Mantenemos el try...catch aquí por si falla algo DESPUÉS de autenticar
+                try { 
                     currentUserId = user.uid;
-                    screenLog(`Autenticado con UID: ${user.uid}`, 'INFO'); // Log de éxito
+                    screenLog(`Autenticado con UID: ${user.uid}`, 'INFO'); // Mantenemos el log útil
                     await registerServiceWorker();
 
                     const hashId = window.location.hash.substring(1).toUpperCase();
                     if (hashId) {
                         contestId = hashId;
+                        // Mantenemos el try...catch interno para la lógica de la sala
                         try {
                             const contestDoc = await getDoc(getContestRef(hashId));
                             if(contestDoc.exists()){
                                 const userDoc = await getDoc(getUserRef(hashId, currentUserId));
                                 if(userDoc.exists()){
                                     const userData = userDoc.data();
-                                currentUserName = userData.name; // Guardamos el nombre desde Firestore
+                                    currentUserName = userData.name; // Guardamos el nombre desde Firestore
                                     subscribeToContest(contestId);
                                 } else {
                                      if(contestDoc.data().isLocked) {
@@ -4380,25 +4382,21 @@ Aqui
                     } else {
                         showScreen('home');
                     }
-                } catch (e) {
-                    screenLog(`Error fatal en el bloque 'if (user)': ${e.message}`, 'ERROR');
-                    loadingOverlay.classList.add('hidden');
+                } catch (e) { // Catch para errores después de autenticar
+                    screenLog(`Error fatal DESPUÉS de autenticar: ${e.message}`, 'ERROR');
+                    loadingOverlay.classList.add('hidden'); // Asegura ocultar si algo falla aquí
                     customAlert("Error Inesperado", `Ocurrió un error al procesar tu usuario: ${e.message}`);
                 }
             } else {
-                try {
-                    loadingOverlay.classList.remove('hidden');
-                    document.getElementById('loading-text').textContent = 'Autenticando...';
-                    screenLog('Usuario no encontrado. Intentando inicio anónimo...', 'INFO');
-                    await signInAnonymously(auth);
-                    // El listener onAuthStateChanged se disparará de nuevo, esta vez entrando al bloque 'if (user)'
-                } catch (e) {
-                    screenLog(`Error fatal al intentar 'signInAnonymously': ${e.message}`, 'ERROR');
-                    loadingOverlay.classList.add('hidden');
-                    customAlert("Error de Autenticación", `No se pudo iniciar sesión anónima. ${e.message}. Revisa la configuración de Authentication en Firebase.`);
-                }
+                // Volvemos a la versión simple: solo intentar iniciar sesión.
+                // NO mostramos loading, NO usamos try...catch aquí.
+                screenLog('Usuario no encontrado. Intentando inicio anónimo...', 'INFO'); // Log simple
+                await signInAnonymously(auth); 
+                // Si funciona, onAuthStateChanged se llamará de nuevo y entrará al bloque 'if (user)'.
+                // Si falla, el error aparecerá en la consola del navegador, pero no bloqueará la app aquí.
             }
         });
+
 
 
 
