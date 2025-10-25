@@ -1151,16 +1151,17 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-            // --- INICIO: Lógica Anti-Loop de Notificación (CORREGIDA v5 - Definitiva) ---
+            // --- INICIO: Lógica Anti-Loop de Notificación (CORREGIDA v6) ---
             screenLog(`[User: ${currentUserId}] --- Listener Check ---`);
             screenLog(`[User: ${currentUserId}] Received OnDeck User: ${onDeckData.userId}, Status: ${onDeckData.status}`);
             screenLog(`[User: ${currentUserId}] Received IsUp User: ${isUpData.userId}, AckUp: ${localContestData.acknowledgedUp}`);
             screenLog(`[User: ${currentUserId}] State BEFORE - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
 
             const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
-            // Manejo del modal OnDeck (Mantenemos lógica v3)
+            // --- OnDeck Modal ---
             if (currentOnDeckStatus === 'called') {
                 screenLog(`[User: ${currentUserId}] OnDeck: Received 'called'.`);
+                // Solo mostrar si el estado anterior NO era 'called' Y TAMPOCO 'acknowledging'/'not_ready' (para ignorar ecos post-clic)
                 if (notificationState.lastOnDeckStatus !== 'called' && notificationState.lastOnDeckStatus !== 'acknowledged' && notificationState.lastOnDeckStatus !== 'not_ready') {
                     screenLog(`[User: ${currentUserId}]    -> State ok. SHOWING On Deck modal.`);
                     notificationState.lastOnDeckStatus = 'called';
@@ -1172,24 +1173,28 @@
                     showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
                 } else {
                     screenLog(`[User: ${currentUserId}]    -> State was already ${notificationState.lastOnDeckStatus}. Ignoring 'called' echo.`);
+                    // Si el estado local es acknowledged/not_ready pero recibimos 'called', forzamos cierre por si acaso? No, podría causar parpadeo. Dejamos así.
                 }
-            } else {
+            } else { // Si no es 'called'
                 screenLog(`[User: ${currentUserId}] OnDeck: Received status is NOT 'called' (${currentOnDeckStatus}). Closing modal.`);
-                notificationState.lastOnDeckStatus = currentOnDeckStatus;
-                onDeckModal.classList.remove('visible');
+                // Solo actualizamos estado local si era 'called' O si el estado recibido es diferente al actual local
+                 if (notificationState.lastOnDeckStatus === 'called' || notificationState.lastOnDeckStatus !== currentOnDeckStatus) {
+                     notificationState.lastOnDeckStatus = currentOnDeckStatus;
+                 }
+                onDeckModal.classList.remove('visible'); // Asegurar cierre
             }
 
-            // Manejo del modal IsUp (Lógica V5)
-            const receivedIsUpUserId = isUpData.userId; // Usar variable local para claridad
+            // --- IsUp Modal ---
+            const receivedIsUpUserId = isUpData.userId;
             if (receivedIsUpUserId === currentUserId) {
                 screenLog(`[User: ${currentUserId}] IsUp: Received current user is Up.`);
-                // *** CORRECCIÓN V5 ***: Priorizar el estado local 'acknowledging'
+                // *** CORRECCIÓN V6 ***: Si estamos 'acknowledging', ignorar SIEMPRE y resetear.
                 if (notificationState.lastIsUpUserId === 'acknowledging') {
-                    screenLog(`[User: ${currentUserId}]    -> Local state is 'acknowledging'. IGNORING received 'isUp' signal. Resetting local state.`);
-                    notificationState.lastIsUpUserId = null; // Resetear estado local ahora que Firestore "alcanzó"
-                    isUpModal.classList.remove('visible'); // Asegurar cierre por si acaso
+                    screenLog(`[User: ${currentUserId}]    -> Local state is 'acknowledging'. IGNORING received 'isUp' signal strongly. Resetting local state.`);
+                    notificationState.lastIsUpUserId = null; // Resetear estado local
+                    isUpModal.classList.remove('visible'); // Asegurar cierre
                 }
-                // Si el estado local no es 'acknowledging', aplicar lógica v4
+                // Si no estamos 'acknowledging', aplicar lógica V4 (chequear estado local y Firestore AckUp)
                 else if (notificationState.lastIsUpUserId !== currentUserId && localContestData.acknowledgedUp !== currentUserId) {
                     screenLog(`[User: ${currentUserId}]    -> State ok & Not Ack'd yet. SHOWING Is Up modal.`);
                     notificationState.lastIsUpUserId = currentUserId; // Marcar como 'Up'
@@ -1197,27 +1202,25 @@
                     if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
                     showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
                 } else {
-                    // Informar por qué no se muestra
-                    if(notificationState.lastIsUpUserId === currentUserId) {
+                    // Informar por qué no se muestra / se ignora el eco
+                    if (notificationState.lastIsUpUserId === currentUserId) {
                          screenLog(`[User: ${currentUserId}]    -> State was already current user being Up. Ignoring 'isUp' echo.`);
                     } else if (localContestData.acknowledgedUp === currentUserId) {
                          screenLog(`[User: ${currentUserId}]    -> User already acknowledged this 'isUp' via Firestore. Ignoring 'isUp' echo.`);
                     } else {
                          screenLog(`[User: ${currentUserId}]    -> Condition not met, ignoring 'isUp'. State: ${notificationState.lastIsUpUserId}, AckUp: ${localContestData.acknowledgedUp}`);
                     }
-                    // Asegurar cierre si ninguna condición de mostrar se cumple pero recibimos 'isUp'
-                    if (!isUpModal.classList.contains('visible')) {
-                        screenLog(`[User: ${currentUserId}]    -> Ensuring Is Up modal is closed.`);
-                         isUpModal.classList.remove('visible');
-                    }
+                     // Asegurar cierre si ninguna condición de mostrar se cumple pero recibimos 'isUp' (y no estamos 'acknowledging')
+                     if (notificationState.lastIsUpUserId !== 'acknowledging') {
+                        isUpModal.classList.remove('visible');
+                     }
                 }
             } else { // Si el usuario 'IsUp' NO es el actual
                 screenLog(`[User: ${currentUserId}] IsUp: Received user is NOT current user (${receivedIsUpUserId}). Closing modal.`);
-                // Solo resetear si el estado local no era ya null o acknowledging
+                // Resetear estado local si era 'Up' O si era 'acknowledging' y Firestore confirma que ya no somos nosotros Y que ya acusamos recibo.
                 if (notificationState.lastIsUpUserId === currentUserId) {
                    notificationState.lastIsUpUserId = null;
-                } else if (notificationState.lastIsUpUserId === 'acknowledging' && receivedIsUpUserId === undefined && localContestData.acknowledgedUp === currentUserId) {
-                   // Si estábamos acusando recibo y ahora Firestore confirma que ya no estamos 'up' Y que SÍ acusamos recibo, reseteamos.
+                } else if (notificationState.lastIsUpUserId === 'acknowledging' && localContestData.acknowledgedUp === currentUserId) {
                    screenLog(`[User: ${currentUserId}]    -> Confirmation received after acknowledging. Resetting local state.`);
                    notificationState.lastIsUpUserId = null;
                 }
@@ -1226,7 +1229,7 @@
 
             screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
             screenLog(`[User: ${currentUserId}] --- End Listener Check ---`);
-            // --- FIN: Lógica Anti-Loop de Notificación (CORREGIDA v5 - Definitiva) ---
+            // --- FIN: Lógica Anti-Loop de Notificación (CORREGIDA v6) ---
 
                 if (newStatus === 'paused' && isAdmin) {
                     showScreen('lobby');
@@ -1241,26 +1244,35 @@
         }
 
 
-        document.getElementById('on-deck-ready').addEventListener('click', async () => {
-        	screenLog("Button 'on-deck-ready' CLICKED. Sending status: acknowledged");
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
-        });
         document.getElementById('is-up-close').addEventListener('click', async () => {
-    screenLog("Button 'is-up-close' CLICKED. Setting local state to 'acknowledging' and sending update.");
-    notificationState.lastIsUpUserId = 'acknowledging'; // Marcar localmente INMEDIATO
-    isUpModal.classList.remove('visible'); // Cerrar visualmente ya mismo
-    if (localContestData.isUp && localContestData.isUp.userId === currentUserId) { // Doble chequeo por si acaso
-        try {
-            await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: currentUserId });
-             screenLog("Update sent successfully.");
-        } catch (error) {
-             screenLog(`Error sending update: ${error.message}`);
-             // Opcional: Revertir estado local si falla el envío? Podría ser complejo.
-             // Por ahora, asumimos que el envío funcionará o el listener corregirá.
-        }
-    } else {
-         screenLog("State mismatch or button clicked too late. No update sent.");
+    // --- Estrategia v6 ---
+    // 1. Verificar si realmente deberíamos estar viendo este modal AHORA MISMO
+    if (!isUpModal.classList.contains('visible') || localContestData.isUp?.userId !== currentUserId) {
+        screenLog("Button 'is-up-close' CLICKED, but modal wasn't visible or user wasn't 'isUp'. Ignoring click.");
+        isUpModal.classList.remove('visible'); // Asegurar cierre por si acaso
+        return; // No hacer nada si el estado ya cambió
     }
+
+    // 2. Marcar localmente que estamos procesando el clic
+    screenLog("Button 'is-up-close' CLICKED. Setting local state to 'acknowledging', forcing close, then sending update.");
+    notificationState.lastIsUpUserId = 'acknowledging';
+
+    // 3. Forzar cierre visual inmediato
+    isUpModal.classList.remove('visible');
+
+    // 4. Enviar la actualización a Firestore (sin esperar necesariamente aquí)
+    // Usamos .then/.catch para no bloquear, pero sí registrar si hay error
+    updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: currentUserId })
+        .then(() => {
+            screenLog("Update (isUp:null, ackUp:currentUser) sent successfully.");
+        })
+        .catch((error) => {
+            screenLog(`Error sending update: ${error.message}`);
+            // Si falla, el listener debería eventualmente corregir el estado visual,
+            // pero el estado local 'acknowledging' podría prevenir reapertura.
+        });
+
+    // No hacemos await aquí, dejamos que el listener maneje la reacción final.
 });
 
 
@@ -1527,6 +1539,7 @@
         }
 
         async function renderVotingScreen(contestData, users) {
+        	screenLog(`Rendering Voting Screen. onDeck: ${JSON.stringify(contestData.onDeck)}, isUp: ${JSON.stringify(contestData.isUp)}, ackUp: ${contestData.acknowledgedUp}`);
             const isAdmin = contestData.creatorId === currentUserId;
             const me = users.find(u => u.id === currentUserId);
             const isJuror = me?.isJuror;
