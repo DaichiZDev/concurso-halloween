@@ -1151,67 +1151,64 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-                // --- INICIO: Lógica Anti-Loop de Notificación (CON SCREEN LOG + UserID) ---
-                screenLog(`[User: ${currentUserId}] --- Listener Check ---`); // Log separator
-                // screenLog(`Current User: ${currentUserId}`); // Ya incluido arriba
-                screenLog(`[User: ${currentUserId}] Received OnDeck User: ${onDeckData.userId}, Status: ${onDeckData.status}`);
-                screenLog(`[User: ${currentUserId}] Received IsUp User: ${isUpData.userId}`);
-                screenLog(`[User: ${currentUserId}] State BEFORE - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
+            // --- INICIO: Lógica Anti-Loop de Notificación (CORREGIDA v3) ---
+            screenLog(`[User: ${currentUserId}] --- Listener Check ---`);
+            screenLog(`[User: ${currentUserId}] Received OnDeck User: ${onDeckData.userId}, Status: ${onDeckData.status}`);
+            screenLog(`[User: ${currentUserId}] Received IsUp User: ${isUpData.userId}`);
+            screenLog(`[User: ${currentUserId}] State BEFORE - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
 
-                const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
-                if (currentOnDeckStatus === 'called') {
-                    screenLog(`[User: ${currentUserId}] OnDeck Condition MET: Should potentially show On Deck modal.`);
-                    if (notificationState.lastOnDeckStatus !== 'called') {
-                        screenLog(`[User: ${currentUserId}]    -> State changed to 'called'. SHOWING On Deck modal.`);
-                        notificationState.lastOnDeckStatus = 'called';
-                        const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
-                        document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
-                        document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
-                        onDeckModal.classList.add('visible');
-                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                        showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
-                    } else {
-                        screenLog(`[User: ${currentUserId}]    -> State was already 'called'. Doing nothing to avoid re-showing.`);
-                    }
+            const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
+            // Manejo del modal OnDeck
+            if (currentOnDeckStatus === 'called') {
+                screenLog(`[User: ${currentUserId}] OnDeck: Received 'called'.`);
+                // *** CORRECCIÓN CLAVE ***: Solo mostrar si el estado anterior NO era 'acknowledged' o 'not_ready'
+                // Esto ignora el 'called' si ya hemos procesado un clic de botón.
+                if (notificationState.lastOnDeckStatus !== 'called' && notificationState.lastOnDeckStatus !== 'acknowledged' && notificationState.lastOnDeckStatus !== 'not_ready') {
+                    screenLog(`[User: ${currentUserId}]    -> State was neither 'called' nor ack/not_ready. SHOWING On Deck modal.`);
+                    notificationState.lastOnDeckStatus = 'called'; // Marcar que ahora sí está 'called'
+                    const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
+                    document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
+                    document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
+                    onDeckModal.classList.add('visible');
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
                 } else {
-                    screenLog(`[User: ${currentUserId}] OnDeck Condition NOT MET: Should close On Deck modal.`);
-                    if (notificationState.lastOnDeckStatus === 'called') {
-                         screenLog(`[User: ${currentUserId}]    -> State changing FROM 'called'. CLOSING On Deck modal.`);
-                    } else {
-                         screenLog(`[User: ${currentUserId}]    -> State wasn't 'called'. Ensuring On Deck modal is closed.`);
-                    }
-                    notificationState.lastOnDeckStatus = currentOnDeckStatus;
-                    onDeckModal.classList.remove('visible');
+                    screenLog(`[User: ${currentUserId}]    -> State was already ${notificationState.lastOnDeckStatus}. Ignoring 'called' echo.`);
                 }
+            } else { // Si el estado recibido NO es 'called' (es null, acknowledged, not_ready, o para otro usuario)
+                screenLog(`[User: ${currentUserId}] OnDeck: Received status is NOT 'called' (${currentOnDeckStatus}). Closing modal.`);
+                // Siempre actualizamos el estado local al que no es 'called'
+                notificationState.lastOnDeckStatus = currentOnDeckStatus;
+                onDeckModal.classList.remove('visible'); // Asegurar que esté cerrado
+            }
 
-                const currentIsUpUserId = isUpData.userId;
-                if (currentIsUpUserId === currentUserId) {
-                    screenLog(`[User: ${currentUserId}] IsUp Condition MET: Should potentially show Is Up modal.`);
-                    if (notificationState.lastIsUpUserId !== currentUserId) {
-                        screenLog(`[User: ${currentUserId}]    -> State changed to current user being Up. SHOWING Is Up modal.`);
-                        notificationState.lastIsUpUserId = currentUserId;
-                        isUpModal.classList.add('visible');
-                        if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                        showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
-                    } else {
-                        screenLog(`[User: ${currentUserId}]    -> State was already current user being Up. Doing nothing to avoid re-showing.`);
-                    }
+            // Manejo del modal IsUp
+            const currentIsUpUserId = isUpData.userId;
+            if (currentIsUpUserId === currentUserId) {
+                screenLog(`[User: ${currentUserId}] IsUp: Received current user is Up.`);
+                // *** CORRECCIÓN CLAVE ***: Solo mostrar si el estado anterior NO era este mismo usuario
+                // (Esto ignora el 'isUp' si ya hemos procesado el clic del botón "¡VOY!")
+                if (notificationState.lastIsUpUserId !== currentUserId) {
+                    screenLog(`[User: ${currentUserId}]    -> State changed to current user being Up. SHOWING Is Up modal.`);
+                    notificationState.lastIsUpUserId = currentUserId; // Marcar que ahora sí está 'Up'
+                    isUpModal.classList.add('visible');
+                    if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                    showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
                 } else {
-                    screenLog(`[User: ${currentUserId}] IsUp Condition NOT MET: Should close Is Up modal.`);
-                     if (notificationState.lastIsUpUserId === currentUserId) {
-                       screenLog(`[User: ${currentUserId}]    -> State changing FROM current user being Up. CLOSING Is Up modal.`);
-                       notificationState.lastIsUpUserId = null;
-                    } else {
-                        screenLog(`[User: ${currentUserId}]    -> State wasn't current user being Up. Ensuring Is Up modal is closed.`);
-                    }
-                    isUpModal.classList.remove('visible');
+                    screenLog(`[User: ${currentUserId}]    -> State was already current user being Up. Ignoring 'isUp' echo.`);
                 }
-                screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
-                screenLog(`[User: ${currentUserId}] --- End Listener Check ---`); // Log separator
-                // --- FIN: Lógica Anti-Loop de Notificación (CON SCREEN LOG + UserID) ---
+            } else { // Si el usuario 'IsUp' NO es el actual (es null, undefined, o es otro usuario)
+                screenLog(`[User: ${currentUserId}] IsUp: Received user is NOT current user (${currentIsUpUserId}). Closing modal.`);
+                // Solo reseteamos el estado local si *antes* sí éramos nosotros los que estábamos 'Up'
+                if (notificationState.lastIsUpUserId === currentUserId) {
+                   notificationState.lastIsUpUserId = null;
+                }
+                isUpModal.classList.remove('visible'); // Asegurar que esté cerrado
+            }
 
-
-
+            screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
+            screenLog(`[User: ${currentUserId}] --- End Listener Check ---`);
+            // --- FIN: Lógica Anti-Loop de Notificación (CORREGIDA v3) ---
 
                 if (newStatus === 'paused' && isAdmin) {
                     showScreen('lobby');
