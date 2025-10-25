@@ -2405,24 +2405,16 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' }); // 4. Envía a Firestore
         });
 
-        document.getElementById('is-up-close').addEventListener('click', async () => {
-        	screenLog("Botón 'is-up-close' (¡VOY!)", 'CLICK');
-            if (localContestData.isUp && localContestData.isUp.userId) {
-                const userIdWhoAcked = localContestData.isUp.userId; // Guardar el ID
-
-                // --- INICIO CORRECCIÓN OPTIMISTA ---
-                // 1. Cierra el modal en la UI inmediatamente.
-                isUpModal.classList.remove('visible');
-                screenLog('CIERRE LOCAL: ¡AHORA! (IsUp)', 'MODAL'); // 2. Log de cierre
-                
-                // 3. Actualiza la *copia local* de los datos.
-                localContestData.acknowledgedUp = userIdWhoAcked;
-                // --- FIN CORRECCIÓN OPTIMISTA ---
-
-                // 4. Envía la actualización a Firestore en segundo plano.
-                await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: userIdWhoAcked });
-            }
+        document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
+        	screenLog("Botón 'on-deck-not-ready' (Necesito un momento)", 'CLICK');
+            // --- INICIO CORRECCIÓN OPTIMISTA ---
+            notificationState.lastOnDeckStatus = 'not_ready'; // 1. Actualiza estado local
+            onDeckModal.classList.remove('visible');          // 2. Cierra UI local
+            screenLog('CIERRE LOCAL: ¡Prepárate! (OnDeck)', 'MODAL'); // 3. Log de cierre
+            // --- FIN CORRECCIÓN OPTIMISTA ---
+            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' }); // 4. Envía a Firestore
         });
+
 
 
         function subscribeToUsers(id, renderer) {
