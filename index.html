@@ -612,27 +612,26 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-    // Función para mostrar logs en pantalla (versión desplegable)
-    const MAX_LOG_LINES = 30; // Aumentamos un poco el límite
+    // Función para mostrar logs en pantalla (versión desplegable con Nombre)
+    const MAX_LOG_LINES = 30;
     function screenLog(message) {
-        const logDisplay = document.getElementById('debug-log-display'); // El DIV *dentro* de <details>
+        const logDisplay = document.getElementById('debug-log-display');
         if (logDisplay) {
             const time = new Date().toLocaleTimeString();
+            // Usa el nombre guardado, o el ID si el nombre aún no está disponible
+            const userIdentifier = currentUserName || currentUserId || 'UNKNOWN_USER';
             const newLine = document.createElement('div');
-            newLine.textContent = `[${time}] ${message}`;
-            // Añadir nueva línea al principio del DIV
+            // Muestra el Identificador (Nombre o ID) al principio
+            newLine.textContent = `[${time}] [${userIdentifier}] ${message}`;
             logDisplay.insertBefore(newLine, logDisplay.firstChild);
-            // Limitar el número de líneas dentro del DIV
             while (logDisplay.children.length > MAX_LOG_LINES) {
                 logDisplay.removeChild(logDisplay.lastChild);
             }
-            // Scroll hacia arriba para ver lo más nuevo si está abierto
-            // logDisplay.scrollTop = 0; // Descomentar si quieres auto-scroll
         }
-         // También mantenemos el console.log por si acaso
-         console.log(message);
+         // Log a consola también con el identificador
+         const consoleIdentifier = currentUserName || currentUserId || 'UNKNOWN_USER';
+         console.log(`[${consoleIdentifier}] ${message}`);
     }
-
 
         const appId = 'concurso-halloween-shared-2025';
 
@@ -667,6 +666,7 @@
         let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
+        let currentUserName = null; // Variable para guardar el nombre del usuario
         // **FIX:** Declare notificationState globally ONCE.
         var notificationState = { // Use 'var' or declare it outside any function if preferred
              lastOnDeckStatus: null,
@@ -1082,6 +1082,7 @@
             }
 
             await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
+            currentUserName = name; // Guardamos el nombre ingresado
             subscribeToContest(contestId);
         });
 
@@ -1150,67 +1151,82 @@
                 const onDeckData = localContestData.onDeck || {};
                 const isUpData = localContestData.isUp || {};
 
-                // --- INICIO: Lógica Anti-Loop de Notificación (CON SCREEN LOG + UserID) ---
-                screenLog(`[User: ${currentUserId}] --- Listener Check ---`); // Log separator
-                // screenLog(`Current User: ${currentUserId}`); // Ya incluido arriba
-                screenLog(`[User: ${currentUserId}] Received OnDeck User: ${onDeckData.userId}, Status: ${onDeckData.status}`);
-                screenLog(`[User: ${currentUserId}] Received IsUp User: ${isUpData.userId}`);
-                screenLog(`[User: ${currentUserId}] State BEFORE - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
+            // --- INICIO: Lógica Anti-Loop de Notificación (CORREGIDA v5 - Definitiva) ---
+            screenLog(`[User: ${currentUserId}] --- Listener Check ---`);
+            screenLog(`[User: ${currentUserId}] Received OnDeck User: ${onDeckData.userId}, Status: ${onDeckData.status}`);
+            screenLog(`[User: ${currentUserId}] Received IsUp User: ${isUpData.userId}, AckUp: ${localContestData.acknowledgedUp}`);
+            screenLog(`[User: ${currentUserId}] State BEFORE - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
 
-                const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
-                if (currentOnDeckStatus === 'called') {
-                    screenLog(`[User: ${currentUserId}] OnDeck Condition MET: Should potentially show On Deck modal.`);
-                    if (notificationState.lastOnDeckStatus !== 'called') {
-                        screenLog(`[User: ${currentUserId}]    -> State changed to 'called'. SHOWING On Deck modal.`);
-                        notificationState.lastOnDeckStatus = 'called';
-                        const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
-                        document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
-                        document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
-                        onDeckModal.classList.add('visible');
-                        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                        showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
-                    } else {
-                        screenLog(`[User: ${currentUserId}]    -> State was already 'called'. Doing nothing to avoid re-showing.`);
-                    }
+            const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
+            // Manejo del modal OnDeck (Mantenemos lógica v3)
+            if (currentOnDeckStatus === 'called') {
+                screenLog(`[User: ${currentUserId}] OnDeck: Received 'called'.`);
+                if (notificationState.lastOnDeckStatus !== 'called' && notificationState.lastOnDeckStatus !== 'acknowledged' && notificationState.lastOnDeckStatus !== 'not_ready') {
+                    screenLog(`[User: ${currentUserId}]    -> State ok. SHOWING On Deck modal.`);
+                    notificationState.lastOnDeckStatus = 'called';
+                    const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
+                    document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
+                    document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
+                    onDeckModal.classList.add('visible');
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
                 } else {
-                    screenLog(`[User: ${currentUserId}] OnDeck Condition NOT MET: Should close On Deck modal.`);
-                    if (notificationState.lastOnDeckStatus === 'called') {
-                         screenLog(`[User: ${currentUserId}]    -> State changing FROM 'called'. CLOSING On Deck modal.`);
-                    } else {
-                         screenLog(`[User: ${currentUserId}]    -> State wasn't 'called'. Ensuring On Deck modal is closed.`);
-                    }
-                    notificationState.lastOnDeckStatus = currentOnDeckStatus;
-                    onDeckModal.classList.remove('visible');
+                    screenLog(`[User: ${currentUserId}]    -> State was already ${notificationState.lastOnDeckStatus}. Ignoring 'called' echo.`);
                 }
+            } else {
+                screenLog(`[User: ${currentUserId}] OnDeck: Received status is NOT 'called' (${currentOnDeckStatus}). Closing modal.`);
+                notificationState.lastOnDeckStatus = currentOnDeckStatus;
+                onDeckModal.classList.remove('visible');
+            }
 
-                const currentIsUpUserId = isUpData.userId;
-                if (currentIsUpUserId === currentUserId) {
-                    screenLog(`[User: ${currentUserId}] IsUp Condition MET: Should potentially show Is Up modal.`);
-                    if (notificationState.lastIsUpUserId !== currentUserId) {
-                        screenLog(`[User: ${currentUserId}]    -> State changed to current user being Up. SHOWING Is Up modal.`);
-                        notificationState.lastIsUpUserId = currentUserId;
-                        isUpModal.classList.add('visible');
-                        if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                        showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
-                    } else {
-                        screenLog(`[User: ${currentUserId}]    -> State was already current user being Up. Doing nothing to avoid re-showing.`);
-                    }
+            // Manejo del modal IsUp (Lógica V5)
+            const receivedIsUpUserId = isUpData.userId; // Usar variable local para claridad
+            if (receivedIsUpUserId === currentUserId) {
+                screenLog(`[User: ${currentUserId}] IsUp: Received current user is Up.`);
+                // *** CORRECCIÓN V5 ***: Priorizar el estado local 'acknowledging'
+                if (notificationState.lastIsUpUserId === 'acknowledging') {
+                    screenLog(`[User: ${currentUserId}]    -> Local state is 'acknowledging'. IGNORING received 'isUp' signal. Resetting local state.`);
+                    notificationState.lastIsUpUserId = null; // Resetear estado local ahora que Firestore "alcanzó"
+                    isUpModal.classList.remove('visible'); // Asegurar cierre por si acaso
+                }
+                // Si el estado local no es 'acknowledging', aplicar lógica v4
+                else if (notificationState.lastIsUpUserId !== currentUserId && localContestData.acknowledgedUp !== currentUserId) {
+                    screenLog(`[User: ${currentUserId}]    -> State ok & Not Ack'd yet. SHOWING Is Up modal.`);
+                    notificationState.lastIsUpUserId = currentUserId; // Marcar como 'Up'
+                    isUpModal.classList.add('visible');
+                    if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+                    showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
                 } else {
-                    screenLog(`[User: ${currentUserId}] IsUp Condition NOT MET: Should close Is Up modal.`);
-                     if (notificationState.lastIsUpUserId === currentUserId) {
-                       screenLog(`[User: ${currentUserId}]    -> State changing FROM current user being Up. CLOSING Is Up modal.`);
-                       notificationState.lastIsUpUserId = null;
+                    // Informar por qué no se muestra
+                    if(notificationState.lastIsUpUserId === currentUserId) {
+                         screenLog(`[User: ${currentUserId}]    -> State was already current user being Up. Ignoring 'isUp' echo.`);
+                    } else if (localContestData.acknowledgedUp === currentUserId) {
+                         screenLog(`[User: ${currentUserId}]    -> User already acknowledged this 'isUp' via Firestore. Ignoring 'isUp' echo.`);
                     } else {
-                        screenLog(`[User: ${currentUserId}]    -> State wasn't current user being Up. Ensuring Is Up modal is closed.`);
+                         screenLog(`[User: ${currentUserId}]    -> Condition not met, ignoring 'isUp'. State: ${notificationState.lastIsUpUserId}, AckUp: ${localContestData.acknowledgedUp}`);
                     }
-                    isUpModal.classList.remove('visible');
+                    // Asegurar cierre si ninguna condición de mostrar se cumple pero recibimos 'isUp'
+                    if (!isUpModal.classList.contains('visible')) {
+                        screenLog(`[User: ${currentUserId}]    -> Ensuring Is Up modal is closed.`);
+                         isUpModal.classList.remove('visible');
+                    }
                 }
-                screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
-                screenLog(`[User: ${currentUserId}] --- End Listener Check ---`); // Log separator
-                // --- FIN: Lógica Anti-Loop de Notificación (CON SCREEN LOG + UserID) ---
+            } else { // Si el usuario 'IsUp' NO es el actual
+                screenLog(`[User: ${currentUserId}] IsUp: Received user is NOT current user (${receivedIsUpUserId}). Closing modal.`);
+                // Solo resetear si el estado local no era ya null o acknowledging
+                if (notificationState.lastIsUpUserId === currentUserId) {
+                   notificationState.lastIsUpUserId = null;
+                } else if (notificationState.lastIsUpUserId === 'acknowledging' && receivedIsUpUserId === undefined && localContestData.acknowledgedUp === currentUserId) {
+                   // Si estábamos acusando recibo y ahora Firestore confirma que ya no estamos 'up' Y que SÍ acusamos recibo, reseteamos.
+                   screenLog(`[User: ${currentUserId}]    -> Confirmation received after acknowledging. Resetting local state.`);
+                   notificationState.lastIsUpUserId = null;
+                }
+                isUpModal.classList.remove('visible'); // Asegurar cierre
+            }
 
-
-
+            screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
+            screenLog(`[User: ${currentUserId}] --- End Listener Check ---`);
+            // --- FIN: Lógica Anti-Loop de Notificación (CORREGIDA v5 - Definitiva) ---
 
                 if (newStatus === 'paused' && isAdmin) {
                     showScreen('lobby');
@@ -1226,16 +1242,27 @@
 
 
         document.getElementById('on-deck-ready').addEventListener('click', async () => {
+        	screenLog("Button 'on-deck-ready' CLICKED. Sending status: acknowledged");
             await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
         });
-        document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
-        });
         document.getElementById('is-up-close').addEventListener('click', async () => {
-            if (localContestData.isUp && localContestData.isUp.userId) {
-                await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: localContestData.isUp.userId });
-            }
-        });
+    screenLog("Button 'is-up-close' CLICKED. Setting local state to 'acknowledging' and sending update.");
+    notificationState.lastIsUpUserId = 'acknowledging'; // Marcar localmente INMEDIATO
+    isUpModal.classList.remove('visible'); // Cerrar visualmente ya mismo
+    if (localContestData.isUp && localContestData.isUp.userId === currentUserId) { // Doble chequeo por si acaso
+        try {
+            await updateDoc(getContestRef(contestId), { isUp: null, acknowledgedUp: currentUserId });
+             screenLog("Update sent successfully.");
+        } catch (error) {
+             screenLog(`Error sending update: ${error.message}`);
+             // Opcional: Revertir estado local si falla el envío? Podría ser complejo.
+             // Por ahora, asumimos que el envío funcionará o el listener corregirá.
+        }
+    } else {
+         screenLog("State mismatch or button clicked too late. No update sent.");
+    }
+});
+
 
         function subscribeToUsers(id, renderer) {
             if (usersUnsubscribe) usersUnsubscribe();
@@ -2216,6 +2243,10 @@
                         if(contestDoc.exists()){
                             const userDoc = await getDoc(getUserRef(hashId, currentUserId));
                             if(userDoc.exists()){
+                            	const userData = userDoc.data();
+                            currentUserName = userData.name; // Guardamos el nombre desde Firestore
+
+
                                 subscribeToContest(contestId);
                             } else {
                                  if(contestDoc.data().isLocked) {
