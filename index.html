@@ -664,6 +664,7 @@
         let isInDebugMode = false;
         const API_KEY_STORAGE_KEY = 'halloweenContestApiKey';
         let previousRevealStep = 0;
+        let currentUserName = null; // Variable para guardar el nombre del usuario
         // **FIX:** Declare notificationState globally ONCE.
         var notificationState = { // Use 'var' or declare it outside any function if preferred
              lastOnDeckStatus: null,
@@ -1079,6 +1080,7 @@
             }
 
             await setDoc(getUserRef(contestId, currentUserId), { name, costume, isParticipant: !!costume, isJuror: false, hasVoted: false, totalScore: 0, costumeDescription: '', isManualEntry: false });
+            currentUserName = name; // Guardamos el nombre ingresado
             subscribeToContest(contestId);
         });
 
@@ -2213,6 +2215,10 @@
                         if(contestDoc.exists()){
                             const userDoc = await getDoc(getUserRef(hashId, currentUserId));
                             if(userDoc.exists()){
+                            	const userData = userDoc.data();
+                            currentUserName = userData.name; // Guardamos el nombre desde Firestore
+
+
                                 subscribeToContest(contestId);
                             } else {
                                  if(contestDoc.data().isLocked) {
