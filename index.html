@@ -1048,10 +1048,17 @@
 <div class="modal-content">
         <h2 id="on-deck-title" class="font-creepster text-6xl text-yellow-300 drop-shadow-lg">¡Prepárate!</h2>
         <p id="on-deck-message" class="text-2xl text-white font-bold mt-4 drop-shadow-md">¿Estás listo?</p>
-        <div class="flex flex-row gap-4 mt-8">
-            <button id="on-deck-not-ready" class="btn btn-yellow flex-1">⌛ Necesito un Momento</button>
-            <button id="on-deck-ready" class="btn btn-green flex-1">✅ ¡Estoy Listo!</button>
-        </div>
+        <div class="flex flex-row gap-4 mt-8 items-stretch">
+    <button id="on-deck-not-ready" class="btn btn-yellow flex-1 flex flex-col items-center justify-center p-4">
+        <span class="text-3xl mb-2">⌛</span>
+        <span class="text-center font-bold">Necesito un Momento</span>
+    </button>
+    <button id="on-deck-ready" class="btn btn-green flex-1 flex flex-col items-center justify-center p-4">
+        <span class="text-3xl mb-2">✅</span>
+        <span class="text-center font-bold">¡Estoy Listo!</span>
+    </button>
+</div>
+
     </div>
    </div>
 
@@ -1060,7 +1067,10 @@
 <div class="modal-content">
         <h2 class="font-creepster text-8xl text-red-500 drop-shadow-lg">¡AHORA!</h2>
         <p class="text-3xl text-white font-bold mt-4 drop-shadow-md">¡Es tu turno!</p>
-        <button id="is-up-close" class="btn btn-primary mt-8 w-full">👍 ¡VOY!</button>
+        <button id="is-up-close" class="btn btn-primary mt-8 w-full flex items-center justify-center">
+    <span class="text-3xl mr-2">👍</span>
+    <span class="font-bold">¡VOY!</span>
+</button>
     </div>
    </div>
 
@@ -1690,80 +1700,100 @@ function checkModals() {
 
         }
 
-
-
+// COMIENZA: Corrección Botón Salir (Paso 14 - Definitivo)
 async function leaveContest() {
-    // Declarar UNA SOLA VEZ al principio
     const contestIdToLeave = contestId;
-    const userIdToLeave = currentUserId; // Guarda el userId también
-    const isOrganizer = localContestData.creatorId === userIdToLeave;
-    const shouldDeleteContest = isOrganizer && (localContestData.status === 'lobby' || localContestData.status === 'finalized');
+    const userIdToLeave = currentUserId;
 
-    screenLog(`leaveContest: Iniciando salida para User ${userIdToLeave} de Sala ${contestIdToLeave}`, 'INFO'); // LOG
+    // --- INICIO DE LA CORRECCIÓN ---
+    // 1. ANTES de limpiar nada, obtenemos los datos frescos de la sala
+    let freshCreatorId = null;
+    let freshStatus = null;
+    if (contestIdToLeave) {
+        try {
+            // Preguntamos a Firestore por los datos actuales
+            const contestSnap = await getDoc(getContestRef(contestIdToLeave));
+            if (contestSnap.exists()) {
+                freshCreatorId = contestSnap.data().creatorId;
+                freshStatus = contestSnap.data().status;
+            }
+        } catch (error) {
+            screenLog(`leaveContest: No se pudo obtener datos frescos, puede que el borrado falle. ${error.message}`, 'ERROR');
+        }
+    }
 
-    // Limpiar listeners Firestore
+    // 2. Determinamos la acción AHORA, usando los datos frescos
+    const isOrganizer = freshCreatorId === userIdToLeave;
+    // (Tu lógica exacta: el Admin solo borra si la sala está en lobby o finalizada)
+    const shouldDeleteContest = isOrganizer && (freshStatus === 'lobby' || freshStatus === "finalized");
+    // --- FIN DE LA CORRECCIÓN ---
+
+    screenLog(`leaveContest: Iniciando salida... Admin? ${isOrganizer}. Borrar sala? ${shouldDeleteContest}.`, 'INFO');
+
+    // 3. Limpiamos listeners y estado local (Tu código original, está perfecto)
     if (contestUnsubscribe) contestUnsubscribe();
     if (usersUnsubscribe) usersUnsubscribe();
     contestUnsubscribe = null;
     usersUnsubscribe = null;
 
-    // Limpiar listeners RTDB (Como lo hiciste antes)
-    screenLog('leaveContest: Limpiando listeners RTDB...', 'INFO'); // LOG
-    if (presenceListener && presenceRef) presenceRef.off('value', presenceListener);
-    if (connectedListener && connectedRef) connectedRef.off('value', connectedListener);
+    screenLog('leaveContest: Limpiando listeners RTDB...', 'INFO');
+    // CORRECCIÓN: Se añaden try/catch para que NUNCA falle
+    try {
+        if (presenceListener && presenceRef) presenceRef.off('value', presenceListener);
+        if (connectedListener && connectedRef) connectedRef.off('value', connectedListener);
+    } catch (e) {
+        screenLog(`leaveContest: Error menor al limpiar RTDB (ignorado): ${e.message}`, 'WARN');
+    }
     presenceRef = null;
     presenceListener = null;
     connectedRef = null;
     connectedListener = null;
-    localPresenceData = {}; // Limpia los datos de presencia locales
+    localPresenceData = {}; 
 
-    // --- NO HAY SEGUNDA DECLARACIÓN AQUÍ ---
-
-    // Limpiar estado local
     contestId = null;
     localContestData = {};
     window.location.hash = '';
     showScreen('home'); // Navegar a home
 
-    // Acciones en DB (Marcar offline y borrar si es necesario)
-    if (contestIdToLeave && userIdToLeave) { // Usa las variables guardadas
+    // 4. Acciones en DB (AHORA USA LOS DATOS FRESCOS)
+    if (contestIdToLeave && userIdToLeave) { 
 
-        // PRIMERO: Intentar marcar como offline en RTDB
+        // Marcar como offline en RTDB (Tu código original, está perfecto)
         try {
-            screenLog(`leaveContest: Marcando offline en RTDB: status/${contestIdToLeave}/${userIdToLeave}`, 'INFO'); // LOG
+            screenLog(`leaveContest: Marcando offline en RTDB: status/${contestIdToLeave}/${userIdToLeave}`, 'INFO');
             const userStatusRef = ref(rtdb, `status/${contestIdToLeave}/${userIdToLeave}`);
             await set(userStatusRef, {
                 isOnline: false,
                 lastChanged: rtdbServerTimestamp()
             });
-            screenLog('leaveContest: Estado RTDB marcado como offline.', 'INFO'); // LOG
+            screenLog('leaveContest: Estado RTDB marcado como offline.', 'INFO');
         } catch (error) {
-            screenLog(`Error al marcar offline en RTDB al salir: ${error.message}`, 'ERROR'); // LOG
+            screenLog(`Error al marcar offline en RTDB al salir: ${error.message}`, 'ERROR');
             console.warn("Error al marcar offline en RTDB al salir:", error);
         }
 
-        // SEGUNDO: Borrar concurso o usuario según corresponda (Tu lógica original)
+        // Borrar concurso o usuario (AHORA USA LOS DATOS FRESCOS)
         if (shouldDeleteContest) {
-             screenLog(`leaveContest: El organizador (${userIdToLeave}) está saliendo, eliminando sala ${contestIdToLeave}.`, 'INFO'); // LOG
+             screenLog(`leaveContest: El organizador (${userIdToLeave}) está saliendo, eliminando sala ${contestIdToLeave}.`, 'INFO');
             await deleteContest(contestIdToLeave);
         } else if (!isOrganizer) {
-             screenLog(`leaveContest: El participante (${userIdToLeave}) está saliendo, eliminando su doc de sala ${contestIdToLeave}.`, 'INFO'); // LOG
+             screenLog(`leaveContest: El participante (${userIdToLeave}) está saliendo, eliminando su doc de sala ${contestIdToLeave}.`, 'INFO');
              try {
-                // Asegúrate de usar userIdToLeave aquí también
                 await deleteDoc(getUserRef(contestIdToLeave, userIdToLeave));
              } catch (error) {
-                 screenLog(`Error al borrar user doc al salir: ${error.message}`, 'WARN'); // LOG
+                 screenLog(`Error al borrar user doc al salir: ${error.message}`, 'WARN');
                  console.warn("Error deleting user doc on leave (might already be deleted):", error);
              }
         } else {
-             screenLog(`leaveContest: El organizador (${userIdToLeave}) está saliendo, PERO NO elimina sala ${contestIdToLeave} (estado: ${localContestData.status}).`, 'INFO'); // LOG
+             // Esto pasa si eres el Admin pero la sala está "voting" (no se debe borrar)
+             screenLog(`leaveContest: El organizador (${userIdToLeave}) está saliendo, PERO NO elimina sala ${contestIdToLeave} (estado: ${freshStatus}).`, 'INFO');
         }
     } else {
-         screenLog('leaveContest: No contestIdToLeave o userIdToLeave, no se realizaron acciones en DB.', 'WARN'); // LOG
+         screenLog('leaveContest: No contestIdToLeave o userIdToLeave, no se realizaron acciones en DB.', 'WARN');
     }
-    screenLog('leaveContest: Salida completada.', 'INFO'); // LOG
+    screenLog('leaveContest: Salida completada.', 'INFO');
 }
-
+// FIN: Corrección Botón Salir (Paso 14 - Definitivo)
 
 
 
@@ -3248,40 +3278,47 @@ const presenceDot = `<span class="status-dot ${isOnline ? 'online' : ''}" style=
 
 
 
+                    // COMIENZA: Lógica de Dibujado de Botones (Paso 11)
                     if(selectedForActionId) {
-
                         const selectedUser = users.find(u=> u.id === selectedForActionId), canCall = selectedUser && !selectedUser.isManualEntry;
+                        
+                        // --- Lógica de 3 estados (de botones.html) ---
+                        const isEvaluating = contestData.currentlyVotingFor === selectedForActionId;
+                        const isEvaluated = (contestData.votedOnParticipants || []).includes(selectedForActionId) && !isEvaluating;
+                        // --- Fin lógica de 3 estados ---
 
-                        const isEvaluated = contestData.votedOnParticipants?.includes(selectedForActionId);
+                        const callBtnClasses = `btn-secondary w-1/2 ${canCall ? 'bg-cyan-600 hover:bg-cyan-700' : ''}`;
 
-// REEMPLAZA EL BLOQUE ANTERIOR CON ESTE CORREGIDO
-const callBtnClasses = `btn-secondary w-1/2 ${canCall ? 'bg-cyan-600 hover:bg-cyan-700' : ''}`;
+                        // --- Lógica de Botón Llamar Deshabilitado (de botones.html) ---
+                        let isCallPending = false;
+                        const onDeck = contestData.onDeck;
+                        const isUp = contestData.isUp;
+                        if (onDeck?.userId === selectedForActionId && onDeck?.status === 'called') isCallPending = true;
+                        if (isUp?.userId === selectedForActionId) isCallPending = true;
 
-// --- Lógica de Botón Deshabilitado ---
-let isCallPending = false;
-const onDeck = contestData.onDeck;
-const isUp = contestData.isUp;
-if (onDeck?.userId === selectedForActionId && onDeck?.status === 'called') isCallPending = true;
-if (isUp?.userId === selectedForActionId) isCallPending = true;
+                        let callButtonHtml = `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall || isCallPending ? 'disabled' : ''}>${isCallPending ? 'Esperando...' : '📣 Llamar'}</button>`;
+                        // --- Fin Lógica de Botón ---
 
-let callButtonHtml = `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall || isCallPending ? 'disabled' : ''}>${isCallPending ? 'Esperando...' : '📣 Llamar'}</button>`;
-// --- Fin Lógica de Botón ---
+                        html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
+                        
+                        // --- DIBUJADO DE BOTONES CON 3 ESTADOS ---
+                        if (isEvaluating) {
+                            // 1. Está siendo evaluado -> Mostrar botón "Listo"
+                            html += `<button id="admin-finish-btn" class="btn-primary w-full bg-green-600 hover:bg-green-700">🏁 Listo (Evaluado)</button>`;
+                        } else if (isEvaluated) {
+                            // 2. Ya fue evaluado -> Mostrar botón "Reiniciar"
+                            html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
+                        } else {
+                            // 3. Está pendiente -> Mostrar "Llamar" y "Evaluar"
+                            html += callButtonHtml;
+                            html += `<button id="admin-eval-btn" class="btn-primary w-1/2">🧐 Evaluar</button>`;
+                        }
+                        // --- FIN DIBUJADO DE BOTONES ---
 
-html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
-// const isEvaluated = contestData.votedOnParticipants?.includes(selectedForActionId); // <-- ESTA LÍNEA SE ELIMINÓ
-if(isEvaluated) { // <-- Usamos la variable 'isEvaluated' que ya existía antes
-    html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
-} else {
-    html += callButtonHtml;
-    html += `<button id="admin-eval-btn" class="btn-primary w-1/2">Evaluar</button>`;
-}
-html +=`</div></div>`; // Cierra los divs del panel
-
-
-
+                        html +=`</div></div>`; // Cierra los divs del panel
                     }
-
-                }
+// FIN: Lógica de Dibujado de Botones (Paso 11)
+} 
 
 
 
@@ -3373,41 +3410,35 @@ html +=`</div></div>`; // Cierra los divs del panel
     selectedForActionId = null;
 },
 
-'admin-reopen-btn': async () => {
-    // Lógica de botones.html (Marcar como evaluado y limpiar estados)
-    screenLog(`Admin Reopen/Finish Button (botones): Marcando como evaluado a ${selectedForActionId}`, 'CLICK');
-    
-    // Si la acción es "Reabrir Votos" (lógica de proyecto)
-    if ( (contestData.votedOnParticipants || []).includes(selectedForActionId) ) {
-        screenLog('Admin Reopen (botones): Reiniciando votos para (ya evaluado)', 'WARN');
-        const batch = writeBatch(db);
-        const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId));
-        votes.forEach(v => batch.delete(v.ref));
-        
-        batch.update(getContestRef(contestId), { 
-            votedOnParticipants: arrayRemove(selectedForActionId), // Quitar de evaluados
-            currentlyVotingFor: null, // Dejar de votar
-            onDeck: null,
-            isUp: null,
-            acknowledgedUp: null
-        });
 
-        if (isTiebreaker) {
-             batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
-        }
-        await batch.commit();
+// COMIENZA: Corrección Reiniciar Votos (Paso 10)
+'admin-reopen-btn': async () => {
+    screenLog(`Admin Reopen Button (botones): Reiniciando votos para ${selectedForActionId}`, 'CLICK');
     
-    } else {
-        // Si la acción es "Marcar como Listo/Evaluado" (lógica de botones.html)
-        screenLog('Admin Finish (botones): Marcando como evaluado (estaba en votación)', 'INFO');
-        await updateDoc(getContestRef(contestId), {
-            currentlyVotingFor: null, // Dejar de votar
-            votedOnParticipants: arrayUnion(selectedForActionId) // Añadir a evaluados
-        });
+    // Prepara un batch para hacer todas las operaciones juntas
+    const batch = writeBatch(db);
+    
+    // 1. Borra todos los votos existentes para este participante
+    const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId));
+    votes.forEach(v => batch.delete(v.ref)); // Borrar votos
+    
+    // 2. Actualiza el estado de la sala
+    batch.update(getContestRef(contestId), { 
+        votedOnParticipants: arrayRemove(selectedForActionId), // Quitar de "Evaluados" (si estaba)
+        currentlyVotingFor: null, // Dejar de "Evaluar" (si se estaba evaluando)
+    });
+
+    // 3. (Lógica de proyecto original) Maneja el caso de desempate
+    if (isTiebreaker) {
+         batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
     }
-    selectedForActionId = null;
+    
+    // 4. Ejecuta todos los cambios
+    await batch.commit();
+    selectedForActionId = null; // Deselecciona al usuario
 },
-// FIN: Bloque Botones Admin
+// FIN: Corrección Reiniciar Votos (Paso 10)
+
 
 
 
