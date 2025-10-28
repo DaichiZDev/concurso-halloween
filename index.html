@@ -536,8 +536,43 @@
 
         #ayuda-container[open] { animation: fadeIn 0.5s ease-out; }
 
+.status-dot {
+   display: inline-block;
+   width: 10px;
+   height: 10px;
+   border-radius: 50%;
+   background-color: #6b7280; /* gris */
+   margin-right: 8px;
+   flex-shrink: 0;
+}
+.status-dot.online {
+   background-color: #22c55e; /* verde */
+}
 
+/* COMIENZA: Estilos de Botón Faltantes (de botones.html) */
 
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem; 
+    line-height: 1.5rem;
+}
+.btn-green { background-color: #16a34a; color: white; }
+.btn-green:hover:not(:disabled) { background-color: #15803d; }
+.btn-yellow { background-color: #ca8a04; color: white; }
+.btn-yellow:hover:not(:disabled) { background-color: #a16207; }
+
+.btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
+} /* <-- ESTA LLAVE FALTABA */
     </style>
 
 </head>
@@ -1010,37 +1045,24 @@
 
     <div id="on-deck-modal" class="modal-backdrop on-deck-alert">
 
-        <div class="modal-content !bg-transparent border-none text-center">
-
-            <h2 id="on-deck-title" class="font-creepster text-6xl text-yellow-300 drop-shadow-lg">¡Prepárate!</h2>
-
-            <p id="on-deck-message" class="text-2xl text-white font-bold mt-4 drop-shadow-md">Eres el siguiente en pasar. ¿Estás listo?</p>
-
-            <div class="flex gap-4 mt-8">
-
-                <button id="on-deck-not-ready" class="btn-danger flex-1">Necesito un momento ⏳</button>
-
-                <button id="on-deck-ready" class="btn-primary flex-1 bg-green-600 hover:bg-green-700">¡Estoy listo! ✅</button>
-
-            </div>
-
+<div class="modal-content">
+        <h2 id="on-deck-title" class="font-creepster text-6xl text-yellow-300 drop-shadow-lg">¡Prepárate!</h2>
+        <p id="on-deck-message" class="text-2xl text-white font-bold mt-4 drop-shadow-md">¿Estás listo?</p>
+        <div class="flex flex-row gap-4 mt-8">
+            <button id="on-deck-not-ready" class="btn btn-yellow flex-1">⌛ Necesito un Momento</button>
+            <button id="on-deck-ready" class="btn btn-green flex-1">✅ ¡Estoy Listo!</button>
         </div>
-
     </div>
+   </div>
 
      <div id="is-up-modal" class="modal-backdrop is-up-alert">
 
-        <div class="modal-content !bg-transparent border-none text-center">
-
-            <h2 class="font-creepster text-8xl text-red-500 drop-shadow-lg">¡AHORA!</h2>
-
-            <p class="text-3xl text-white font-bold mt-4 drop-shadow-md">Es tu turno. ¡Pasa al escenario!</p>
-
-            <button id="is-up-close" class="btn-primary mt-8">¡VOY!</button>
-
-        </div>
-
+<div class="modal-content">
+        <h2 class="font-creepster text-8xl text-red-500 drop-shadow-lg">¡AHORA!</h2>
+        <p class="text-3xl text-white font-bold mt-4 drop-shadow-md">¡Es tu turno!</p>
+        <button id="is-up-close" class="btn btn-primary mt-8 w-full">👍 ¡VOY!</button>
     </div>
+   </div>
 
     <div id="paused-modal" class="modal-backdrop">
 
@@ -1196,24 +1218,29 @@
 
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, getDocs, writeBatch, deleteDoc, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import { 
+   getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, 
+   collection, addDoc, getDocs, writeBatch, deleteDoc, query, 
+   where, serverTimestamp, arrayUnion, arrayRemove // <-- Se añaden estos dos 
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import { 
+           getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbServerTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM",
-            authDomain: "concurso-halloween.firebaseapp.com",
-            projectId: "concurso-halloween",
-            storageBucket: "concurso-halloween.appspot.com",
-            messagingSenderId: "911444785839",
-            appId: "1:911444785839:web:03326456c9b2b35d90325a"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyAogdul6URUEE0rQKKGQesZqgqAI5bQbZM", // Tu API key original
+    authDomain: "concurso-halloween.firebaseapp.com",
+    projectId: "concurso-halloween",
+    databaseURL: "https://concurso-halloween-default-rtdb.firebaseio.com", // [CAMBIADO]
+    storageBucket: "concurso-halloween.appspot.com",
+    messagingSenderId: "911444785839",
+};
 
 
         const app = initializeApp(firebaseConfig);
-
         const auth = getAuth(app);
-
         const db = getFirestore(app);
-
+        const rtdb = getDatabase(app); 
 
 
     // Función para mostrar logs en pantalla (versión "Chismoso" v2)
@@ -1280,6 +1307,9 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
         let contestUnsubscribe = null, usersUnsubscribe = null;
 
         let currentJurorScores = {};
+       
+       let localUsersData = [];
+
 
         const MAX_SCORE = 10;
 
@@ -1313,20 +1343,21 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
         let previousRevealStep = 0;
 
-        let currentUserName = null; // Variable para guardar el nombre del usuario
+        let currentUserName = null;
+// [PEGAR CÓDIGO AQUÍ]
 
-        // **FIX:** Declare notificationState globally ONCE.
-
-        var notificationState = { // Use 'var' or declare it outside any function if preferred
-
-             lastOnDeckStatus: null,
-
-             lastIsUpUserId: null
-
-         };
-
-
-
+        // --- Variables de Presencia (de botones.html) ---
+        let localPresenceData = {};
+        let presenceRef = null;
+        let presenceListener = null;
+        let connectedRef = null;
+        let connectedListener = null;
+        let isNavigatingAway = false; // Guardia para la salida
+        
+        // --- Variables para Refresco de Presencia ---
+        let rendererForPresenceUpdate = null;
+        let localUsersDataForPresence = [];       
+        let isResponding = false;
 
 
         document.getElementById('winner-notification-close').addEventListener('click', () => {
@@ -1352,6 +1383,108 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
             winnerNotificationModal.classList.add('visible');
 
         }
+
+// AÑADE ESTAS DOS FUNCIONES (Fuente [1], Paso 5.1):
+
+function hideAllModals() {
+   screenLog('hideAllModals: Ocultando todos los modales', 'MODAL'); // LOG
+   onDeckModal.classList.remove('visible');
+   isUpModal.classList.remove('visible');
+}
+
+// COMIENZA: Bloque checkModals (Cerebro de botones.html)
+function checkModals() {
+    // Busca tu propio usuario en la lista local (que se actualiza con los listeners)
+    const me = localUsersDataForPresence.find(u => u.id === currentUserId);
+    // Si no te encuentras (aún no cargaron los datos), no hagas nada
+    if (!me) {
+        screenLog('checkModals: No se encontró "me" en localUsersDataForPresence aún.', 'WARN');
+        return;
+    }
+
+    // Obtiene los datos de onDeck e isUp del estado local de la sala
+    const onDeckData = localContestData.onDeck || {};
+    const isUpData = localContestData.isUp || {};
+    
+    // Determina si el usuario actual es el que está "on deck" y cuál es su estado ('called', 'acknowledged', 'not_ready')
+    const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
+    // Determina quién es el usuario que está "is up"
+    const currentIsUpUserId = isUpData.userId;
+
+    screenLog(`checkModals: currentOnDeckStatus=${currentOnDeckStatus}, currentIsUpUserId=${currentIsUpUserId}`, 'INFO');
+
+
+    // --- Lógica del Modal "On Deck" (de botones.html) ---
+    const isOnDeckModalVisible = onDeckModal.classList.contains('visible');
+
+    // 1. Si tu estado es 'called'
+    if (currentOnDeckStatus === 'called') {
+        // Y el modal NO está visible
+        if (!isOnDeckModalVisible) {
+            screenLog('checkModals (botones): Mostrando modal On Deck.', 'MODAL');
+            
+            // Revisa si es la primera llamada del concurso (Tu lógica de proyecto)
+            const evaluatedList = localContestData.votedOnParticipants || [];
+            const isFirstCall = evaluatedList.length === 0;
+
+            // Ajusta el título y mensaje (Tu lógica de proyecto)
+            document.getElementById('on-deck-title').textContent = isFirstCall ? "¡ROMPE EL HIELO!" : "¡PREPÁRATE!";
+            document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
+
+            // Cierra el modal "Is Up" por si acaso y abre el modal "On Deck"
+            isUpModal.classList.remove('visible'); // Asegura cerrar el otro
+            onDeckModal.classList.add('visible');
+            
+            // Vibra (Tu lógica de proyecto)
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+            // Muestra la notificación del sistema operativo (Tu lógica de proyecto)
+            showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
+        } else {
+             screenLog('checkModals (botones): Modal On Deck ya estaba visible.', 'INFO');
+        }
+    // 2. Si tu estado NO es 'called' (o no estás on deck)
+    } else {
+        // Y el modal SÍ está visible
+        if (isOnDeckModalVisible) {
+            screenLog('checkModals (botones): Ocultando modal On Deck (estado ya no es "called").', 'MODAL');
+            // Cierra el modal
+            onDeckModal.classList.remove('visible');
+        }
+    }
+
+    // --- Lógica del Modal "Is Up" (de botones.html) ---
+    const isIsUpModalVisible = isUpModal.classList.contains('visible');
+    
+    // 1. Si tú eres el usuario que está "is up"
+    if (currentIsUpUserId === currentUserId) {
+        // Y el modal NO está visible
+        if (!isIsUpModalVisible) {
+             screenLog('checkModals (botones): Mostrando modal Is Up.', 'MODAL');
+            
+            // Cierra el modal "On Deck" por si acaso y abre el modal "Is Up"
+            onDeckModal.classList.remove('visible'); // Asegura cerrar el otro
+            isUpModal.classList.add('visible');
+            
+            // Vibra más intensamente (Tu lógica de proyecto)
+            if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
+
+            // Muestra la notificación del sistema operativo (Tu lógica de proyecto)
+            showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
+        } else {
+             screenLog('checkModals (botones): Modal Is Up ya estaba visible.', 'INFO');
+        }
+    // 2. Si el usuario "is up" NO eres tú
+    } else {
+        // Y el modal SÍ está visible
+        if (isIsUpModalVisible) {
+             screenLog('checkModals (botones): Ocultando modal Is Up (ya no eres tú).', 'MODAL');
+            // Cierra el modal
+            isUpModal.classList.remove('visible');
+        }
+    }
+}
+// FIN: Bloque checkModals (Cerebro de botones.html)
 
 
 
@@ -1559,61 +1692,78 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
 
 
-        async function leaveContest() {
+async function leaveContest() {
+    // Declarar UNA SOLA VEZ al principio
+    const contestIdToLeave = contestId;
+    const userIdToLeave = currentUserId; // Guarda el userId también
+    const isOrganizer = localContestData.creatorId === userIdToLeave;
+    const shouldDeleteContest = isOrganizer && (localContestData.status === 'lobby' || localContestData.status === 'finalized');
 
-            const contestIdToLeave = contestId;
+    screenLog(`leaveContest: Iniciando salida para User ${userIdToLeave} de Sala ${contestIdToLeave}`, 'INFO'); // LOG
 
-            const isOrganizer = localContestData.creatorId === currentUserId;
+    // Limpiar listeners Firestore
+    if (contestUnsubscribe) contestUnsubscribe();
+    if (usersUnsubscribe) usersUnsubscribe();
+    contestUnsubscribe = null;
+    usersUnsubscribe = null;
 
-            const shouldDeleteContest = isOrganizer && (localContestData.status === 'lobby' || localContestData.status === 'finalized');
+    // Limpiar listeners RTDB (Como lo hiciste antes)
+    screenLog('leaveContest: Limpiando listeners RTDB...', 'INFO'); // LOG
+    if (presenceListener && presenceRef) presenceRef.off('value', presenceListener);
+    if (connectedListener && connectedRef) connectedRef.off('value', connectedListener);
+    presenceRef = null;
+    presenceListener = null;
+    connectedRef = null;
+    connectedListener = null;
+    localPresenceData = {}; // Limpia los datos de presencia locales
 
+    // --- NO HAY SEGUNDA DECLARACIÓN AQUÍ ---
 
+    // Limpiar estado local
+    contestId = null;
+    localContestData = {};
+    window.location.hash = '';
+    showScreen('home'); // Navegar a home
 
+    // Acciones en DB (Marcar offline y borrar si es necesario)
+    if (contestIdToLeave && userIdToLeave) { // Usa las variables guardadas
 
-
-            if (contestUnsubscribe) contestUnsubscribe();
-
-            if (usersUnsubscribe) usersUnsubscribe();
-
-            contestUnsubscribe = null;
-
-            usersUnsubscribe = null;
-
-
-
-            contestId = null;
-
-            localContestData = {};
-
-            window.location.hash = '';
-
-            showScreen('home');
-
-
-
-            if (contestIdToLeave && currentUserId) {
-
-                if (shouldDeleteContest) {
-
-                    await deleteContest(contestIdToLeave);
-
-                } else if (!isOrganizer) {
-
-                     try {
-
-                        await deleteDoc(getUserRef(contestIdToLeave, currentUserId));
-
-                     } catch (error) {
-
-                         console.warn("Error deleting user doc on leave (might already be deleted):", error);
-
-                     }
-
-                }
-
-            }
-
+        // PRIMERO: Intentar marcar como offline en RTDB
+        try {
+            screenLog(`leaveContest: Marcando offline en RTDB: status/${contestIdToLeave}/${userIdToLeave}`, 'INFO'); // LOG
+            const userStatusRef = ref(rtdb, `status/${contestIdToLeave}/${userIdToLeave}`);
+            await set(userStatusRef, {
+                isOnline: false,
+                lastChanged: rtdbServerTimestamp()
+            });
+            screenLog('leaveContest: Estado RTDB marcado como offline.', 'INFO'); // LOG
+        } catch (error) {
+            screenLog(`Error al marcar offline en RTDB al salir: ${error.message}`, 'ERROR'); // LOG
+            console.warn("Error al marcar offline en RTDB al salir:", error);
         }
+
+        // SEGUNDO: Borrar concurso o usuario según corresponda (Tu lógica original)
+        if (shouldDeleteContest) {
+             screenLog(`leaveContest: El organizador (${userIdToLeave}) está saliendo, eliminando sala ${contestIdToLeave}.`, 'INFO'); // LOG
+            await deleteContest(contestIdToLeave);
+        } else if (!isOrganizer) {
+             screenLog(`leaveContest: El participante (${userIdToLeave}) está saliendo, eliminando su doc de sala ${contestIdToLeave}.`, 'INFO'); // LOG
+             try {
+                // Asegúrate de usar userIdToLeave aquí también
+                await deleteDoc(getUserRef(contestIdToLeave, userIdToLeave));
+             } catch (error) {
+                 screenLog(`Error al borrar user doc al salir: ${error.message}`, 'WARN'); // LOG
+                 console.warn("Error deleting user doc on leave (might already be deleted):", error);
+             }
+        } else {
+             screenLog(`leaveContest: El organizador (${userIdToLeave}) está saliendo, PERO NO elimina sala ${contestIdToLeave} (estado: ${localContestData.status}).`, 'INFO'); // LOG
+        }
+    } else {
+         screenLog('leaveContest: No contestIdToLeave o userIdToLeave, no se realizaron acciones en DB.', 'WARN'); // LOG
+    }
+    screenLog('leaveContest: Salida completada.', 'INFO'); // LOG
+}
+
 
 
 
@@ -2191,12 +2341,68 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
         function subscribeToContest(id) {
 
             if (contestUnsubscribe) contestUnsubscribe();
+// [PEGAR ESTE BLOQUE CORREGIDO después de la línea 1820: if (contestUnsubscribe) contestUnsubscribe();]
 
-            // Resetear estado de notificación al suscribirse
+            // --- INICIO: Lógica de Presencia RTDB (de botones.html) ---
 
-            notificationState = { lastOnDeckStatus: null, lastIsUpUserId: null };
+            // 3. Configurar Presencia (RTDB)
+            // Detener listeners anteriores si existen
+            if (presenceListener && presenceRef) {
+                presenceRef.off('value', presenceListener);
+                screenLog("Listener de presencia RTDB (antiguo) detenido.", 'INFO');
+            }
+            if (connectedListener && connectedRef) {
+                connectedRef.off('value', connectedListener);
+                screenLog("Listener de conexión RTDB (antiguo) detenido.", 'INFO');
+            }
 
+            connectedRef = ref(rtdb, ".info/connected");
+            const userStatusRef = ref(rtdb, `status/${id}/${currentUserId}`); // Usa 'id' (contestId)
 
+            connectedListener = onValue(connectedRef, (snap) => {
+                if (isNavigatingAway) return;
+                if (snap.val() === true) {
+                    set(userStatusRef, { 
+                        isOnline: true, 
+                        // *** CORRECCIÓN APLICADA ***
+                        lastChanged: rtdbServerTimestamp() 
+                    });
+                    // Acción al desconectar (cerrar pestaña)
+                    onDisconnect(userStatusRef).set({ 
+                        isOnline: false, 
+                        // *** CORRECCIÓN APLICADA ***
+                        lastChanged: rtdbServerTimestamp() 
+                    });
+                    screenLog("RTDB: Conectado y 'onDisconnect' establecido.", 'INFO');
+                }
+            });
+
+            // 4. Escuchar cambios de presencia de *todos* (RTDB)
+presenceRef = ref(rtdb, `status/${id}`); // Usa 'id' (contestId)
+            presenceListener = onValue(presenceRef, (snapshot) => {
+                if (isNavigatingAway) return;
+                screenLog("PresenceListener: Datos de presencia RTDB recibidos.", 'INFO'); 
+                localPresenceData = snapshot.val() || {};
+
+                // --- *** INICIO DE LA CORRECCIÓN *** ---
+                // Se elimina la guardia "localUsersDataForPresence.length > 0".
+                // Este listener AHORA es el responsable de renderizar.
+                
+                if (typeof(rendererForPresenceUpdate) === 'function') {
+                    // Si el renderer (ej: renderLobby) ya está listo,
+                    // le ordenamos que renderice AHORA con los datos que tenga.
+                    screenLog("PresenceListener: Renderizando UI.", 'INFO');
+                    rendererForPresenceUpdate(localContestData, localUsersDataForPresence);
+                
+                } else {
+                    // Si el renderer (ej: renderLobby) AÚN NO ESTÁ LISTO,
+                    // (porque el listener de Firestore es más lento), no hacemos nada.
+                    // El listener de Usuarios (Paso 4) se encargará de renderizar.
+                    screenLog("PresenceListener: Renderer aún no está listo. Omitiendo render.", 'WARN');
+                }
+                // --- *** FIN DE LA CORRECCIÓN *** ---
+            });
+            // --- FIN: Lógica de Presencia RTDB ---
 
             contestUnsubscribe = onSnapshot(getContestRef(id), async (doc) => {
 
@@ -2279,105 +2485,8 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                 const onDeckData = localContestData.onDeck || {};
 
                 const isUpData = localContestData.isUp || {};
-
-
-
-            // --- INICIO: Lógica Anti-Loop de Notificación (CORREGIDA v4 - Final) ---
-
-            screenLog(`[User: ${currentUserId}] --- Listener Check ---`);
-
-            screenLog(`[User: ${currentUserId}] Received OnDeck User: ${onDeckData.userId}, Status: ${onDeckData.status}`);
-
-            screenLog(`[User: ${currentUserId}] Received IsUp User: ${isUpData.userId}, AckUp: ${localContestData.acknowledgedUp}`); // Añadido AckUp
-
-            screenLog(`[User: ${currentUserId}] State BEFORE - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
-
-
-
-            const currentOnDeckStatus = onDeckData.userId === currentUserId ? onDeckData.status : null;
-
-            // Manejo del modal OnDeck (Parece funcionar, mantenemos lógica v3)
-
-            if (currentOnDeckStatus === 'called') {
-
-                screenLog(`[User: ${currentUserId}] OnDeck: Received 'called'.`);
-
-                if (notificationState.lastOnDeckStatus !== 'called' && notificationState.lastOnDeckStatus !== 'acknowledged' && notificationState.lastOnDeckStatus !== 'not_ready') {
-
-                    screenLog(`[User: ${currentUserId}]    -> State ok. SHOWING On Deck modal.`);
-
-                    notificationState.lastOnDeckStatus = 'called';
-
-                    // ... (código para mostrar modal OnDeck sin cambios) ...
-
-                    const isFirstCall = !localContestData.votedOnParticipants || localContestData.votedOnParticipants.length === 0;
-
-                    document.getElementById('on-deck-title').textContent = isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!";
-                    document.getElementById('on-deck-message').textContent = isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¿Estás listo?";
-                    onDeckModal.classList.add('visible');
-                    screenLog('ABRIR MODAL: ¡Prepárate! (OnDeck)', 'MODAL'); // <-- LÍNEA NUEVA
-                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-                    showNotification(isFirstCall ? "¡Rompe el Hielo!" : "¡Prepárate!", isFirstCall ? "Eres el primero en pasar. ¿Estás listo?" : "Eres el siguiente en pasar. ¡Mucha suerte!", 'on-deck-alert');
-                } else {
-                    screenLog(`    -> State was already ${notificationState.lastOnDeckStatus}. Ignoring 'called' echo.`, 'INFO'); // <-- Categoría cambiada
-                }
-            } else {
-                // Solo cerramos si el estado NO es 'called'.
-                if (currentOnDeckStatus !== 'called') {
-                     screenLog(`OnDeck: Received status is NOT 'called' (${currentOnDeckStatus}). Closing modal.`, 'MODAL'); // <-- Log movido y mejorado
-                     notificationState.lastOnDeckStatus = currentOnDeckStatus;
-                     onDeckModal.classList.remove('visible');
-                }
-            }
-
-            // Manejo del modal IsUp (Lógica V4)
-
-            const currentIsUpUserId = isUpData.userId;
-
-            if (currentIsUpUserId === currentUserId) {
-
-                screenLog(`[User: ${currentUserId}] IsUp: Received current user is Up.`);
-
-                // *** CORRECCIÓN FINAL ***: Añadimos chequeo de acknowledgedUp
-
-                // Solo mostrar si: 1) Aún no lo habíamos marcado como 'Up' localmente Y 2) El concurso NO dice que ya acusamos recibo.
-
-                    if (notificationState.lastIsUpUserId !== currentUserId && localContestData.acknowledgedUp !== currentUserId) {
-                    screenLog(`    -> State ok & Not Ack'd yet. SHOWING Is Up modal.`, 'INFO'); // <-- Categoría cambiada
-                    notificationState.lastIsUpUserId = currentUserId; // Marcar que ahora sí está 'Up'
-                    isUpModal.classList.add('visible');
-                    screenLog('ABRIR MODAL: ¡AHORA! (IsUp)', 'MODAL'); // <-- LÍNEA NUEVA
-                    if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
-                    showNotification("¡AHORA!", "Es tu turno. ¡Pasa al escenario!", 'is-up-alert');
-
-                } else {
-
-                    // Informar por qué no se muestra (ya sea porque ya estaba 'Up' o porque ya se acusó recibo)
-
-                    if(notificationState.lastIsUpUserId === currentUserId) {
-
-                         screenLog(`[User: ${currentUserId}]    -> State was already current user being Up. Ignoring 'isUp' echo.`);
-
-                    } else { // acknowledgedUp === currentUserId
-
-                         screenLog(`[User: ${currentUserId}]    -> User already acknowledged this 'isUp'. Ignoring 'isUp' echo.`);
-
-                    }
-                                }
-            } else { // Si el usuario 'IsUp' NO es el actual
-                screenLog(`IsUp: Received user is NOT current user (${currentIsUpUserId}). Closing modal.`, 'MODAL'); // <-- Log mejorado
-                if (notificationState.lastIsUpUserId === currentUserId) {
-                   notificationState.lastIsUpUserId = null; // Resetear estado local solo si éramos nosotros
-                }
-                isUpModal.classList.remove('visible'); // Asegurar cierre
-            }
-
-            screenLog(`[User: ${currentUserId}] State AFTER - lastOnDeckStatus: ${notificationState.lastOnDeckStatus}, lastIsUpUserId: ${notificationState.lastIsUpUserId}`);
-
-            screenLog(`[User: ${currentUserId}] --- End Listener Check ---`);
-
-            // --- FIN: Lógica Anti-Loop de Notificación (CORREGIDA v4 - Final) ---
-
+               
+               checkModals();
 
                 if (newStatus === 'paused' && isAdmin) {
 
@@ -2392,38 +2501,112 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                     if (rendererMap[newStatus]) subscribeToUsers(id, rendererMap[newStatus]);
                 }
             });
-        }
+            
 
-        document.getElementById('on-deck-ready').addEventListener('click', async () => {
-        	screenLog("Botón 'on-deck-ready' (¡Estoy listo!)", 'CLICK');
-           
-            // --- INICIO CORRECCIÓN OPTIMISTA ---
-            notificationState.lastOnDeckStatus = 'not_ready'; // 1. Actualiza estado local
-            onDeckModal.classList.remove('visible');          // 2. Cierra UI local
-            screenLog('CIERRE LOCAL: ¡Prepárate! (OnDeck)', 'MODAL'); // 3. Log de cierre
-            // --- FIN CORRECCIÓN OPTIMISTA ---
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' }); // 4. Envía a Firestore
-        });
+}
 
-        document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
-        	screenLog("Botón 'on-deck-not-ready' (Necesito un momento)", 'CLICK');
-            // --- INICIO CORRECCIÓN OPTIMISTA ---
-            notificationState.lastOnDeckStatus = 'not_ready'; // 1. Actualiza estado local
-            onDeckModal.classList.remove('visible');          // 2. Cierra UI local
-            screenLog('CIERRE LOCAL: ¡Prepárate! (OnDeck)', 'MODAL'); // 3. Log de cierre
-            // --- FIN CORRECCIÓN OPTIMISTA ---
-            await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' }); // 4. Envía a Firestore
-        });
+// COMIENZA: Bloque Respuestas de Modal (Lógica de botones.html)
+document.getElementById('on-deck-not-ready').addEventListener('click', async () => {
+    screenLog("Botón 'on-deck-not-ready' (Necesito un momento)", 'CLICK');
+    if (isResponding) return; // Guardia anti-doble clic
+    isResponding = true;
+    hideAllModals(); // Cierra modal localmente
+    try {
+        // Envía el estado 'not_ready' a Firestore (lógica de botones.html)
+        await updateDoc(getContestRef(contestId), { 'onDeck.status': 'not_ready' });
+        screenLog("Respuesta 'not_ready' enviada.", 'INFO');
+    } catch (error) {
+        screenLog(`ERROR al responder con ⌛: ${error.message}`, 'ERROR');
+        customAlert("Error", "No se pudo enviar tu respuesta. Intenta de nuevo."); // Alerta al usuario
+    } finally {
+        isResponding = false; // Libera la guardia
+    }
+});
+
+document.getElementById('on-deck-ready').addEventListener('click', async () => {
+    screenLog("Botón 'on-deck-ready' (¡Estoy listo!)", 'CLICK');
+    if (isResponding) return; // Guardia anti-doble clic
+    isResponding = true;
+    hideAllModals(); // Cierra modal localmente
+    try {
+        // Envía el estado 'acknowledged' a Firestore (lógica de botones.html)
+        await updateDoc(getContestRef(contestId), { 'onDeck.status': 'acknowledged' });
+        screenLog("Respuesta 'acknowledged' enviada.", 'INFO');
+    } catch (error) {
+        screenLog(`ERROR al responder con ✅: ${error.message}`, 'ERROR');
+        customAlert("Error", "No se pudo enviar tu respuesta. Intenta de nuevo."); // Alerta al usuario
+    } finally {
+        isResponding = false; // Libera la guardia
+    }
+});
+
+document.getElementById('is-up-close').addEventListener('click', async () => {
+    screenLog("Botón 'is-up-close' (¡VOY!)", 'CLICK');
+     if (isResponding) return; // Guardia anti-doble clic
+     isResponding = true;
+     hideAllModals(); // Cierra modal localmente
+
+     // Obtiene el ID del usuario que estaba en 'isUp' (lógica de botones.html)
+     const userIdWhoAcked = localContestData.isUp?.userId;
+
+     // Verificación extra
+     if (!userIdWhoAcked) {
+         screenLog("ERROR: 'is-up-close' presionado, pero 'localContestData.isUp.userId' no estaba definido localmente.", 'ERROR');
+         isResponding = false;
+         return;
+     }
+
+     try {
+         // Envía la actualización a Firestore (lógica de botones.html)
+         await updateDoc(getContestRef(contestId), {
+            isUp: null, // Quita al usuario de 'isUp'
+            acknowledgedUp: userIdWhoAcked // Registra que este usuario acusó recibo
+         });
+         screenLog(`Respuesta 'acknowledgedUp' (${userIdWhoAcked}) enviada.`, 'INFO');
+    } catch (error) {
+         screenLog(`ERROR al responder ¡VOY!: ${error.message}`, 'ERROR');
+         customAlert("Error", "No se pudo enviar tu respuesta. Intenta de nuevo."); // Alerta al usuario
+    } finally {
+        isResponding = false; // Libera la guardia
+    }
+});
+// FIN: Bloque Respuestas de Modal
 
 
 
         function subscribeToUsers(id, renderer) {
-
             if (usersUnsubscribe) usersUnsubscribe();
 
-            usersUnsubscribe = onSnapshot(getUsersCollectionRef(id), (snap) => renderer(localContestData, snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+            // 1. Guarda el 'renderer' (ej: renderLobby) para que RTDB pueda llamarlo
+            rendererForPresenceUpdate = renderer;
 
+            // 2. Se suscribe a la lista de usuarios (Firestore)
+            usersUnsubscribe = onSnapshot(getUsersCollectionRef(id), (snap) => {
+                
+                // 3. Guarda la lista de usuarios en la variable global
+                localUsersDataForPresence = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                screenLog(`UsersListener: Lista de usuarios actualizada (Total: ${localUsersDataForPresence.length}).`, 'INFO');
+
+                // --- *** INICIO DE LA CORRECCIÓN *** ---
+                
+                // 4. NO LLAMAMOS AL RENDERER AQUÍ.
+                // Dejamos que el Listener de Presencia (Paso 5) se encargue
+                // de renderizar CUANDO reciba los datos de presencia.
+                
+                // PERO, si los datos de presencia YA HABÍAN LLEGADO PRIMERO,
+                // forzamos el renderizado ahora.
+                if (Object.keys(localPresenceData).length > 0) {
+                     screenLog("UsersListener: Datos de presencia ya existían. Forzando re-render.", 'INFO');
+                     if (typeof(rendererForPresenceUpdate) === 'function') {
+                        rendererForPresenceUpdate(localContestData, localUsersDataForPresence);
+                     }
+                }
+                
+                // --- *** FIN DE LA CORRECCIÓN *** ---
+            });
         }
+
+        
 
 
 
@@ -2638,8 +2821,9 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                 `;
 
 
+                const isOnline = localPresenceData[user.id]?.isOnline === true;
+                const onlineIndicator = `<span class="status-dot ${isOnline ? 'online' : ''}" title="${isOnline ? 'Conectado' : 'Desconectado'}"></span>`;
 
-                const onlineIndicator = !user.isManualEntry ? `<span class="h-2 w-2 rounded-full bg-green-500 inline-block mr-2" title="Conectado"></span>` : `<span class="h-2 w-2 rounded-full bg-gray-600 inline-block mr-2" title="Añadido manualmente"></span>`;
 
                 const imgTag = getImageTag(user.costumeImageBase64, 'image-preview-sm flex-shrink-0', user.costume);
 
@@ -3031,7 +3215,8 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
 
 
-                        let statusIcon = !p.isManualEntry ? '🟢' : '';
+                        let statusIcon = '';
+
 
                         if (isUp) statusIcon = '🚨'; else if (acknowledgedUp) statusIcon = '✅'; else if (onDeck) {
 
@@ -3046,10 +3231,16 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
                         if(evaluated) { statusText = 'Evaluado'; statusColor = 'text-green-400'; }
 
                         if(voting) { statusText = allVotesIn ? 'Votación Completa' : 'Evaluando...'; statusColor = allVotesIn ? 'text-green-400' : 'text-yellow-400'; }
+                       
+                       const isOnline = localPresenceData[p.id]?.isOnline === true;
+const presenceDot = `<span class="status-dot ${isOnline ? 'online' : ''}" style="margin-right: 4px;" title="${isOnline ? 'Conectado' : 'Desconectado'}"></span>`;
 
 
 
-                        html += `<div data-userid="${p.id}" data-is-online="${!p.isManualEntry}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-2 text-xs" title="Conectado">${statusIcon}</span>${p.name}</p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`;
+
+
+                        html += `<div data-userid="${p.id}" data-is-online="${localPresenceData[p.id]?.isOnline === true}" class="${participantClasses}"><div><p class="font-bold flex items-center"><span class="mr-1 text-lg" title="Estado Llamada">${statusIcon || '➖'}</span>${presenceDot}<span class="ml-1">${p.name}</span></p><p class="text-sm text-gray-400">${p.costume}</p></div><span class="text-sm ${statusColor}">${statusText}</span></div>`;
+
 
                     });
 
@@ -3063,17 +3254,30 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
                         const isEvaluated = contestData.votedOnParticipants?.includes(selectedForActionId);
 
-                        const callBtnClasses = `btn-secondary w-1/2 ${canCall ? 'bg-cyan-600 hover:bg-cyan-700' : ''}`;
+// REEMPLAZA EL BLOQUE ANTERIOR CON ESTE CORREGIDO
+const callBtnClasses = `btn-secondary w-1/2 ${canCall ? 'bg-cyan-600 hover:bg-cyan-700' : ''}`;
+
+// --- Lógica de Botón Deshabilitado ---
+let isCallPending = false;
+const onDeck = contestData.onDeck;
+const isUp = contestData.isUp;
+if (onDeck?.userId === selectedForActionId && onDeck?.status === 'called') isCallPending = true;
+if (isUp?.userId === selectedForActionId) isCallPending = true;
+
+let callButtonHtml = `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall || isCallPending ? 'disabled' : ''}>${isCallPending ? 'Esperando...' : '📣 Llamar'}</button>`;
+// --- Fin Lógica de Botón ---
+
+html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
+// const isEvaluated = contestData.votedOnParticipants?.includes(selectedForActionId); // <-- ESTA LÍNEA SE ELIMINÓ
+if(isEvaluated) { // <-- Usamos la variable 'isEvaluated' que ya existía antes
+    html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
+} else {
+    html += callButtonHtml;
+    html += `<button id="admin-eval-btn" class="btn-primary w-1/2">Evaluar</button>`;
+}
+html +=`</div></div>`; // Cierra los divs del panel
 
 
-
-                        html += `<div class="mt-6 p-4 bg-gray-700 rounded-xl"><h4 class="font-bold text-yellow-400">Acciones para: ${selectedUser.name}</h4><div class="flex gap-2 mt-4">`;
-
-                        if(isEvaluated) html += `<button id="admin-reopen-btn" class="btn-secondary w-full bg-yellow-600 hover:bg-yellow-700">🔄 Reiniciar Votos</button>`;
-
-                        else html += `<button id="admin-call-btn" class="${callBtnClasses}" ${!canCall ? 'disabled' : ''}>📣 Llamar</button><button id="admin-eval-btn" class="btn-primary w-1/2">Evaluar</button>`;
-
-                        html +=`</div></div>`;
 
                     }
 
@@ -3105,19 +3309,108 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
                         const actionMap = {
 
-                            'admin-call-btn': async () => {
+// COMIENZA: Bloque Botones Admin (Lógica de botones.html)
+'admin-call-btn': async () => {
+    screenLog(`Admin Call Button (botones): Llamando a ${selectedForActionId}`, 'CLICK');
+    const onDeck = contestData.onDeck;
+    const acknowledgedUp = contestData.acknowledgedUp;
+    let updateData = {};
 
-                                const onDeck = contestData.onDeck;
+    const isOnDeck = onDeck && onDeck.userId === selectedForActionId;
+    const onDeckStatus = isOnDeck ? onDeck.status : null;
+    const isAcknowledgedUp = acknowledgedUp === selectedForActionId;
 
-                                const update = (onDeck && onDeck.userId === selectedForActionId) || contestData.acknowledgedUp === selectedForActionId
+    screenLog(`Admin Call Logic (botones): isOnDeck=${isOnDeck}, onDeckStatus=${onDeckStatus}, isAcknowledgedUp=${isAcknowledgedUp}`, 'DEBUG');
 
-                                    ? { isUp: { userId: selectedForActionId }, onDeck: null, acknowledgedUp: null }
+    if (onDeckStatus === 'acknowledged' || isAcknowledgedUp) {
+        // Acción: Poner en 'isUp' (¡AHORA!)
+        screenLog(`Admin Call Logic (botones): Enviando 'isUp'`, 'INFO');
+        updateData = {
+            isUp: { userId: selectedForActionId },
+            onDeck: null,
+            acknowledgedUp: null,
+            currentlyVotingFor: null // <-- REPARACIÓN CLAVE
+        };
+    } else {
+        // Acción: Poner en 'onDeck' (¡PREPÁRATE!)
+        screenLog(`Admin Call Logic (botones): Enviando 'onDeck' con status 'called'`, 'INFO');
+        updateData = {
+            onDeck: { userId: selectedForActionId, status: 'called' },
+            isUp: null,
+            acknowledgedUp: null,
+            currentlyVotingFor: null // <-- REPARACIÓN CLAVE
+        };
+    }
 
-                                    : { onDeck: { userId: selectedForActionId, status: 'called' }, isUp: null, acknowledgedUp: null };
+    await updateDoc(getContestRef(contestId), updateData);
+    screenLog('Admin Call Button (botones): Update enviado a Firestore.', 'INFO');
+},
 
-                                await updateDoc(getContestRef(contestId), update);
+'admin-eval-btn': async () => {
+    // Lógica de botones.html (Poner a evaluar y limpiar estados de llamada)
+    screenLog(`Admin Eval Button (botones): Evaluando a ${selectedForActionId}`, 'CLICK');
+    const updateData = {
+        currentlyVotingFor: selectedForActionId,
+        onDeck: null,
+        isUp: null,
+        acknowledgedUp: null,
+        // (No tocamos votedOnParticipants aquí)
+    };
+    
+    // Limpiamos votedOnParticipants SOLO si estaba ahí (lógica de botones.html: evalReset + evalStart)
+    const evaluatedList = contestData.votedOnParticipants || [];
+    if (evaluatedList.includes(selectedForActionId)) {
+        updateData.votedOnParticipants = arrayRemove(selectedForActionId);
+    }
+    
+    await updateDoc(getContestRef(contestId), updateData);
+    
+    // Limpiamos los votos anteriores (de proyecto.html, es buena idea)
+    const batch = writeBatch(db);
+    jurors.forEach(j => batch.update(getUserRef(contestId, j.id), { hasVoted: false }));
+    await batch.commit();
 
-                            },
+    selectedForActionId = null;
+},
+
+'admin-reopen-btn': async () => {
+    // Lógica de botones.html (Marcar como evaluado y limpiar estados)
+    screenLog(`Admin Reopen/Finish Button (botones): Marcando como evaluado a ${selectedForActionId}`, 'CLICK');
+    
+    // Si la acción es "Reabrir Votos" (lógica de proyecto)
+    if ( (contestData.votedOnParticipants || []).includes(selectedForActionId) ) {
+        screenLog('Admin Reopen (botones): Reiniciando votos para (ya evaluado)', 'WARN');
+        const batch = writeBatch(db);
+        const votes = await getDocs(getVotesCollectionRef(contestId, selectedForActionId));
+        votes.forEach(v => batch.delete(v.ref));
+        
+        batch.update(getContestRef(contestId), { 
+            votedOnParticipants: arrayRemove(selectedForActionId), // Quitar de evaluados
+            currentlyVotingFor: null, // Dejar de votar
+            onDeck: null,
+            isUp: null,
+            acknowledgedUp: null
+        });
+
+        if (isTiebreaker) {
+             batch.update(getContestRef(contestId), { status: 'voting', tiebreakerInfo: null });
+        }
+        await batch.commit();
+    
+    } else {
+        // Si la acción es "Marcar como Listo/Evaluado" (lógica de botones.html)
+        screenLog('Admin Finish (botones): Marcando como evaluado (estaba en votación)', 'INFO');
+        await updateDoc(getContestRef(contestId), {
+            currentlyVotingFor: null, // Dejar de votar
+            votedOnParticipants: arrayUnion(selectedForActionId) // Añadir a evaluados
+        });
+    }
+    selectedForActionId = null;
+},
+// FIN: Bloque Botones Admin
+
+
+
 
                             'admin-eval-btn': async () => {
 
@@ -3261,9 +3554,28 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
 
 
-            document.getElementById('voted-list').innerHTML = sortedVoted.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
 
-            document.getElementById('pending-list').innerHTML = sortedPending.map(p=>`<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded' : ''}">${p.name}</li>`).join('');
+
+document.getElementById('voted-list').innerHTML = sortedVoted.map(p => {
+    // Obtenemos el estado online del participante 'p' desde los datos globales
+    const isParticipantOnline = localPresenceData[p.id]?.isOnline === true;
+    // Creamos el HTML para el punto (verde si está online, gris si no)
+    const participantIndicator = `<span class="status-dot ${isParticipantOnline ? 'online' : ''}" title="${isParticipantOnline ? 'Conectado' : 'Desconectado'}"></span>`;
+    // Generamos el HTML del elemento de lista (<li>)
+    // Añadimos clases CSS 'flex items-center' para alinear el punto y el nombre
+    // Incluimos el indicador antes del nombre
+    return `<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded flex items-center' : 'flex items-center'}">${participantIndicator} ${p.name}</li>`; // Añadido espacio
+}).join(''); // Unimos todos los <li> generados
+
+document.getElementById('pending-list').innerHTML = sortedPending.map(p => {
+    // Obtenemos el estado online del participante 'p'
+    const isParticipantOnline = localPresenceData[p.id]?.isOnline === true;
+    // Creamos el HTML para el punto
+    const participantIndicator = `<span class="status-dot ${isParticipantOnline ? 'online' : ''}" title="${isParticipantOnline ? 'Conectado' : 'Desconectado'}"></span>`;
+    // Generamos el HTML del elemento de lista (<li>)
+    return `<li class="${p.id === currentUserId && p.isParticipant ? 'participant-me p-1 rounded flex items-center' : 'flex items-center'}">${participantIndicator} ${p.name}</li>`; // Añadido espacio
+}).join(''); // Unimos todos los <li> generados
+
 
         }
 
@@ -3987,7 +4299,11 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
                     const textList = await extractTextWithGemini(event.target.result);
 
+
+
+
                     document.getElementById('participants-list-input').value = textList;
+                    
 
                     customAlert("Revisión Necesaria", "La IA ha procesado la imagen. Por favor, revisa y corrige el texto antes de cargar la lista.");
 
