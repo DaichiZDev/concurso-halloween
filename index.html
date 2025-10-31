@@ -119,41 +119,38 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 
-
+/* INICIO: Código a Pegar (CSS Corregido SIN Animaciones) */
         .modal-backdrop {
-
             position: fixed;
-
             inset: 0;
-
             background-color: rgba(0,0,0,0.7);
-
             display: flex;
-
             align-items: flex-start;
-
             justify-content: center;
-
             z-index: 100;
-
             padding: 2rem 1rem;
-
             overflow-y: auto;
-
             opacity: 0;
-
             pointer-events: none;
-
-            transition: opacity 0.3s ease;
-
+            /* transition: opacity 0.3s ease; */ /* TRANSICIÓN ELIMINADA */
         }
-
         .modal-backdrop.visible { opacity: 1; pointer-events: auto; }
-
-        .modal-content { background-color: #2d2d2d; color: #f0f0f0; padding: 2rem; border-radius: 0.75rem; max-width: 90%; width: 500px; border: 1px solid #444; text-align: center; transform: scale(0.95); transition: transform 0.3s ease; }
-
-        .modal-backdrop.visible .modal-content { transform: scale(1); }
-
+        .modal-content { 
+            background-color: #2d2d2d; 
+            color: #f0f0f0; 
+            padding: 2rem; 
+            border-radius: 0.75rem; 
+            max-width: 90%; 
+            width: 500px; 
+            border: 1px solid #444; 
+            text-align: center; 
+            /* transform: scale(0.95); */ /* ANIMACIÓN ELIMINADA */
+            /* transition: transform 0.3s ease; */ /* TRANSICIÓN ELIMINADA */
+        }
+        .modal-backdrop.visible .modal-content { 
+            /* transform: scale(1); */ /* REGLA ELIMINADA */
+        }
+/* FIN: Código a Pegar */
 
 
         .rank-1 { color: #facc15; }
@@ -1175,6 +1172,8 @@
     <div id="costume-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Nombre del Disfraz</h2><input type="text" id="costume-modal-input" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500"><div class="flex gap-4 mt-6"><button id="costume-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="costume-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
 
     <div id="description-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Descripción del Disfraz</h2><textarea id="description-modal-input" rows="4" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Descripción..."></textarea><button id="description-modal-generate" class="btn-secondary w-full mt-4 bg-indigo-600 hover:bg-indigo-700">✨ Generar con IA</button><div class="flex gap-4 mt-6"><button id="description-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="description-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
+   
+   <div id="criterion-description-modal" class="modal-backdrop"><div class="modal-content"><h2 id="criterion-modal-title" class="font-creepster text-3xl text-orange-500 mb-4">Descripción del Criterio</h2><textarea id="criterion-modal-input" rows="4" class="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Ej: Mide la calidad del trabajo manual, el maquillaje, la costura, etc..."></textarea><div class="flex gap-4 mt-6"><button id="criterion-modal-cancel" class="btn-secondary flex-1">Cancelar</button><button id="criterion-modal-save" class="btn-primary flex-1">Guardar</button></div></div></div>
 
     <div id="image-choice-modal" class="modal-backdrop"><div class="modal-content"><h2 class="font-creepster text-3xl text-orange-500 mb-4">Elegir Imagen</h2><p class="text-gray-300 mb-6">¿Cómo quieres agregar la imagen del disfraz?</p><div class="flex flex-col gap-4"><button id="image-choice-upload" class="btn-secondary w-full">⬆️ Subir Foto</button><button id="image-choice-generate" class="btn-secondary w-full bg-indigo-600 hover:bg-indigo-700">🤖 Generar con IA</button><button id="image-choice-cancel" class="btn-danger w-full mt-2">Cancelar</button></div></div></div>
 
@@ -1209,11 +1208,10 @@
                 <button id="settings-modal-cancel" class="btn-secondary flex-1">Cancelar</button>
 
                 <button id="settings-modal-save" class="btn-primary flex-1">Guardar Clave</button>
+               
 
             </div>
-
         </div>
-
     </div>
 
      <input type="file" id="image-file-input" class="hidden" accept="image/*">
@@ -1354,6 +1352,7 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
         let previousRevealStep = 0;
 
         let currentUserName = null;
+        let localVotingTargetId = null;
 // [PEGAR CÓDIGO AQUÍ]
 
         // --- Variables de Presencia (de botones.html) ---
@@ -1608,47 +1607,44 @@ function checkModals() {
 
 
 
-        function setupModal(modalElement, inputId, saveButtonId, cancelButtonId) {
-
+// INICIO: Código a Pegar 1 (Reemplazo de setupModal CON LOGS)
+        // INICIO: Función setupModal MODIFICADA CON LOGS
+        const setupModal = (modalElement, inputId, saveButtonId, cancelButtonId) => {
             const input = modalElement.querySelector(`#${inputId}`);
-
             const cancelBtn = modalElement.querySelector(`#${cancelButtonId}`);
 
             const show = (currentValue, onSave) => {
-
+                screenLog(`setupModal.show: Iniciando. Modal ID: ${modalElement.id}`, 'MODAL');
                 const saveBtn = modalElement.querySelector(`#${saveButtonId}`);
-
                 input.value = currentValue;
-
+                
+                screenLog(`setupModal.show: Añadiendo .visible a ${modalElement.id}`, 'MODAL');
                 modalElement.classList.add('visible');
+                screenLog(`setupModal.show: .visible añadido a ${modalElement.id}. ¿classList lo tiene? ` + modalElement.classList.contains('visible'), 'MODAL');
 
                 input.focus();
-
                 const newSaveBtn = saveBtn.cloneNode(true);
-
                 saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-
-                newSaveBtn.addEventListener('click', async () => { await onSave(input.value.trim()); hide(); });
-
+                newSaveBtn.addEventListener('click', async () => { 
+                    screenLog(`setupModal.show: Botón Guardar presionado en ${modalElement.id}`, 'MODAL');
+                    await onSave(input.value.trim()); 
+                    hide(); 
+                });
             };
-
-            const hide = () => modalElement.classList.remove('visible');
-
+            const hide = () => {
+                screenLog(`setupModal.hide: Ocultando ${modalElement.id}`, 'MODAL');
+                modalElement.classList.remove('visible');
+            };
             cancelBtn.addEventListener('click', hide);
-
             return { show };
-
-        }
-
-
+        };
+        // FIN: Función setupModal MODIFICADA CON LOGS
 
         const namePrompt = setupModal(document.getElementById('name-modal'), 'name-modal-input', 'name-modal-save', 'name-modal-cancel');
-
         const costumePrompt = setupModal(document.getElementById('costume-modal'), 'costume-modal-input', 'costume-modal-save', 'costume-modal-cancel');
-
         const descriptionPrompt = setupModal(document.getElementById('description-modal'), 'description-modal-input', 'description-modal-save', 'description-modal-cancel');
-
-
+        const criterionDescriptionPrompt = setupModal(document.getElementById('criterion-description-modal'), 'criterion-modal-input', 'criterion-modal-save', 'criterion-modal-cancel');
+// FIN: Código a Pegar 1
 
         const generateId = () => Math.random().toString(36).substr(2, 6).toUpperCase();
 
@@ -1946,6 +1942,7 @@ async function leaveContest() {
 
 
             const criteria = localContestData.criteria || [];
+            
 
             if (criteria.length === 0) {
 
@@ -2518,18 +2515,34 @@ presenceRef = ref(rtdb, `status/${id}`); // Usa 'id' (contestId)
                
                checkModals();
 
-                if (newStatus === 'paused' && isAdmin) {
+if (oldStatus !== newStatus) {
+                    screenLog(`Cambio de estado detectado: ${oldStatus} -> ${newStatus}. Reconfigurando listeners.`, 'STATUS');
+                    // El estado CAMBIÓ. Necesitamos cambiar de pantalla y de listener.
+                    if (newStatus === 'paused' && isAdmin) {
+                        showScreen('lobby');
+                        subscribeToUsers(id, renderLobby);
+                    } else {
+                        const screenMap = { lobby: 'lobby', voting: 'voting', paused: 'voting', tiebreaker: 'voting', results: 'results' };
+                        const rendererMap = { lobby: renderLobby, voting: renderVotingScreen, paused: renderVotingScreen, tiebreaker: renderVotingScreen, results: renderResults };
+                        
+                        const newScreen = screenMap[newStatus];
+                        const newRenderer = rendererMap[newStatus];
 
-                    showScreen('lobby');
-
-                    subscribeToUsers(id, renderLobby);
-
+                        showScreen(newScreen);
+                        if (newRenderer) {
+                            subscribeToUsers(id, newRenderer);
+                        }
+                    }
                 } else {
-                    const screenMap = { lobby: 'lobby', voting: 'voting', paused: 'voting', tiebreaker: 'voting', results: 'results' };
-                    const rendererMap = { lobby: renderLobby, voting: renderVotingScreen, paused: renderVotingScreen, tiebreaker: renderVotingScreen, results: renderResults };
-                    showScreen(screenMap[newStatus]);
-                    if (rendererMap[newStatus]) subscribeToUsers(id, rendererMap[newStatus]);
+                    screenLog(`Actualización de datos (sin cambio de estado: ${newStatus}). Re-renderizando vista.`, 'INFO');
+                    // El estado NO cambió (ej. solo se actualizó 'criteria' en 'lobby').
+                    // Solo necesitamos re-renderizar la vista actual con los datos nuevos.
+                    if (typeof(rendererForPresenceUpdate) === 'function') {
+                        // Usamos el renderer que ya está activo (ej. renderLobby)
+                        rendererForPresenceUpdate(localContestData, localUsersDataForPresence);
+                    }
                 }
+                // --- FIN DE LA CORRECCIÓN ---
             });
             
 
@@ -2640,145 +2653,113 @@ document.getElementById('is-up-close').addEventListener('click', async () => {
 
 
 
+// INICIO: Función renderCriteriaSettings actualizada
         function renderCriteriaSettings(contestData) {
-
             const criteria = contestData.criteria || [];
-
             const scoringMethod = contestData.scoringMethod || 'weighted_average';
-
             const criteriaListContainer = document.getElementById('criteria-list');
-
             const isWeighted = scoringMethod === 'weighted_average';
 
-
-
             document.getElementById('scoring-method-select').value = scoringMethod;
-
             criteriaListContainer.innerHTML = '';
 
-
-
             let totalWeight = 0;
-
             criteria.forEach(crit => {
-
                 totalWeight += (crit.weight || 0);
-
                 const item = document.createElement('div');
-
-                item.className = 'grid grid-cols-[1fr,auto,auto] items-center gap-2';
-
+                item.className = 'grid grid-cols-[auto,1fr,auto,auto] items-center gap-2';
                 item.innerHTML = `
-
+                    <button data-criterion-id="${crit.id}" class="edit-criterion-desc-btn bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg flex items-center justify-center h-10 w-10 text-xl" title="Editar descripción">✏️</button>
                     <input type="text" value="${crit.name}" data-criterion-id="${crit.id}" class="criterion-name-input w-full bg-gray-700 rounded p-2 border border-gray-600 text-white">
-
                     <input type="number" value="${crit.weight}" data-criterion-id="${crit.id}" class="criterion-weight-input w-20 bg-gray-700 rounded p-2 border border-gray-600 text-white text-center ${isWeighted ? '' : 'hidden'}" placeholder="%">
-
                     <button data-criterion-id="${crit.id}" class="remove-criterion-btn bg-red-700 hover:bg-red-800 text-white font-bold rounded-lg flex items-center justify-center h-10 w-10 text-xl">&times;</button>
-
                 `;
-
                 criteriaListContainer.appendChild(item);
-
             });
 
-
-
             const warningEl = document.getElementById('criteria-weight-warning');
-
             if (isWeighted) {
-
                 warningEl.textContent = `Suma de valores: ${totalWeight}%. Debe ser 100%.`;
-
                 warningEl.classList.toggle('hidden', totalWeight === 100);
-
                 warningEl.classList.toggle('text-red-500', totalWeight !== 100);
-
                 warningEl.classList.toggle('text-green-400', totalWeight === 100);
-
             } else {
-
                 warningEl.classList.add('hidden');
-
             }
-
         }
+// FIN: Función renderCriteriaSettings actualizada
 
 
 
+
+// INICIO: Código a Pegar 2 (Reemplazo de admin-controls CON LOGS)
         document.getElementById('admin-controls').addEventListener('change', async (e) => {
-
             if (localContestData.creatorId !== currentUserId) return;
-
-
 
             const target = e.target;
-
             const criteria = localContestData.criteria || [];
-
-
 
             if (target.id === 'scoring-method-select') {
-
                 await updateDoc(getContestRef(contestId), { scoringMethod: target.value });
-
             } else if (target.classList.contains('criterion-name-input')) {
-
                 const id = target.dataset.criterionId;
-
                 const newName = target.value.trim();
-
                 const updatedCriteria = criteria.map(c => c.id === id ? { ...c, name: newName } : c);
-
                 await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
-
             } else if (target.classList.contains('criterion-weight-input')) {
-
                 const id = target.dataset.criterionId;
-
                 const newWeight = parseInt(target.value) || 0;
-
                 const updatedCriteria = criteria.map(c => c.id === id ? { ...c, weight: newWeight } : c);
-
                 await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
-
             }
-
         });
-
-
 
         document.getElementById('admin-controls').addEventListener('click', async (e) => {
-
+            screenLog('admin-controls.click: Clic detectado en panel de admin', 'CLICK');
             if (localContestData.creatorId !== currentUserId) return;
 
-
-
             const target = e.target.closest('button');
-
-            if (!target) return;
-
-
-
-            const criteria = localContestData.criteria || [];
-
-            if (target.id === 'add-criterion-btn') {
-
-                const newCriterion = { id: `crit${Date.now()}`, name: 'Nuevo Criterio', weight: 10 };
-
-                await updateDoc(getContestRef(contestId), { criteria: [...criteria, newCriterion] });
-
-            } else if (target.classList.contains('remove-criterion-btn')) {
-
-                const id = target.dataset.criterionId;
-
-                const updatedCriteria = criteria.filter(c => c.id !== id);
-
-                await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
-
+            if (!target) {
+                screenLog('admin-controls.click: Clic fue en un área no-botón', 'CLICK');
+                return;
             }
 
+            screenLog(`admin-controls.click: Botón presionado: ${target.id || target.classList[0]}`, 'CLICK');
+            const criteria = localContestData.criteria || [];
+           
+           if (target.classList.contains('edit-criterion-desc-btn')) {
+                screenLog('admin-controls.click: Botón ✏️ (edit-criterion-desc-btn) detectado.', 'CLICK');
+                const criterionId = target.dataset.criterionId;
+                const criterion = criteria.find(c => c.id === criterionId);
+                if (!criterion) {
+                     screenLog('admin-controls.click: No se encontró criterio para el ID ' + criterionId, 'ERROR');
+                    return;
+                }
+
+                const currentDesc = criterion.description || '';
+                screenLog(`admin-controls.click: Llamando a criterionDescriptionPrompt.show() para ${criterion.name}`, 'CLICK');
+                
+                criterionDescriptionPrompt.show(currentDesc, async (newDesc) => {
+                    screenLog(`admin-controls.click: Callback de Guardar ejecutándose.`, 'CLICK');
+                    const updatedCriteria = criteria.map(c => 
+                        c.id === criterionId ? { ...c, description: newDesc } : c
+                    );
+                    await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
+                    customAlert("Guardado", "Descripción del criterio actualizada.");
+                });
+            } else
+            if (target.id === 'add-criterion-btn') {
+                screenLog('admin-controls.click: Botón "Añadir Criterio" presionado.', 'CLICK');
+                const newCriterion = { id: `crit${Date.now()}`, name: 'Nuevo Criterio', weight: 10 };
+                await updateDoc(getContestRef(contestId), { criteria: [...criteria, newCriterion] });
+            } else if (target.classList.contains('remove-criterion-btn')) {
+                screenLog('admin-controls.click: Botón "Eliminar Criterio" presionado.', 'CLICK');
+                const id = target.dataset.criterionId;
+                const updatedCriteria = criteria.filter(c => c.id !== id);
+                await updateDoc(getContestRef(contestId), { criteria: updatedCriteria });
+            }
         });
+// FIN: Código a Pegar 2
 
 
 
@@ -3499,31 +3480,27 @@ const presenceDot = `<span class="status-dot ${isOnline ? 'online' : ''}" style=
 
 
 
-            if (isJuror) {
-
+            // --- INICIO DE LA MODIFICACIÓN (Lógica de Visibilidad de Votos Pendientes) ---
+            // Solo muestra la lista de "catch-up" si eres jurado Y NO eres el admin.
+            if (isJuror && !isAdmin) {
                 const votedOnIds = contestData.votedOnParticipants || [];
-
                 const catchupParticipants = [];
-
                 for (const participantId of votedOnIds) {
-
-                    if (participantId === currentUserId) continue;
-
+                    // (Lógica interna sin cambios)
+                    if (participantId === currentUserId) continue; 
                     const voteSnap = await getDoc(doc(getVotesCollectionRef(contestId, participantId), currentUserId));
-
                     if (!voteSnap.exists()) {
-
                         const p = users.find(u => u.id === participantId);
-
                         if (p) catchupParticipants.push(p);
-
                     }
-
                 }
-
                 renderCatchupList(catchupParticipants);
-
+            } else {
+                // Si eres admin (incluso si eres jurado), oculta la lista.
+                renderCatchupList([]); // Llama con lista vacía para asegurar que se oculte
             }
+            // --- FIN DE LA MODIFICACIÓN ---
+
 
 
 
