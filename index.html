@@ -859,6 +859,9 @@
                 <h2 id="voting-screen-title" class="font-creepster text-4xl text-orange-500 mb-6 text-center">Votación en Progreso</h2>
 
                 <div id="admin-voting-view" class="hidden"></div>
+                
+                <div id="delegate-voting-view" class="hidden p-4">
+                     </div>
 
                 <div id="voter-voting-view">
 
@@ -2866,7 +2869,31 @@ document.getElementById('is-up-close').addEventListener('click', async () => {
 
 
 
-                const rolesHTML = isAdmin ? `<div class="flex items-center gap-4 pt-2 border-t border-gray-700 mt-2"><label class="toggle-label flex-1"><span>Participa</span><input type="checkbox" class="toggle-checkbox" data-role="isParticipant" data-userid="${user.id}" ${user.isParticipant?'checked':''}><div class="toggle-switch"></div></label><label class="toggle-label flex-1"><span>Jurado</span><input type="checkbox" class="toggle-checkbox" data-role="isJuror" data-userid="${user.id}" ${user.isJuror?'checked':''}><div class="toggle-switch"></div></label></div>` : `<div class="text-sm text-orange-400 mt-1">${user.isParticipant?'Participante':''} ${user.isJuror?(user.isParticipant?'/ Jurado':'Jurado'):''}</div>`;
+// --- NUEVO CÓDIGO CON "DELEGADO" (Línea corregida) ---
+                const rolesHTML = isAdmin 
+                    ? `<div class="grid grid-cols-3 items-center gap-3 pt-2 border-t border-gray-700 mt-2">
+                           <label class="toggle-label !text-xs !flex-col-reverse gap-1">
+                               <span>Participa</span>
+                               <input type="checkbox" class="toggle-checkbox" data-role="isParticipant" data-userid="${user.id}" ${user.isParticipant?'checked':''}>
+                               <div class="toggle-switch"></div>
+                           </label>
+                           <label class="toggle-label !text-xs !flex-col-reverse gap-1">
+                               <span>Jurado</span>
+                               <input type="checkbox" class="toggle-checkbox" data-role="isJuror" data-userid="${user.id}" ${user.isJuror?'checked':''}>
+                               <div class="toggle-switch"></div>
+                           </label>
+                           <label class="toggle-label !text-xs !flex-col-reverse gap-1">
+                               <span class="text-cyan-300">Delegado</span>
+                               <input type="checkbox" class="toggle-checkbox" data-role="isDelegate" data-userid="${user.id}" ${user.isDelegate?'checked':''}>
+                               <div class="toggle-switch"></div>
+                           </label>
+                       </div>` 
+                    : `<div class="text-sm text-orange-400 mt-1">
+                         ${user.isParticipant?'Participante':''} 
+                         ${user.isJuror?(user.isParticipant?'/ Jurado':'Jurado'):''}
+                         ${user.isDelegate?'<span class="text-cyan-300">/ Delegado</span>':''}
+                       </div>`;
+// --- FIN DEL NUEVO CÓDIGO ---
 
 
 
@@ -3158,29 +3185,119 @@ document.getElementById('is-up-close').addEventListener('click', async () => {
 
         }
 
+/**
+         * ¡NUEVA FUNCIÓN! (v2: Con Scroll)
+         * Renderiza el panel de auditoría para el rol de Delegado.
+         * Muestra todos los votos de todos los jurados para todos los participantes.
+         */
+        async function renderDelegateView(contestData, users) {
+            screenLog('Renderizando Panel de Delegado (Auditoría)', 'DELEGATE');
+            const container = document.getElementById('delegate-voting-view');
+            if (!container) return;
 
+            // 1. Obtener listas clave
+            const participants = users.filter(u => u.isParticipant).sort((a,b) => a.name.localeCompare(b.name));
+            const jurors = users.filter(u => u.isJuror).sort((a,b) => a.name.localeCompare(b.name));
+            const criteria = contestData.criteria || [];
+            
+            // 2. Construir el HTML
+            let html = `<h2 class="font-creepster text-4xl text-cyan-400 mb-6 text-center">Panel de Auditoría</h2>`;
+            html += `<div class="space-y-6">`; // Contenedor para cada participante
+
+            // 3. Iterar por cada PARTICIPANTE
+            for (const p of participants) {
+                const isBeingVotedOn = contestData.currentlyVotingFor === p.id;
+                const isVoted = (contestData.votedOnParticipants || []).includes(p.id);
+                let participantClass = 'bg-gray-900';
+                if (isBeingVotedOn) participantClass = 'bg-yellow-900/50 border border-yellow-500';
+                else if (isVoted) participantClass = 'bg-green-900/30';
+
+                html += `<div class="p-4 rounded-lg ${participantClass}">`;
+                html += `<h3 class="font-bold text-2xl text-orange-400">${p.name} <span class="text-xl text-gray-300">(${p.costume || 'N/A'})</span></h3>`;
+
+                // 4. Obtener todos los votos para ESTE participante
+                const votesSnapshot = await getDocs(getVotesCollectionRef(contestId, p.id)); //
+                const votes = votesSnapshot.docs.map(d => d.data());
+
+                // --- INICIO DE LA MEJORA VISUAL (Scroll) ---
+                html += `<div class="overflow-x-auto rounded-lg bg-black/20 mt-3">`;
+                html += `<table class="w-full text-left table-fixed min-w-[600px]">`; // Ancho mínimo
+                html += `<thead><tr class="border-b border-gray-600">`;
+                html += `<th class="p-2 text-cyan-300" style="width: 120px;">Jurado</th>`;
+                
+                criteria.forEach(c => {
+                    html += `<th class="p-2 text-center text-gray-300 break-words">${c.name}</th>`;
+                });
+                html += `</tr></thead><tbody>`;
+                // --- FIN DE LA MEJORA VISUAL ---
+
+                // 6. Iterar por cada JURADO y mostrar su voto
+                for (const j of jurors) {
+                    const voteData = votes.find(v => v.jurorId === j.id);
+                    
+                    html += `<tr class="border-b border-gray-700">`;
+                    html += `<td class="p-2 font-medium break-words">${j.name}</td>`;
+                    
+                    if (voteData) {
+                        // Si votó, mostrar cada puntaje
+                        criteria.forEach(c => {
+                            const score = voteData.scores[c.id] || '-';
+                            let color = 'text-white';
+                            if (score === MAX_SCORE) color = 'text-green-400 font-bold'; //
+                            if (score <= 3) color = 'text-red-400 font-bold';
+                            
+                            html += `<td class="p-2 text-center text-lg ${color}">${score}</td>`;
+                        });
+                    } else {
+                        // Si no ha votado
+                        html += `<td colspan="${criteria.length}" class="p-2 text-center italic text-gray-500">(Voto pendiente)</td>`;
+                    }
+                    html += `</tr>`;
+                }
+                
+                html += `</tbody></table></div>`; // Cierra el div de overflow Y la tabla
+                html += `</div>`; // Cierra el div del participante
+            }
+
+            html += `</div>`; // Cierra el contenedor principal
+            container.innerHTML = html;
+        }
 
         async function renderVotingScreen(contestData, users) {
 
+// --- NUEVO CÓDIGO (CON LÓGICA DE DELEGADO) ---
             const isAdmin = contestData.creatorId === currentUserId;
-
             const me = users.find(u => u.id === currentUserId);
+            if (!me) return; // Guardia de seguridad
 
-            const isJuror = me?.isJuror;
-
+            const isJuror = me.isJuror || false; // Tu lógica original
+            const isDelegate = me.isDelegate || false; // <-- 1. AÑADIMOS AL DELEGADO
             const isTiebreaker = contestData.status === 'tiebreaker';
 
-
-
             document.getElementById('voting-screen-title').textContent = isTiebreaker ? `Desempate por el ${contestData.tiebreakerInfo.rank}º Lugar` : 'Votación en Progreso';
-
+            
+            // --- 2. LÓGICA DE PANELES (CORREGIDA) ---
+            
+            // Muestra/oculta el panel de Admin (Tu lógica original)
             document.getElementById('admin-voting-view').classList.toggle('hidden', !isAdmin);
+            
+            // Muestra/oculta el panel de Delegado (Nuevo)
+            document.getElementById('delegate-voting-view').classList.toggle('hidden', !isDelegate);
+            if (isDelegate) {
+                renderDelegateView(contestData, users); // Llama a la función que ya tienes
+            }
 
-            document.getElementById('voter-voting-view').classList.remove('hidden');
-
-
-
+            // Muestra/oculta el panel de Votante (Sliders)
+            // Tu lógica original se ejecuta si NO eres delegado
+            if (!isDelegate) {
+                document.getElementById('voter-voting-view').classList.remove('hidden');
+            } else {
+                // Oculta los sliders SÓLO si eres delegado
+                document.getElementById('voter-voting-view').classList.add('hidden');
+            }
+            
             let participants = users.filter(u => u.isParticipant);
+// --- FIN DEL NUEVO CÓDIGO ---
 
             if (isTiebreaker) participants = participants.filter(p => contestData.tiebreakerInfo.participantIds.includes(p.id));
 
