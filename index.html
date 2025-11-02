@@ -1340,11 +1340,12 @@ let currentUserId = null, contestId = null, localContestData = {}, currentScreen
 
         let currentUserName = null;
         let localVotingTargetId = null;
+        // Descriocion Criterios default
         const DEFAULT_CRITERIA_DESCRIPTIONS = {
             'crit1': 'Mide la originalidad de la idea, la elección del personaje y qué tan única es la propuesta.',
             'crit2': 'Evalúa la calidad del trabajo manual, el maquillaje, la costura y los accesorios. ¿Está bien hecho?',
-            'crit3': 'Califica el "performance", la actuación del personaje y el entusiasmo al presentarlo.',
-            'crit4': 'Valora la apariencia general, el impacto visual y la estética del conjunto.' // <-- LÍNEA AÑADIDA
+            'crit3': 'Califica el "performance", la actuación del personaje y el entusiasmo al presentarlo ¿Encarna sus gestos y movimientos?',
+            'crit4': 'Valora la apariencia general, el impacto visual y la estética del conjunto.'
         };
 
         /**
@@ -2319,10 +2320,10 @@ html += `
                         isLocked: false,
                         scoringMethod: "weighted_average",
                         criteria: [
-                            { id: 'crit1', name: 'Creatividad y Originalidad', weight: 40 },
-                            { id: 'crit2', name: 'Fidelidad', weight: 40 },
-                            { id: 'crit3', name: 'Interpretacion', weight: 40 },
-                            { id: 'crit4', name: 'Styling, Look', weight: 20 }
+                            { id: 'crit1', name: 'Creatividad y Originalidad', weight: 0 },
+                            { id: 'crit2', name: 'Stilyng', weight: 0 },
+                            { id: 'crit3', name: 'Interpretacion', weight: 0 },
+                            { id: 'crit4', name: 'Fidelidad Impacto Visual', weight: 0 }
                         ]
                     });
                 } else {
@@ -3201,7 +3202,7 @@ document.getElementById('is-up-close').addEventListener('click', async () => {
             const criteria = contestData.criteria || [];
             
             // 2. Construir el HTML
-            let html = `<h2 class="font-creepster text-4xl text-cyan-400 mb-6 text-center">Panel de Auditoría</h2>`;
+            let html = `<h2 class="font-creepster text-4xl text-cyan-400 mb-6 text-center">Panel de Delegado</h2>`;
             html += `<div class="space-y-6">`; // Contenedor para cada participante
 
             // 3. Iterar por cada PARTICIPANTE
